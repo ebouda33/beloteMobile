@@ -49,6 +49,21 @@ puis recharger les configurations du projet ou recreer une configuration
 - `Dart entrypoint` : `lib/main.dart`
 - `Additional run args` : `-d chrome`
 
+## Etat de l'ecran d'accueil
+
+Au premier lancement Web, l'ecran affiche un bouton `Nouvelle partie`.
+Il est actuellement grise parce que le code le declare avec `onPressed: null`.
+
+Cet etat est volontaire pour le premier niveau du projet : l'interface existe,
+mais le demarrage de partie n'est pas encore relie au moteur de jeu.
+
+La prochaine implementation devra remplacer ce placeholder par une action qui :
+
+1. cree une nouvelle partie locale ;
+2. melange et distribue le paquet ;
+3. affiche la main du joueur humain ;
+4. active les premieres actions de jeu.
+
 ## Commandes utiles
 
 Verifier Flutter :

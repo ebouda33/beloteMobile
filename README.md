@@ -1,17 +1,50 @@
-# belote_mobile
+# Belote Mobile
 
-A new Flutter project.
+Application Flutter pour construire un jeu de belote local, en commencant par
+la cible Web afin de valider rapidement le moteur et l'interface.
 
-## Getting Started
+## Etat actuel
 
-This project is a starting point for a Flutter application.
+- Projet Flutter initialise.
+- Cibles Web, iOS et Android presentes dans le depot.
+- Configuration IntelliJ partagee pour lancer le Web sans script shell.
+- Premier modele de cartes de belote implemente.
+- Tests de base sur le paquet, les couleurs, les valeurs et l'ecran d'accueil.
+- Bouton `Nouvelle partie` visible mais volontairement desactive tant que le
+  moteur de partie n'est pas branche a l'interface.
 
-A few resources to get you started if this is your first Flutter project:
+## Lancer le projet
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Depuis IntelliJ IDEA ou Android Studio, utiliser la configuration :
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```text
+Flutter Web
+```
+
+Elle lance `lib/main.dart` sur Chrome avec `-d chrome`.
+
+Depuis un terminal :
+
+```sh
+flutter run -d chrome
+```
+
+## Tests
+
+```sh
+flutter test
+```
+
+Derniere verification effectuee avant le premier commit : tous les tests
+passent.
+
+## Documentation
+
+- `docs/specifications-belote.md` : specification fonctionnelle de la V1.
+- `docs/installation-flutter.md` : installation de Flutter et des outils.
+- `docs/ide/intellij-flutter.md` : configuration IntelliJ pour lancer le Web.
+
+## Prochaine reprise
+
+Prochaine etape recommandee : brancher le bouton `Nouvelle partie` sur un debut
+d'etat de partie local, puis afficher une premiere main distribuee au joueur.

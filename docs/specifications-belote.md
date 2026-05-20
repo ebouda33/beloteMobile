@@ -20,6 +20,26 @@ Ordre des plateformes :
 2. iOS
 3. Android
 
+## Etat d'avancement
+
+Premier niveau valide :
+
+- squelette Flutter cree ;
+- lancement Web depuis l'IDE configure sans script shell ;
+- documentation d'installation et de configuration IDE ajoutee ;
+- modele de cartes et paquet de 32 cartes cree ;
+- tests de base ajoutes et executes avec succes.
+
+Le bouton `Nouvelle partie` est visible dans l'interface mais desactive. Il doit
+etre active au moment ou le premier etat de partie local sera implemente.
+
+Prochaine reprise :
+
+1. definir un objet d'etat de partie ;
+2. creer la distribution initiale ;
+3. brancher `Nouvelle partie` sur cet etat ;
+4. afficher la main du joueur humain.
+
 ## Principes de conception
 
 - La logique de jeu doit etre separee de l'interface mobile.
