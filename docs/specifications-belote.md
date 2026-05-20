@@ -1,0 +1,259 @@
+# Specifications - Jeu de belote mobile
+
+## Objectif
+
+Construire un jeu de belote avec Flutter, d'abord jouable sur le Web pour
+simplifier le demarrage et les premiers tests, puis sur iOS, puis sur Android.
+La premiere version est locale uniquement : pas de reseau, pas de compte
+utilisateur, pas de matchmaking.
+
+La specification doit rester evolutive afin d'ajouter plus tard :
+
+- le mode reseau ;
+- plusieurs variantes de regles ;
+- une meilleure intelligence artificielle ;
+- des statistiques et historiques de parties.
+
+Ordre des plateformes :
+
+1. Web
+2. iOS
+3. Android
+
+## Principes de conception
+
+- La logique de jeu doit etre separee de l'interface mobile.
+- Le moteur de jeu doit pouvoir fonctionner sans dependance a l'UI.
+- Les joueurs IA de la V1 doivent pouvoir etre remplaces plus tard par des joueurs reseau.
+- Les regles doivent etre testables automatiquement.
+- L'interface Web doit servir de premiere surface de validation.
+- L'interface doit rester pensee mobile des le depart : lisible, tactile, fluide.
+
+## Variante cible V1
+
+La V1 part sur une belote classique simplifiee.
+
+Decisions initiales :
+
+- 4 joueurs.
+- 2 equipes de 2 joueurs.
+- 1 joueur humain.
+- 3 joueurs controles par une IA locale.
+- Partie locale uniquement.
+- Distribution automatique.
+- Jeu en manches successives.
+- Score cumule entre les equipes.
+- Score cible : 501 points.
+- Belote/rebelote activee des la V1.
+- Autres annonces desactivees en V1.
+- Capot gere des la V1.
+- Defausse autorisee quand le partenaire est maitre du pli.
+- Stack cible : Flutter.
+- Plateforme de demarrage : Web.
+
+Recommandation V1 :
+
+- demarrer sans annonces complexes ;
+- inclure belote/rebelote ;
+- garder les encheres simples ;
+- conserver le dix de der ;
+- viser une partie jusqu'a 501 points.
+
+## Cartes
+
+Le jeu contient 32 cartes :
+
+- couleurs : trefle, carreau, coeur, pique ;
+- valeurs : 7, 8, 9, valet, dame, roi, 10, as.
+
+Chaque carte doit etre modelisee par :
+
+- une couleur ;
+- une valeur ;
+- un identifiant stable ;
+- un libelle affichable.
+
+## Ordre et valeur des cartes
+
+Hors atout, ordre du plus fort au plus faible :
+
+1. As
+2. 10
+3. Roi
+4. Dame
+5. Valet
+6. 9
+7. 8
+8. 7
+
+A l'atout, ordre du plus fort au plus faible :
+
+1. Valet
+2. 9
+3. As
+4. 10
+5. Roi
+6. Dame
+7. 8
+8. 7
+
+Valeurs hors atout :
+
+- As : 11
+- 10 : 10
+- Roi : 4
+- Dame : 3
+- Valet : 2
+- 9, 8, 7 : 0
+
+Valeurs a l'atout :
+
+- Valet : 20
+- 9 : 14
+- As : 11
+- 10 : 10
+- Roi : 4
+- Dame : 3
+- 8, 7 : 0
+
+## Deroulement d'une manche
+
+Une manche suit ce cycle :
+
+1. Melanger les 32 cartes.
+2. Distribuer 8 cartes a chaque joueur.
+3. Determiner l'atout.
+4. Jouer 8 plis.
+5. Calculer les points de chaque equipe.
+6. Ajouter le score de la manche au score total.
+7. Demarrer une nouvelle manche si le score cible n'est pas atteint.
+
+## Encheres V1
+
+Objectif : avoir une premiere version jouable sans complexifier trop tot.
+
+Option recommandee :
+
+- proposer une phase d'enchere simple ;
+- chaque joueur peut passer ou prendre une couleur ;
+- la premiere couleur prise devient l'atout ;
+- si tout le monde passe, redistribuer.
+
+Les encheres avancees, coinche, surcoinche et contrats chiffres sont hors scope V1.
+
+## Regles de jeu d'une carte
+
+Pour chaque pli :
+
+- le premier joueur pose une carte librement ;
+- les autres joueurs doivent suivre la couleur demandee si possible ;
+- si le joueur ne peut pas suivre, il doit couper a l'atout si possible ;
+- si le partenaire du joueur est actuellement maitre du pli, le joueur peut defausser au lieu de couper ;
+- si un atout est deja joue et que le joueur doit couper, il doit monter si possible ;
+- si le joueur ne peut ni suivre ni couper, il peut jouer n'importe quelle carte.
+
+## Gain d'un pli
+
+Le gagnant du pli est :
+
+- la carte d'atout la plus forte si au moins un atout a ete joue ;
+- sinon la carte la plus forte dans la couleur demandee.
+
+Le gagnant du pli ouvre le pli suivant.
+
+## Score d'une manche
+
+Regles initiales :
+
+- additionner les valeurs des cartes gagnees par chaque equipe ;
+- ajouter 10 points a l'equipe qui gagne le dernier pli ;
+- ajouter 20 points pour belote/rebelote a l'equipe du joueur concerne ;
+- attribuer un bonus de capot si une equipe gagne les 8 plis ;
+- verifier si l'equipe preneuse a rempli son contrat ;
+- si le contrat echoue, l'equipe adverse marque les points selon la regle choisie.
+
+Belote/rebelote :
+
+- un joueur possedant le roi et la dame d'atout peut annoncer belote/rebelote ;
+- l'annonce vaut 20 points ;
+- l'annonce appartient a l'equipe du joueur qui possede les deux cartes ;
+- l'annonce doit etre declaree lors du jeu du roi et de la dame d'atout ;
+- l'annonce ne concerne que l'atout.
+
+Point a specifier avant implementation :
+
+- score exact en cas de chute ;
+- valeur exacte du capot dans la variante retenue ;
+- arrondis eventuels ;
+- moment exact d'affichage et de confirmation de belote/rebelote dans l'interface.
+
+## Intelligence artificielle V1
+
+L'IA V1 doit etre simple, deterministe autant que possible, et suffisante pour jouer.
+
+Priorites :
+
+- respecter les regles ;
+- choisir une carte valide ;
+- eviter les choix aleatoires quand une decision simple est possible.
+
+Strategie minimale :
+
+- si elle peut gagner le pli avec une carte peu couteuse, elle le fait ;
+- si elle ne peut pas gagner, elle joue une carte faible ;
+- elle garde les gros atouts quand ce n'est pas necessaire de les jouer ;
+- aux encheres, elle prend si sa main contient assez de points ou de force dans une couleur.
+
+Une IA plus forte viendra apres stabilisation du moteur.
+
+## Interface V1
+
+Ecrans et zones minimales :
+
+- ecran de partie ;
+- main du joueur humain ;
+- cartes jouees au centre de la table ;
+- score des deux equipes ;
+- indication de l'atout ;
+- indication du joueur courant ;
+- actions disponibles : passer, prendre, jouer une carte, nouvelle manche.
+
+L'interface doit empecher autant que possible les actions invalides.
+La validation finale reste cependant dans le moteur de jeu.
+
+## Tests attendus
+
+Les tests doivent couvrir en priorite le moteur de jeu :
+
+- creation du paquet de 32 cartes ;
+- melange/distribution sans doublons ;
+- ordre des cartes hors atout ;
+- ordre des cartes a l'atout ;
+- valeur des cartes ;
+- validation des cartes jouables ;
+- determination du gagnant d'un pli ;
+- calcul des points d'un pli ;
+- calcul du score d'une manche ;
+- comportements simples de l'IA.
+
+Apres chaque ajout de code, les tests pertinents doivent etre ajoutes ou mis a jour,
+puis executes selon le skill `test`.
+
+## Hors scope V1
+
+- reseau ;
+- comptes utilisateur ;
+- matchmaking ;
+- chat ;
+- achats integres ;
+- classements en ligne ;
+- sauvegarde cloud ;
+- variantes coinche/contree completes ;
+- animations avancees ;
+- tutoriel complet.
+
+## Decisions ouvertes
+
+- Niveau exact de fidelite aux regles familiales.
+- Representation graphique des cartes : assets dedies ou cartes dessinees par l'UI.
+- Score exact en cas de chute et valeur exacte du capot.

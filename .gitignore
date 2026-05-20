@@ -1,0 +1,13 @@
+# IntelliJ / Android Studio local workspace.
+/.idea/
+*.iml
+
+# Dart / Flutter generated files.
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+
+# Test coverage.
+coverage/
