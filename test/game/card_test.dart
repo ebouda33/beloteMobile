@@ -119,6 +119,25 @@ void main() {
   });
 
   group('Deck dealing', () {
+    test('deals initial five-card hands and turns one card for trump', () {
+      final deck = createDeck();
+      final initialDeal = dealInitialHandsAndTurnCard(deck);
+
+      expect(initialDeal.hands, hasLength(4));
+      for (final hand in initialDeal.hands) {
+        expect(hand, hasLength(5));
+      }
+      expect(initialDeal.turnedCard, deck[20]);
+      expect(initialDeal.remainingDeck, hasLength(11));
+
+      final visibleCards = [
+        ...initialDeal.hands.expand((hand) => hand),
+        initialDeal.turnedCard,
+        ...initialDeal.remainingDeck,
+      ];
+      expect(visibleCards.toSet(), deck.toSet());
+    });
+
     test('deals four hands of eight cards without losing cards', () {
       final deck = createDeck();
       final hands = dealFourHands(deck);

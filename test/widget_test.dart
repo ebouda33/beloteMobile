@@ -20,7 +20,36 @@ void main() {
     await tester.pump();
 
     expect(find.text('Votre main'), findsOneWidget);
-    expect(find.byType(Chip), findsNWidgets(8));
+    expect(find.byType(Chip), findsNWidgets(5));
     expect(find.text('Atout : a choisir'), findsOneWidget);
+    expect(find.textContaining('Carte retournee : '), findsOneWidget);
+    expect(find.textContaining('Prendre '), findsOneWidget);
+    expect(find.text('Passer'), findsOneWidget);
+
+    await tester.tap(find.textContaining('Prendre '));
+    await tester.pump();
+
+    expect(find.textContaining('Atout : '), findsOneWidget);
+    expect(find.text('Atout : a choisir'), findsNothing);
+    expect(find.textContaining('Prendre '), findsNothing);
+    expect(find.text('Passer'), findsNothing);
+  });
+
+  testWidgets('passes on the turned trump card', (WidgetTester tester) async {
+    await tester.pumpWidget(const BeloteApp());
+
+    await tester.tap(find.text('Nouvelle partie'));
+    await tester.pump();
+
+    await tester.tap(find.text('Passer'));
+    await tester.pump();
+
+    expect(find.text('Atout : a choisir'), findsOneWidget);
+    expect(
+      find.text('Vous avez passe. En attente des autres joueurs.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Prendre '), findsNothing);
+    expect(find.text('Passer'), findsNothing);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'game/cards/belote_card.dart';
 import 'game/game_state.dart';
 
 void main() {
@@ -38,6 +39,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _chooseTrump() {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    setState(() {
+      _gameState = gameState.chooseTrump();
+    });
+  }
+
+  void _passTrump() {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    setState(() {
+      _gameState = gameState.passTrump();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Belote Mobile'),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +101,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                const Text('Atout : a choisir'),
+                Text(
+                  gameState.trumpSuit == null
+                      ? 'Atout : a choisir'
+                      : 'Atout : ${gameState.trumpSuit!.label}',
+                ),
+                const SizedBox(height: 8),
+                Text('Carte retournee : ${gameState.turnedCard.label}'),
+                if (gameState.phase == GamePhase.choosingTrump) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton(
+                        onPressed: _chooseTrump,
+                        child: Text(
+                          'Prendre ${gameState.turnedCard.suit.label}',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _passTrump,
+                        child: const Text('Passer'),
+                      ),
+                    ],
+                  ),
+                ],
+                if (gameState.phase == GamePhase.waitingForTrumpTaker) ...[
+                  const SizedBox(height: 12),
+                  const Text('Vous avez passe. En attente des autres joueurs.'),
+                ],
               ],
             ],
           ),

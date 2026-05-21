@@ -28,23 +28,25 @@ Premier niveau valide :
 - lancement Web depuis l'IDE configure sans script shell ;
 - documentation d'installation et de configuration IDE ajoutee ;
 - modele de cartes et paquet de 32 cartes cree ;
-- distribution en quatre mains implementee ;
+- distribution initiale de 5 cartes par joueur implementee ;
+- carte du paquet retournee pour proposer l'atout ;
 - bouton `Nouvelle partie` actif dans l'interface ;
-- affichage d'une main aleatoire de 8 cartes pour le joueur humain ;
-- etat de partie local ajoute avec les quatre mains, le joueur humain et la
-  phase de choix de l'atout ;
+- affichage d'une main aleatoire de 5 cartes pour le joueur humain ;
+- etat de partie local ajoute avec les quatre mains initiales, la carte retournee,
+  le joueur humain et la phase de choix de l'atout ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
-paquet, distribue quatre mains, conserve les mains par siege de joueur, puis
-affiche la main du joueur humain. L'atout n'est pas encore selectionne.
+paquet, distribue 5 cartes par siege de joueur, retourne une carte du paquet,
+puis affiche la main du joueur humain. La couleur de la carte retournee est
+l'atout propose.
 
 Prochaine reprise :
 
-1. ajouter une action d'interface pour choisir l'atout ;
-2. enregistrer la couleur choisie dans l'etat de partie ;
-3. ajouter une phase de jeu apres le choix de l'atout ;
-4. afficher l'atout courant dans l'ecran de partie.
+1. ajouter le refus de la carte retournee ;
+2. gerer le cas ou tous les joueurs passent ;
+3. completer la distribution apres la prise de l'atout ;
+4. afficher clairement le preneur et l'atout courant.
 
 ## Principes de conception
 
@@ -147,12 +149,14 @@ Valeurs a l'atout :
 Une manche suit ce cycle :
 
 1. Melanger les 32 cartes.
-2. Distribuer 8 cartes a chaque joueur.
-3. Determiner l'atout.
-4. Jouer 8 plis.
-5. Calculer les points de chaque equipe.
-6. Ajouter le score de la manche au score total.
-7. Demarrer une nouvelle manche si le score cible n'est pas atteint.
+2. Distribuer 5 cartes a chaque joueur.
+3. Retourner la carte suivante du paquet : sa couleur propose l'atout.
+4. Permettre aux joueurs de prendre ou passer.
+5. Completer la distribution jusqu'a 8 cartes par joueur quand l'atout est pris.
+6. Jouer 8 plis.
+7. Calculer les points de chaque equipe.
+8. Ajouter le score de la manche au score total.
+9. Demarrer une nouvelle manche si le score cible n'est pas atteint.
 
 ## Encheres V1
 
@@ -161,8 +165,8 @@ Objectif : avoir une premiere version jouable sans complexifier trop tot.
 Option recommandee :
 
 - proposer une phase d'enchere simple ;
-- chaque joueur peut passer ou prendre une couleur ;
-- la premiere couleur prise devient l'atout ;
+- chaque joueur peut passer ou prendre la couleur de la carte retournee ;
+- si un joueur prend, la couleur de la carte retournee devient l'atout ;
 - si tout le monde passe, redistribuer.
 
 Les encheres avancees, coinche, surcoinche et contrats chiffres sont hors scope V1.
