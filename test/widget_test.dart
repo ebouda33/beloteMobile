@@ -21,5 +21,6 @@ void main() {
 
     expect(find.text('Votre main'), findsOneWidget);
     expect(find.byType(Chip), findsNWidgets(8));
+    expect(find.text('Atout : a choisir'), findsOneWidget);
   });
 }

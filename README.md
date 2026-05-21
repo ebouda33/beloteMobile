@@ -13,6 +13,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   l'ecran d'accueil.
 - Bouton `Nouvelle partie` actif : il melange le paquet, distribue quatre mains
   et affiche une main aleatoire de 8 cartes au joueur.
+- Debut d'etat de partie local : les quatre mains sont conservees, le joueur
+  humain est identifie et la partie attend le choix de l'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -38,7 +40,7 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres l'affichage d'une main aleatoire :
+Derniere verification effectuee apres l'ajout de l'etat de partie local :
 `flutter test` et `flutter analyze` passent.
 
 ## Documentation
@@ -49,6 +51,6 @@ Derniere verification effectuee apres l'affichage d'une main aleatoire :
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : introduire un objet d'etat de partie qui conserve
-les quatre mains distribuees, le joueur humain et les adversaires locaux, puis
-preparer le choix de l'atout.
+Prochaine etape recommandee : ajouter une action d'interface pour choisir
+l'atout, enregistrer la couleur choisie dans l'etat de partie, puis passer a une
+phase de jeu suivante.

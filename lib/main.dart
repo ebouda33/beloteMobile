@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'game/cards/belote_card.dart';
-import 'game/cards/deck.dart';
+import 'game/game_state.dart';
 
 void main() {
   runApp(const BeloteApp());
@@ -31,13 +30,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<BeloteCard> _playerHand = const [];
+  GameState? _gameState;
 
   void _startNewGame() {
-    final hands = dealFourHands(createShuffledDeck());
-
     setState(() {
-      _playerHand = hands.first;
+      _gameState = createInitialGameState();
     });
   }
 
@@ -65,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: _startNewGame,
                 child: const Text('Nouvelle partie'),
               ),
-              if (_playerHand.isNotEmpty) ...[
+              if (_gameState case final gameState?) ...[
                 const SizedBox(height: 32),
                 const Text(
                   'Votre main',
@@ -76,10 +73,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final card in _playerHand)
+                    for (final card in gameState.humanHand)
                       Chip(label: Text(card.label)),
                   ],
                 ),
+                const SizedBox(height: 24),
+                const Text('Atout : a choisir'),
               ],
             ],
           ),

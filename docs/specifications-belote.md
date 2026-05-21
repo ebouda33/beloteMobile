@@ -31,19 +31,20 @@ Premier niveau valide :
 - distribution en quatre mains implementee ;
 - bouton `Nouvelle partie` actif dans l'interface ;
 - affichage d'une main aleatoire de 8 cartes pour le joueur humain ;
+- etat de partie local ajoute avec les quatre mains, le joueur humain et la
+  phase de choix de l'atout ;
 - tests de base ajoutes et executes avec succes.
 
-Le premier lien entre l'interface et le moteur de cartes est en place : une
-nouvelle partie melange le paquet, distribue quatre mains, puis affiche la main
-du joueur humain. Les autres mains ne sont pas encore conservees dans un etat de
-partie complet.
+Le premier etat de partie local est en place : une nouvelle partie melange le
+paquet, distribue quatre mains, conserve les mains par siege de joueur, puis
+affiche la main du joueur humain. L'atout n'est pas encore selectionne.
 
 Prochaine reprise :
 
-1. definir un objet d'etat de partie ;
-2. y conserver les quatre mains distribuees ;
-3. identifier le joueur humain et les trois adversaires locaux ;
-4. preparer la phase de choix de l'atout.
+1. ajouter une action d'interface pour choisir l'atout ;
+2. enregistrer la couleur choisie dans l'etat de partie ;
+3. ajouter une phase de jeu apres le choix de l'atout ;
+4. afficher l'atout courant dans l'ecran de partie.
 
 ## Principes de conception
 
