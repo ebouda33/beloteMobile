@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:belote_mobile/game/cards/belote_card.dart';
 import 'package:belote_mobile/game/cards/deck.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +23,15 @@ void main() {
       for (final rank in Rank.values) {
         expect(deck.where((card) => card.rank == rank), hasLength(4));
       }
+    });
+
+    test('creates a shuffled deck without changing the cards', () {
+      final orderedDeck = createDeck();
+      final shuffledDeck = createShuffledDeck(random: Random(1));
+
+      expect(shuffledDeck, hasLength(32));
+      expect(shuffledDeck.toSet(), orderedDeck.toSet());
+      expect(shuffledDeck, isNot(orderedDeck));
     });
 
     test('uses expected non-trump card points', () {

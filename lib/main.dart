@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<BeloteCard> _playerHand = const [];
 
   void _startNewGame() {
-    final hands = dealFourHands(createDeck());
+    final hands = dealFourHands(createShuffledDeck());
 
     setState(() {
       _playerHand = hands.first;

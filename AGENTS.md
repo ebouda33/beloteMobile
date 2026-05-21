@@ -27,3 +27,7 @@ Existing commits use short imperative summaries, such as `Initialise Flutter bel
 ## Documentation & Configuration Notes
 
 Keep `README.md` focused on current project status and quick start instructions. Put detailed setup or product rules in `docs/`. Do not commit generated build outputs from `build/`, local IDE state, secrets, or machine-specific configuration.
+
+## Agent-Specific Instructions
+
+When the user says `etape finis`, `étape finie`, or similar, use the local `finish-step-docs` skill. Update the relevant docs with the completed work, verification performed, and the next concrete step before committing documentation changes.

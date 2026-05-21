@@ -9,9 +9,12 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Cibles Web, iOS et Android presentes dans le depot.
 - Configuration IntelliJ partagee pour lancer le Web sans script shell.
 - Premier modele de cartes de belote implemente.
-- Tests de base sur le paquet, les couleurs, les valeurs et l'ecran d'accueil.
-- Bouton `Nouvelle partie` visible mais volontairement desactive tant que le
-  moteur de partie n'est pas branche a l'interface.
+- Tests de base sur le paquet, les couleurs, les valeurs, la distribution et
+  l'ecran d'accueil.
+- Bouton `Nouvelle partie` actif : il melange le paquet, distribue quatre mains
+  et affiche une main aleatoire de 8 cartes au joueur.
+- Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
+  etape est terminee.
 
 ## Lancer le projet
 
@@ -35,8 +38,8 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee avant le premier commit : tous les tests
-passent.
+Derniere verification effectuee apres l'affichage d'une main aleatoire :
+`flutter test` et `flutter analyze` passent.
 
 ## Documentation
 
@@ -46,5 +49,6 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : brancher le bouton `Nouvelle partie` sur un debut
-d'etat de partie local, puis afficher une premiere main distribuee au joueur.
+Prochaine etape recommandee : introduire un objet d'etat de partie qui conserve
+les quatre mains distribuees, le joueur humain et les adversaires locaux, puis
+preparer le choix de l'atout.

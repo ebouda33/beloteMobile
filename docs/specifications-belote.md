@@ -28,17 +28,22 @@ Premier niveau valide :
 - lancement Web depuis l'IDE configure sans script shell ;
 - documentation d'installation et de configuration IDE ajoutee ;
 - modele de cartes et paquet de 32 cartes cree ;
+- distribution en quatre mains implementee ;
+- bouton `Nouvelle partie` actif dans l'interface ;
+- affichage d'une main aleatoire de 8 cartes pour le joueur humain ;
 - tests de base ajoutes et executes avec succes.
 
-Le bouton `Nouvelle partie` est visible dans l'interface mais desactive. Il doit
-etre active au moment ou le premier etat de partie local sera implemente.
+Le premier lien entre l'interface et le moteur de cartes est en place : une
+nouvelle partie melange le paquet, distribue quatre mains, puis affiche la main
+du joueur humain. Les autres mains ne sont pas encore conservees dans un etat de
+partie complet.
 
 Prochaine reprise :
 
 1. definir un objet d'etat de partie ;
-2. creer la distribution initiale ;
-3. brancher `Nouvelle partie` sur cet etat ;
-4. afficher la main du joueur humain.
+2. y conserver les quatre mains distribuees ;
+3. identifier le joueur humain et les trois adversaires locaux ;
+4. preparer la phase de choix de l'atout.
 
 ## Principes de conception
 

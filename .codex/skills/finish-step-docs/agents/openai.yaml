@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finish Step Docs"
+  short_description: "Update docs after completed project steps"
+  default_prompt: "Use $finish-step-docs when I say etape finis to update project docs and next steps."

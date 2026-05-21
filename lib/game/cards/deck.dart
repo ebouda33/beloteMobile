@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'belote_card.dart';
 
 List<BeloteCard> createDeck() {
@@ -5,6 +7,10 @@ List<BeloteCard> createDeck() {
     for (final suit in Suit.values)
       for (final rank in Rank.values) BeloteCard(suit: suit, rank: rank),
   ];
+}
+
+List<BeloteCard> createShuffledDeck({Random? random}) {
+  return createDeck()..shuffle(random);
 }
 
 List<List<BeloteCard>> dealFourHands(List<BeloteCard> deck) {
