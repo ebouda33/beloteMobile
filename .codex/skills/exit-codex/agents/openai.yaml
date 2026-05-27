@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exit Codex"
+  short_description: "Save a resume URL or session checkpoint to a root temp file"
+  default_prompt: "Use $exit-codex when I say exit, quitter codex, or /exit to save the current resume URL if available, otherwise capture the session context in the repo-root temp file and report it."

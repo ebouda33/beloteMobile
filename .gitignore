@@ -8,6 +8,7 @@
 .flutter-plugins-dependencies
 .packages
 build/
+.codex-resume-url.tmp
 
 # Test coverage.
 coverage/
