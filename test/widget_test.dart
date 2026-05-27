@@ -41,8 +41,8 @@ void main() {
     await tester.pump();
 
     expect(find.text('Plis joues : 1/8'), findsOneWidget);
-    expect(find.textContaining('Votre equipe : '), findsOneWidget);
-    expect(find.textContaining('Equipe adverse : '), findsOneWidget);
+    expect(find.textContaining(RegExp('^Votre equipe : ')), findsOneWidget);
+    expect(find.textContaining(RegExp('^Equipe adverse : ')), findsOneWidget);
     expect(find.text('Dernier pli'), findsOneWidget);
     expect(find.textContaining('Gagnant : '), findsOneWidget);
     expect(find.text('Pli en cours'), findsNothing);
@@ -92,6 +92,26 @@ void main() {
     );
     expect(find.textContaining('Score Votre equipe : '), findsOneWidget);
     expect(find.textContaining('Score Equipe adverse : '), findsOneWidget);
+    expect(
+      find.textContaining('Score partie - Votre equipe : '),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Score partie - Equipe adverse : '),
+      findsOneWidget,
+    );
+    expect(find.text('Nouvelle manche'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Nouvelle manche'));
+    await tester.tap(find.text('Nouvelle manche'));
+    await tester.pump();
+
+    expect(find.text('Atout : a choisir'), findsOneWidget);
+    expect(find.byType(Chip), findsNWidgets(5));
+    expect(
+      find.textContaining('Score partie - Votre equipe : '),
+      findsOneWidget,
+    );
   });
 
   testWidgets('passes on the turned trump card and can redeal', (

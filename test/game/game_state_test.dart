@@ -226,9 +226,46 @@ void main() {
             (gameState.roundPoints[Team.opponentTeam] ?? 0),
         162,
       );
+      expect(gameState.gameScore, gameState.roundScore);
       for (final seat in PlayerSeat.values) {
         expect(gameState.hands[seat], isEmpty);
       }
+    });
+
+    test('starts a next round while preserving the accumulated score', () {
+      var gameState = createInitialGameState(random: Random(1)).chooseTrump();
+      while (gameState.phase == GamePhase.playingTrick) {
+        final currentPlayer = gameState.currentPlayer!;
+        final playableCards = gameState.playableCards(currentPlayer);
+        gameState = gameState.playCard(
+          playableCards.first,
+          seat: currentPlayer,
+        );
+      }
+
+      final nextRound = gameState.startNextRound(random: Random(2));
+
+      expect(nextRound.phase, GamePhase.choosingTrump);
+      expect(nextRound.gameScore, gameState.gameScore);
+      expect(nextRound.trumpSuit, isNull);
+      expect(nextRound.trumpTaker, isNull);
+      expect(nextRound.completedTrickCount, 0);
+      for (final seat in PlayerSeat.values) {
+        expect(nextRound.hands[seat], hasLength(5));
+      }
+    });
+
+    test('detects game completion at the target score', () {
+      final gameState = GameState(
+        hands: const {},
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        gameScore: const {Team.humanTeam: targetScore, Team.opponentTeam: 320},
+      );
+
+      expect(gameState.isGameComplete, isTrue);
+      expect(gameState.startNextRound, throwsStateError);
     });
 
     test('adds the last trick bonus to the final round points', () {

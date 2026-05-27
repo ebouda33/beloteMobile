@@ -3,6 +3,8 @@ import 'dart:math';
 import 'cards/belote_card.dart';
 import 'cards/deck.dart';
 
+const targetScore = 501;
+
 enum PlayerSeat { human, leftOpponent, partner, rightOpponent }
 
 enum Team { humanTeam, opponentTeam }
@@ -57,6 +59,7 @@ class GameState {
     this.lastCompletedTrick = const [],
     this.lastTrickWinner,
     this.wonTricks = const {Team.humanTeam: [], Team.opponentTeam: []},
+    this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -72,8 +75,13 @@ class GameState {
   final List<PlayedCard> lastCompletedTrick;
   final PlayerSeat? lastTrickWinner;
   final Map<Team, List<List<PlayedCard>>> wonTricks;
+  final Map<Team, int> gameScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
+
+  bool get isGameComplete {
+    return gameScore.values.any((score) => score >= targetScore);
+  }
 
   Map<Team, int> get roundPoints {
     final trump = trumpSuit;
@@ -81,14 +89,11 @@ class GameState {
       return const {Team.humanTeam: 0, Team.opponentTeam: 0};
     }
 
-    return {
-      for (final team in Team.values)
-        team:
-            _pointsForWonTricks(wonTricks[team] ?? const [], trump) +
-            (lastTrickWinner != null && _teamOf(lastTrickWinner!) == team
-                ? 10
-                : 0),
-    };
+    return _roundPointsFor(
+      trumpSuit: trump,
+      lastTrickWinner: lastTrickWinner,
+      wonTricks: wonTricks,
+    );
   }
 
   Team? get takerTeam {
@@ -105,40 +110,17 @@ class GameState {
   }
 
   Team? get capotTeam {
-    if (phase != GamePhase.roundComplete) {
-      return null;
-    }
-
-    for (final team in Team.values) {
-      if ((wonTricks[team]?.length ?? 0) == PlayerSeat.values.length * 2) {
-        return team;
-      }
-    }
-
-    return null;
+    return _capotTeamFor(phase: phase, wonTricks: wonTricks);
   }
 
   Map<Team, int> get roundScore {
-    if (phase != GamePhase.roundComplete) {
-      return const {Team.humanTeam: 0, Team.opponentTeam: 0};
-    }
-
-    final capotWinner = capotTeam;
-    if (capotWinner != null) {
-      return {
-        for (final team in Team.values) team: team == capotWinner ? 252 : 0,
-      };
-    }
-
-    final taker = takerTeam;
-    if (taker == null || isContractFulfilled == true) {
-      return roundPoints;
-    }
-
-    final defendingTeam = _opponentOf(taker);
-    return {
-      for (final team in Team.values) team: team == defendingTeam ? 162 : 0,
-    };
+    return _roundScoreFor(
+      phase: phase,
+      trumpSuit: trumpSuit,
+      trumpTaker: trumpTaker,
+      lastTrickWinner: lastTrickWinner,
+      wonTricks: wonTricks,
+    );
   }
 
   int get completedTrickCount {
@@ -239,6 +221,7 @@ class GameState {
       lastCompletedTrick: lastCompletedTrick,
       lastTrickWinner: lastTrickWinner,
       wonTricks: wonTricks,
+      gameScore: gameScore,
     );
   }
 
@@ -276,6 +259,25 @@ class GameState {
       passedSeats: passedSeats,
       currentPlayer: humanSeat,
       wonTricks: wonTricks,
+      gameScore: gameScore,
+    );
+  }
+
+  GameState startNextRound({Random? random}) {
+    if (phase != GamePhase.roundComplete &&
+        phase != GamePhase.allPlayersPassed) {
+      throw StateError(
+        'A new round can only start after the current round ends.',
+      );
+    }
+    if (isGameComplete) {
+      throw StateError('The game is already complete.');
+    }
+
+    return _createRoundGameState(
+      random: random,
+      gameScore: gameScore,
+      humanSeat: humanSeat,
     );
   }
 
@@ -342,6 +344,18 @@ class GameState {
     final isRoundComplete =
         _completedTrickCount(updatedWonTricks) == PlayerSeat.values.length * 2;
     final nextPhase = isRoundComplete ? GamePhase.roundComplete : phase;
+    final updatedGameScore = isRoundComplete
+        ? _addScores(
+            gameScore,
+            _roundScoreFor(
+              phase: nextPhase,
+              trumpSuit: trumpSuit!,
+              trumpTaker: trumpTaker,
+              lastTrickWinner: trickWinner,
+              wonTricks: updatedWonTricks,
+            ),
+          )
+        : gameScore;
 
     return GameState(
       hands: updatedHands,
@@ -361,6 +375,7 @@ class GameState {
           : updatedTrick,
       lastTrickWinner: trickWinner ?? lastTrickWinner,
       wonTricks: updatedWonTricks,
+      gameScore: updatedGameScore,
     );
   }
 
@@ -435,6 +450,79 @@ Team _opponentOf(Team team) {
   return switch (team) {
     Team.humanTeam => Team.opponentTeam,
     Team.opponentTeam => Team.humanTeam,
+  };
+}
+
+Map<Team, int> _roundScoreFor({
+  required GamePhase phase,
+  required Suit? trumpSuit,
+  required PlayerSeat? trumpTaker,
+  required PlayerSeat? lastTrickWinner,
+  required Map<Team, List<List<PlayedCard>>> wonTricks,
+}) {
+  if (phase != GamePhase.roundComplete || trumpSuit == null) {
+    return const {Team.humanTeam: 0, Team.opponentTeam: 0};
+  }
+
+  final capotWinner = _capotTeamFor(phase: phase, wonTricks: wonTricks);
+  if (capotWinner != null) {
+    return {
+      for (final team in Team.values) team: team == capotWinner ? 252 : 0,
+    };
+  }
+
+  final roundPoints = _roundPointsFor(
+    trumpSuit: trumpSuit,
+    lastTrickWinner: lastTrickWinner,
+    wonTricks: wonTricks,
+  );
+  final takerTeam = trumpTaker == null ? null : _teamOf(trumpTaker);
+  if (takerTeam == null || (roundPoints[takerTeam] ?? 0) >= 82) {
+    return roundPoints;
+  }
+
+  final defendingTeam = _opponentOf(takerTeam);
+  return {
+    for (final team in Team.values) team: team == defendingTeam ? 162 : 0,
+  };
+}
+
+Map<Team, int> _roundPointsFor({
+  required Suit trumpSuit,
+  required PlayerSeat? lastTrickWinner,
+  required Map<Team, List<List<PlayedCard>>> wonTricks,
+}) {
+  return {
+    for (final team in Team.values)
+      team:
+          _pointsForWonTricks(wonTricks[team] ?? const [], trumpSuit) +
+          (lastTrickWinner != null && _teamOf(lastTrickWinner) == team
+              ? 10
+              : 0),
+  };
+}
+
+Team? _capotTeamFor({
+  required GamePhase phase,
+  required Map<Team, List<List<PlayedCard>>> wonTricks,
+}) {
+  if (phase != GamePhase.roundComplete) {
+    return null;
+  }
+
+  for (final team in Team.values) {
+    if ((wonTricks[team]?.length ?? 0) == PlayerSeat.values.length * 2) {
+      return team;
+    }
+  }
+
+  return null;
+}
+
+Map<Team, int> _addScores(Map<Team, int> gameScore, Map<Team, int> roundScore) {
+  return {
+    for (final team in Team.values)
+      team: (gameScore[team] ?? 0) + (roundScore[team] ?? 0),
   };
 }
 
@@ -518,6 +606,14 @@ bool _beats({
 }
 
 GameState createInitialGameState({Random? random}) {
+  return _createRoundGameState(random: random);
+}
+
+GameState _createRoundGameState({
+  Random? random,
+  Map<Team, int> gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
+  PlayerSeat humanSeat = PlayerSeat.human,
+}) {
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
   );
@@ -529,5 +625,7 @@ GameState createInitialGameState({Random? random}) {
     },
     turnedCard: initialDeal.turnedCard,
     remainingDeck: initialDeal.remainingDeck,
+    humanSeat: humanSeat,
+    gameScore: gameScore,
   );
 }

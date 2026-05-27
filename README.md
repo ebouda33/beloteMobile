@@ -33,6 +33,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   10 points pour le dernier pli.
 - Validation du contrat preneur ajoutee : contrat reussi a partir de 82 points,
   chute a 162 points pour la defense et capot a 252 points.
+- Score de partie cumule entre les manches, affichage du score courant,
+  nouvelle manche apres score et detection du score cible de 501 points.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -58,7 +60,7 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres la validation du contrat preneur :
+Derniere verification effectuee apres l'ajout du score de partie :
 `dart format lib test`, `flutter test test/game/game_state_test.dart`,
 `flutter test test/widget_test.dart`, `flutter test` et `flutter analyze`
 passent.
@@ -71,5 +73,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : cumuler le score entre les manches, afficher le
-score de partie et permettre de lancer une nouvelle manche.
+Prochaine etape recommandee : ajouter l'affichage clair du vainqueur de partie
+et affiner le flux de fin de partie avant d'ajouter belote/rebelote.

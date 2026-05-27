@@ -83,6 +83,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _startNextRound() {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    setState(() {
+      _gameState = gameState.startNextRound();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,6 +146,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   gameState.trumpSuit == null
                       ? 'Atout : a choisir'
                       : 'Atout : ${gameState.trumpSuit!.label}',
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Score partie - ${Team.humanTeam.label} : '
+                  '${gameState.gameScore[Team.humanTeam] ?? 0}',
+                ),
+                Text(
+                  'Score partie - ${Team.opponentTeam.label} : '
+                  '${gameState.gameScore[Team.opponentTeam] ?? 0}',
                 ),
                 if (gameState.trumpTaker case final trumpTaker?) ...[
                   const SizedBox(height: 8),
@@ -237,6 +257,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Score ${Team.opponentTeam.label} : '
                     '${gameState.roundScore[Team.opponentTeam] ?? 0}',
                   ),
+                  if (gameState.isGameComplete) ...[
+                    const SizedBox(height: 12),
+                    const Text('Partie terminee.'),
+                  ] else ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: _startNextRound,
+                      child: const Text('Nouvelle manche'),
+                    ),
+                  ],
                 ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[
                   const SizedBox(height: 12),
