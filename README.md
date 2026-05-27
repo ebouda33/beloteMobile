@@ -19,6 +19,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Quand l'atout est pris, les mains sont completees a 8 cartes, le preneur est
   conserve et affiche.
 - Quand tous les joueurs passent, l'interface propose de redistribuer.
+- Debut de pli jouable : apres la prise d'atout, le joueur courant est affiche,
+  les cartes jouables du joueur humain sont cliquables et la carte posee apparait
+  dans le pli en cours.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -44,8 +47,7 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres l'ajout de la prise, du refus et de la
-redistribution :
+Derniere verification effectuee apres l'ajout du premier pli jouable :
 `dart format lib test`, `flutter test test/game/game_state_test.dart`,
 `flutter test` et `flutter analyze` passent.
 
@@ -57,5 +59,5 @@ redistribution :
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : demarrer le premier pli apres la prise de l'atout
-en ajoutant le joueur courant, les cartes jouables et la pose d'une carte.
+Prochaine etape recommandee : ajouter le jeu automatique des adversaires pour
+completer un pli, puis determiner le gagnant du pli.

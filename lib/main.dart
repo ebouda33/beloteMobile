@@ -61,6 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _playCard(BeloteCard card) {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    setState(() {
+      _gameState = gameState.playCard(card);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +108,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   runSpacing: 8,
                   children: [
                     for (final card in gameState.humanHand)
-                      Chip(label: Text(card.label)),
+                      if (gameState
+                          .playableCards(gameState.humanSeat)
+                          .contains(card))
+                        ActionChip(
+                          label: Text(card.label),
+                          onPressed: () => _playCard(card),
+                        )
+                      else
+                        Chip(label: Text(card.label)),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -110,8 +129,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   Text('Preneur : ${trumpTaker.label}'),
                 ],
+                if (gameState.currentPlayer case final currentPlayer?) ...[
+                  const SizedBox(height: 8),
+                  Text('Joueur courant : ${currentPlayer.label}'),
+                ],
                 const SizedBox(height: 8),
                 Text('Carte retournee : ${gameState.turnedCard.label}'),
+                if (gameState.currentTrick.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Pli en cours',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final playedCard in gameState.currentTrick)
+                        Chip(
+                          label: Text(
+                            '${playedCard.player.label} : ${playedCard.card.label}',
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[
                   const SizedBox(height: 12),
                   Wrap(

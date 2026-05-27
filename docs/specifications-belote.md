@@ -38,6 +38,8 @@ Premier niveau valide :
 - prise de la carte retournee ajoutee avec distribution complete a 8 cartes par
   joueur, conservation du preneur et affichage de l'atout ;
 - cas ou tous les joueurs passent gere avec une action de redistribution ;
+- debut de pli ajoute avec joueur courant, cartes jouables pour le joueur humain
+  et affichage de la carte posee dans le pli en cours ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -46,14 +48,17 @@ puis affiche la main du joueur humain. La couleur de la carte retournee est
 l'atout propose. Le joueur humain peut prendre cette couleur, ce qui complete
 les mains et demarre la phase de pli, ou passer. Pour la V1 actuelle, les autres
 joueurs passent automatiquement apres le refus du joueur humain, puis
-l'interface propose de redistribuer.
+l'interface propose de redistribuer. Quand le joueur humain prend l'atout, il
+devient le premier joueur courant de la phase de pli. Ses cartes sont jouables
+dans l'interface, la carte posee est retiree de sa main, ajoutee au pli en cours
+et le tour avance au joueur suivant.
 
 Prochaine reprise :
 
-1. ajouter le joueur courant apres la prise de l'atout ;
-2. afficher les cartes jouables pour le joueur humain ;
-3. permettre la pose d'une premiere carte dans le pli ;
-4. commencer a valider les regles de suivi de couleur et de coupe.
+1. ajouter le jeu automatique des trois joueurs IA pour completer un pli ;
+2. determiner le gagnant d'un pli selon l'atout et la couleur demandee ;
+3. faire ouvrir le pli suivant par le gagnant ;
+4. commencer a valider les regles de suivi de couleur, de coupe et de montee.
 
 ## Principes de conception
 

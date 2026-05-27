@@ -23,6 +23,13 @@ enum GamePhase {
   playingTrick,
 }
 
+class PlayedCard {
+  const PlayedCard({required this.player, required this.card});
+
+  final PlayerSeat player;
+  final BeloteCard card;
+}
+
 class GameState {
   const GameState({
     required this.hands,
@@ -33,6 +40,8 @@ class GameState {
     this.trumpSuit,
     this.trumpTaker,
     this.passedSeats = const {},
+    this.currentPlayer,
+    this.currentTrick = const [],
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -43,8 +52,18 @@ class GameState {
   final Suit? trumpSuit;
   final PlayerSeat? trumpTaker;
   final Set<PlayerSeat> passedSeats;
+  final PlayerSeat? currentPlayer;
+  final List<PlayedCard> currentTrick;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
+
+  List<BeloteCard> playableCards(PlayerSeat seat) {
+    if (phase != GamePhase.playingTrick || currentPlayer != seat) {
+      return const [];
+    }
+
+    return hands[seat] ?? const [];
+  }
 
   GameState passTrump({PlayerSeat seat = PlayerSeat.human}) {
     if (phase != GamePhase.choosingTrump &&
@@ -66,6 +85,8 @@ class GameState {
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
       passedSeats: updatedPassedSeats,
+      currentPlayer: currentPlayer,
+      currentTrick: currentTrick,
     );
   }
 
@@ -101,6 +122,43 @@ class GameState {
       trumpSuit: turnedCard.suit,
       trumpTaker: taker,
       passedSeats: passedSeats,
+      currentPlayer: humanSeat,
+    );
+  }
+
+  GameState playCard(BeloteCard card, {PlayerSeat seat = PlayerSeat.human}) {
+    if (phase != GamePhase.playingTrick) {
+      throw StateError('Cards cannot be played before the trick phase.');
+    }
+    if (currentPlayer != seat) {
+      throw StateError('It is not this player turn.');
+    }
+
+    final playerHand = hands[seat] ?? const [];
+    if (!playerHand.contains(card)) {
+      throw ArgumentError.value(card, 'card', 'Card is not in player hand.');
+    }
+
+    final updatedHands = {
+      for (final playerSeat in PlayerSeat.values)
+        playerSeat: [...hands[playerSeat] ?? const <BeloteCard>[]],
+    };
+    updatedHands[seat]!.remove(card);
+
+    return GameState(
+      hands: updatedHands,
+      turnedCard: turnedCard,
+      remainingDeck: remainingDeck,
+      humanSeat: humanSeat,
+      phase: phase,
+      trumpSuit: trumpSuit,
+      trumpTaker: trumpTaker,
+      passedSeats: passedSeats,
+      currentPlayer: _nextSeatAfter(seat),
+      currentTrick: [
+        ...currentTrick,
+        PlayedCard(player: seat, card: card),
+      ],
     );
   }
 
@@ -124,6 +182,12 @@ class GameState {
 
     return completedHands;
   }
+}
+
+PlayerSeat _nextSeatAfter(PlayerSeat seat) {
+  final nextIndex =
+      (PlayerSeat.values.indexOf(seat) + 1) % PlayerSeat.values.length;
+  return PlayerSeat.values[nextIndex];
 }
 
 GameState createInitialGameState({Random? random}) {

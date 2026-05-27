@@ -42,6 +42,8 @@ void main() {
         expect(updatedState.trumpSuit, gameState.turnedCard.suit);
         expect(updatedState.phase, GamePhase.playingTrick);
         expect(updatedState.trumpTaker, PlayerSeat.human);
+        expect(updatedState.currentPlayer, PlayerSeat.human);
+        expect(updatedState.currentTrick, isEmpty);
         expect(updatedState.remainingDeck, isEmpty);
         for (final seat in PlayerSeat.values) {
           expect(updatedState.hands[seat], hasLength(8));
@@ -63,6 +65,7 @@ void main() {
       expect(updatedState.trumpSuit, gameState.turnedCard.suit);
       expect(updatedState.trumpTaker, PlayerSeat.partner);
       expect(updatedState.phase, GamePhase.playingTrick);
+      expect(updatedState.currentPlayer, PlayerSeat.human);
       expect(
         updatedState.hands[PlayerSeat.partner],
         contains(gameState.turnedCard),
@@ -124,6 +127,48 @@ void main() {
       final gameState = createInitialGameState(random: Random(1)).chooseTrump();
 
       expect(gameState.passTrump, throwsStateError);
+    });
+
+    test('plays a card for the current player and advances the turn', () {
+      final gameState = createInitialGameState(random: Random(1)).chooseTrump();
+      final card = gameState.humanHand.first;
+
+      final updatedState = gameState.playCard(card);
+
+      expect(updatedState.humanHand, hasLength(7));
+      expect(updatedState.humanHand, isNot(contains(card)));
+      expect(updatedState.currentTrick, hasLength(1));
+      expect(updatedState.currentTrick.single.player, PlayerSeat.human);
+      expect(updatedState.currentTrick.single.card, card);
+      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+    });
+
+    test('only exposes playable cards for the current player', () {
+      final gameState = createInitialGameState(random: Random(1)).chooseTrump();
+      final updatedState = gameState.playCard(gameState.humanHand.first);
+
+      expect(gameState.playableCards(PlayerSeat.human), gameState.humanHand);
+      expect(gameState.playableCards(PlayerSeat.leftOpponent), isEmpty);
+      expect(updatedState.playableCards(PlayerSeat.human), isEmpty);
+      expect(
+        updatedState.playableCards(PlayerSeat.leftOpponent),
+        updatedState.hands[PlayerSeat.leftOpponent],
+      );
+    });
+
+    test('rejects playing out of turn or with a missing card', () {
+      final gameState = createInitialGameState(random: Random(1)).chooseTrump();
+      final card = gameState.humanHand.first;
+
+      expect(
+        () => gameState.playCard(card, seat: PlayerSeat.leftOpponent),
+        throwsStateError,
+      );
+      expect(
+        () =>
+            gameState.playCard(gameState.hands[PlayerSeat.leftOpponent]!.first),
+        throwsArgumentError,
+      );
     });
   });
 }
