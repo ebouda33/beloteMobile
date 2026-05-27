@@ -40,6 +40,9 @@ void main() {
     await tester.tap(find.byType(ActionChip).first);
     await tester.pump();
 
+    expect(find.text('Plis joues : 1/8'), findsOneWidget);
+    expect(find.textContaining('Votre equipe : '), findsOneWidget);
+    expect(find.textContaining('Equipe adverse : '), findsOneWidget);
     expect(find.text('Dernier pli'), findsOneWidget);
     expect(find.textContaining('Gagnant : '), findsOneWidget);
     expect(find.text('Pli en cours'), findsNothing);

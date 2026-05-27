@@ -191,6 +191,39 @@ void main() {
       expect(updatedState.currentPlayer, PlayerSeat.partner);
       expect(updatedState.currentTrick, isEmpty);
       expect(updatedState.lastCompletedTrick, hasLength(4));
+      expect(updatedState.completedTrickCount, 1);
+      expect(updatedState.wonTricks[Team.humanTeam], hasLength(1));
+      expect(updatedState.wonTricks[Team.opponentTeam], isEmpty);
+    });
+
+    test('tracks won tricks and completes the round after eight tricks', () {
+      var gameState = createInitialGameState(random: Random(1)).chooseTrump();
+
+      while (gameState.phase == GamePhase.playingTrick) {
+        final currentPlayer = gameState.currentPlayer!;
+        final playableCards = gameState.playableCards(currentPlayer);
+        if (playableCards.isEmpty) {
+          break;
+        }
+
+        gameState = gameState.playCard(
+          playableCards.first,
+          seat: currentPlayer,
+        );
+      }
+
+      expect(gameState.phase, GamePhase.roundComplete);
+      expect(gameState.currentPlayer, isNull);
+      expect(gameState.currentTrick, isEmpty);
+      expect(gameState.completedTrickCount, 8);
+      expect(
+        (gameState.wonTricks[Team.humanTeam]?.length ?? 0) +
+            (gameState.wonTricks[Team.opponentTeam]?.length ?? 0),
+        8,
+      );
+      for (final seat in PlayerSeat.values) {
+        expect(gameState.hands[seat], isEmpty);
+      }
     });
 
     test('only exposes playable cards for the current player', () {

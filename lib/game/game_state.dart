@@ -5,6 +5,8 @@ import 'cards/deck.dart';
 
 enum PlayerSeat { human, leftOpponent, partner, rightOpponent }
 
+enum Team { humanTeam, opponentTeam }
+
 extension PlayerSeatLabel on PlayerSeat {
   String get label {
     return switch (this) {
@@ -16,11 +18,21 @@ extension PlayerSeatLabel on PlayerSeat {
   }
 }
 
+extension TeamLabel on Team {
+  String get label {
+    return switch (this) {
+      Team.humanTeam => 'Votre equipe',
+      Team.opponentTeam => 'Equipe adverse',
+    };
+  }
+}
+
 enum GamePhase {
   choosingTrump,
   waitingForTrumpTaker,
   allPlayersPassed,
   playingTrick,
+  roundComplete,
 }
 
 class PlayedCard {
@@ -44,6 +56,7 @@ class GameState {
     this.currentTrick = const [],
     this.lastCompletedTrick = const [],
     this.lastTrickWinner,
+    this.wonTricks = const {Team.humanTeam: [], Team.opponentTeam: []},
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -58,8 +71,16 @@ class GameState {
   final List<PlayedCard> currentTrick;
   final List<PlayedCard> lastCompletedTrick;
   final PlayerSeat? lastTrickWinner;
+  final Map<Team, List<List<PlayedCard>>> wonTricks;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
+
+  int get completedTrickCount {
+    return wonTricks.values.fold(
+      0,
+      (total, teamTricks) => total + teamTricks.length,
+    );
+  }
 
   List<BeloteCard> playableCards(PlayerSeat seat) {
     if (phase != GamePhase.playingTrick || currentPlayer != seat) {
@@ -151,6 +172,7 @@ class GameState {
       currentTrick: currentTrick,
       lastCompletedTrick: lastCompletedTrick,
       lastTrickWinner: lastTrickWinner,
+      wonTricks: wonTricks,
     );
   }
 
@@ -187,6 +209,7 @@ class GameState {
       trumpTaker: taker,
       passedSeats: passedSeats,
       currentPlayer: humanSeat,
+      wonTricks: wonTricks,
     );
   }
 
@@ -247,22 +270,31 @@ class GameState {
     final trickWinner = updatedTrick.length == PlayerSeat.values.length
         ? _winnerOfTrick(updatedTrick, trumpSuit!)
         : null;
+    final updatedWonTricks = trickWinner == null
+        ? wonTricks
+        : _addWonTrick(wonTricks, _teamOf(trickWinner), updatedTrick);
+    final isRoundComplete =
+        _completedTrickCount(updatedWonTricks) == PlayerSeat.values.length * 2;
+    final nextPhase = isRoundComplete ? GamePhase.roundComplete : phase;
 
     return GameState(
       hands: updatedHands,
       turnedCard: turnedCard,
       remainingDeck: remainingDeck,
       humanSeat: humanSeat,
-      phase: phase,
+      phase: nextPhase,
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
       passedSeats: passedSeats,
-      currentPlayer: trickWinner ?? _nextSeatAfter(seat),
+      currentPlayer: isRoundComplete
+          ? null
+          : trickWinner ?? _nextSeatAfter(seat),
       currentTrick: trickWinner == null ? updatedTrick : const [],
       lastCompletedTrick: trickWinner == null
           ? lastCompletedTrick
           : updatedTrick,
       lastTrickWinner: trickWinner ?? lastTrickWinner,
+      wonTricks: updatedWonTricks,
     );
   }
 
@@ -323,6 +355,34 @@ PlayerSeat _partnerOf(PlayerSeat seat) {
     PlayerSeat.partner => PlayerSeat.human,
     PlayerSeat.leftOpponent => PlayerSeat.rightOpponent,
     PlayerSeat.rightOpponent => PlayerSeat.leftOpponent,
+  };
+}
+
+Team _teamOf(PlayerSeat seat) {
+  return switch (seat) {
+    PlayerSeat.human || PlayerSeat.partner => Team.humanTeam,
+    PlayerSeat.leftOpponent || PlayerSeat.rightOpponent => Team.opponentTeam,
+  };
+}
+
+int _completedTrickCount(Map<Team, List<List<PlayedCard>>> wonTricks) {
+  return wonTricks.values.fold(
+    0,
+    (total, teamTricks) => total + teamTricks.length,
+  );
+}
+
+Map<Team, List<List<PlayedCard>>> _addWonTrick(
+  Map<Team, List<List<PlayedCard>>> wonTricks,
+  Team winningTeam,
+  List<PlayedCard> trick,
+) {
+  return {
+    for (final team in Team.values)
+      team: [
+        ...(wonTricks[team] ?? const <List<PlayedCard>>[]),
+        if (team == winningTeam) trick,
+      ],
   };
 }
 

@@ -146,6 +146,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
                 const SizedBox(height: 8),
                 Text('Carte retournee : ${gameState.turnedCard.label}'),
+                if (gameState.phase == GamePhase.playingTrick ||
+                    gameState.phase == GamePhase.roundComplete) ...[
+                  const SizedBox(height: 24),
+                  Text('Plis joues : ${gameState.completedTrickCount}/8'),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${Team.humanTeam.label} : '
+                    '${gameState.wonTricks[Team.humanTeam]?.length ?? 0}',
+                  ),
+                  Text(
+                    '${Team.opponentTeam.label} : '
+                    '${gameState.wonTricks[Team.opponentTeam]?.length ?? 0}',
+                  ),
+                ],
                 if (gameState.currentTrick.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   const Text(
@@ -196,6 +210,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: _playAutomaticTurns,
                     child: const Text('Continuer'),
                   ),
+                ],
+                if (gameState.phase == GamePhase.roundComplete) ...[
+                  const SizedBox(height: 12),
+                  const Text('Manche terminee. Calcul des points a venir.'),
                 ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[
                   const SizedBox(height: 12),
