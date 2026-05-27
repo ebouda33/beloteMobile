@@ -41,13 +41,45 @@ void main() {
 
         expect(updatedState.trumpSuit, gameState.turnedCard.suit);
         expect(updatedState.phase, GamePhase.playingTrick);
-        expect(updatedState.hands, gameState.hands);
-        expect(updatedState.humanHand, gameState.humanHand);
+        expect(updatedState.trumpTaker, PlayerSeat.human);
+        expect(updatedState.remainingDeck, isEmpty);
+        for (final seat in PlayerSeat.values) {
+          expect(updatedState.hands[seat], hasLength(8));
+        }
+        expect(updatedState.humanHand, contains(gameState.turnedCard));
+
+        final dealtCards = updatedState.hands.values.expand((hand) => hand);
+        expect(dealtCards.toSet(), hasLength(32));
       },
     );
 
+    test('can select trump for another player after earlier passes', () {
+      final gameState = createInitialGameState(
+        random: Random(1),
+      ).passTrump().passTrump(seat: PlayerSeat.leftOpponent);
+
+      final updatedState = gameState.chooseTrump(taker: PlayerSeat.partner);
+
+      expect(updatedState.trumpSuit, gameState.turnedCard.suit);
+      expect(updatedState.trumpTaker, PlayerSeat.partner);
+      expect(updatedState.phase, GamePhase.playingTrick);
+      expect(
+        updatedState.hands[PlayerSeat.partner],
+        contains(gameState.turnedCard),
+      );
+      for (final seat in PlayerSeat.values) {
+        expect(updatedState.hands[seat], hasLength(8));
+      }
+    });
+
     test('rejects trump selection after trump is already selected', () {
       final gameState = createInitialGameState(random: Random(1)).chooseTrump();
+
+      expect(gameState.chooseTrump, throwsStateError);
+    });
+
+    test('rejects trump selection by a player who already passed', () {
+      final gameState = createInitialGameState(random: Random(1)).passTrump();
 
       expect(gameState.chooseTrump, throwsStateError);
     });
@@ -61,6 +93,31 @@ void main() {
       expect(updatedState.phase, GamePhase.waitingForTrumpTaker);
       expect(updatedState.hands, gameState.hands);
       expect(updatedState.turnedCard, gameState.turnedCard);
+      expect(updatedState.passedSeats, {PlayerSeat.human});
+    });
+
+    test('moves to all players passed when every player rejects trump', () {
+      final gameState = createInitialGameState(random: Random(1))
+          .passTrump()
+          .passTrump(seat: PlayerSeat.leftOpponent)
+          .passTrump(seat: PlayerSeat.partner)
+          .passTrump(seat: PlayerSeat.rightOpponent);
+
+      expect(gameState.trumpSuit, isNull);
+      expect(gameState.trumpTaker, isNull);
+      expect(gameState.phase, GamePhase.allPlayersPassed);
+      expect(gameState.passedSeats, PlayerSeat.values.toSet());
+    });
+
+    test('passes every remaining player for the current trump card', () {
+      final gameState = createInitialGameState(
+        random: Random(1),
+      ).passTrump().passRemainingPlayers();
+
+      expect(gameState.trumpSuit, isNull);
+      expect(gameState.trumpTaker, isNull);
+      expect(gameState.phase, GamePhase.allPlayersPassed);
+      expect(gameState.passedSeats, PlayerSeat.values.toSet());
     });
 
     test('rejects passing after trump is already selected', () {

@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.passTrump();
+      _gameState = gameState.passTrump().passRemainingPlayers();
     });
   }
 
@@ -106,6 +106,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? 'Atout : a choisir'
                       : 'Atout : ${gameState.trumpSuit!.label}',
                 ),
+                if (gameState.trumpTaker case final trumpTaker?) ...[
+                  const SizedBox(height: 8),
+                  Text('Preneur : ${trumpTaker.label}'),
+                ],
                 const SizedBox(height: 8),
                 Text('Carte retournee : ${gameState.turnedCard.label}'),
                 if (gameState.phase == GamePhase.choosingTrump) ...[
@@ -130,6 +134,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (gameState.phase == GamePhase.waitingForTrumpTaker) ...[
                   const SizedBox(height: 12),
                   const Text('Vous avez passe. En attente des autres joueurs.'),
+                ],
+                if (gameState.phase == GamePhase.allPlayersPassed) ...[
+                  const SizedBox(height: 12),
+                  const Text('Tous les joueurs ont passe. Redistribuez.'),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: _startNewGame,
+                    child: const Text('Redistribuer'),
+                  ),
                 ],
               ],
             ],

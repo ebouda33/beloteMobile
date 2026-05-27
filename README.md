@@ -15,6 +15,10 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   joueur, retourne une carte du paquet et affiche la main du joueur.
 - Debut d'etat de partie local : les quatre mains initiales sont conservees, le
   joueur humain est identifie et la carte retournee propose l'atout.
+- Encheres simples sur la carte retournee : le joueur peut prendre ou passer.
+- Quand l'atout est pris, les mains sont completees a 8 cartes, le preneur est
+  conserve et affiche.
+- Quand tous les joueurs passent, l'interface propose de redistribuer.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -40,7 +44,9 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres la correction de la distribution initiale :
+Derniere verification effectuee apres l'ajout de la prise, du refus et de la
+redistribution :
+`dart format lib test`, `flutter test test/game/game_state_test.dart`,
 `flutter test` et `flutter analyze` passent.
 
 ## Documentation
@@ -51,5 +57,5 @@ Derniere verification effectuee apres la correction de la distribution initiale 
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : ajouter le refus de la carte retournee, puis
-completer la distribution apres la prise de l'atout.
+Prochaine etape recommandee : demarrer le premier pli apres la prise de l'atout
+en ajoutant le joueur courant, les cartes jouables et la pose d'une carte.

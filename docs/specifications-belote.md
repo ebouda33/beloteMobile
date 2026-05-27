@@ -34,19 +34,26 @@ Premier niveau valide :
 - affichage d'une main aleatoire de 5 cartes pour le joueur humain ;
 - etat de partie local ajoute avec les quatre mains initiales, la carte retournee,
   le joueur humain et la phase de choix de l'atout ;
+- refus de la carte retournee ajoute ;
+- prise de la carte retournee ajoutee avec distribution complete a 8 cartes par
+  joueur, conservation du preneur et affichage de l'atout ;
+- cas ou tous les joueurs passent gere avec une action de redistribution ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
 paquet, distribue 5 cartes par siege de joueur, retourne une carte du paquet,
 puis affiche la main du joueur humain. La couleur de la carte retournee est
-l'atout propose.
+l'atout propose. Le joueur humain peut prendre cette couleur, ce qui complete
+les mains et demarre la phase de pli, ou passer. Pour la V1 actuelle, les autres
+joueurs passent automatiquement apres le refus du joueur humain, puis
+l'interface propose de redistribuer.
 
 Prochaine reprise :
 
-1. ajouter le refus de la carte retournee ;
-2. gerer le cas ou tous les joueurs passent ;
-3. completer la distribution apres la prise de l'atout ;
-4. afficher clairement le preneur et l'atout courant.
+1. ajouter le joueur courant apres la prise de l'atout ;
+2. afficher les cartes jouables pour le joueur humain ;
+3. permettre la pose d'une premiere carte dans le pli ;
+4. commencer a valider les regles de suivi de couleur et de coupe.
 
 ## Principes de conception
 
