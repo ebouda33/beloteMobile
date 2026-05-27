@@ -85,6 +85,13 @@ void main() {
     expect(find.text('Plis joues : 8/8'), findsOneWidget);
     expect(find.textContaining('Points Votre equipe : '), findsOneWidget);
     expect(find.textContaining('Points Equipe adverse : '), findsOneWidget);
+    expect(find.textContaining('Equipe preneuse : '), findsOneWidget);
+    expect(
+      find.textContaining(RegExp('Contrat (reussi|chute)')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Score Votre equipe : '), findsOneWidget);
+    expect(find.textContaining('Score Equipe adverse : '), findsOneWidget);
   });
 
   testWidgets('passes on the turned trump card and can redeal', (

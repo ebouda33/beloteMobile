@@ -31,6 +31,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   equipe et detection de fin de manche.
 - Premier calcul de points de manche : points des cartes gagnees et bonus de
   10 points pour le dernier pli.
+- Validation du contrat preneur ajoutee : contrat reussi a partir de 82 points,
+  chute a 162 points pour la defense et capot a 252 points.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -56,7 +58,7 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres le premier calcul de points de manche :
+Derniere verification effectuee apres la validation du contrat preneur :
 `dart format lib test`, `flutter test test/game/game_state_test.dart`,
 `flutter test test/widget_test.dart`, `flutter test` et `flutter analyze`
 passent.
@@ -69,5 +71,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : ajouter la validation du contrat preneur, les cas
-de chute/capot, puis cumuler le score entre les manches.
+Prochaine etape recommandee : cumuler le score entre les manches, afficher le
+score de partie et permettre de lancer une nouvelle manche.

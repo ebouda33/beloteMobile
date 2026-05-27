@@ -91,6 +91,56 @@ class GameState {
     };
   }
 
+  Team? get takerTeam {
+    final taker = trumpTaker;
+    return taker == null ? null : _teamOf(taker);
+  }
+
+  bool? get isContractFulfilled {
+    if (phase != GamePhase.roundComplete || takerTeam == null) {
+      return null;
+    }
+
+    return (roundPoints[takerTeam!] ?? 0) >= 82;
+  }
+
+  Team? get capotTeam {
+    if (phase != GamePhase.roundComplete) {
+      return null;
+    }
+
+    for (final team in Team.values) {
+      if ((wonTricks[team]?.length ?? 0) == PlayerSeat.values.length * 2) {
+        return team;
+      }
+    }
+
+    return null;
+  }
+
+  Map<Team, int> get roundScore {
+    if (phase != GamePhase.roundComplete) {
+      return const {Team.humanTeam: 0, Team.opponentTeam: 0};
+    }
+
+    final capotWinner = capotTeam;
+    if (capotWinner != null) {
+      return {
+        for (final team in Team.values) team: team == capotWinner ? 252 : 0,
+      };
+    }
+
+    final taker = takerTeam;
+    if (taker == null || isContractFulfilled == true) {
+      return roundPoints;
+    }
+
+    final defendingTeam = _opponentOf(taker);
+    return {
+      for (final team in Team.values) team: team == defendingTeam ? 162 : 0,
+    };
+  }
+
   int get completedTrickCount {
     return wonTricks.values.fold(
       0,
@@ -378,6 +428,13 @@ Team _teamOf(PlayerSeat seat) {
   return switch (seat) {
     PlayerSeat.human || PlayerSeat.partner => Team.humanTeam,
     PlayerSeat.leftOpponent || PlayerSeat.rightOpponent => Team.opponentTeam,
+  };
+}
+
+Team _opponentOf(Team team) {
+  return switch (team) {
+    Team.humanTeam => Team.opponentTeam,
+    Team.opponentTeam => Team.humanTeam,
   };
 }
 

@@ -215,6 +215,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   const Text('Manche terminee. Points de cartes calcules.'),
                   const SizedBox(height: 8),
+                  if (gameState.takerTeam case final takerTeam?)
+                    Text('Equipe preneuse : ${takerTeam.label}'),
+                  if (gameState.isContractFulfilled case final fulfilled?)
+                    Text(fulfilled ? 'Contrat reussi' : 'Contrat chute'),
+                  if (gameState.capotTeam case final capotTeam?)
+                    Text('Capot : ${capotTeam.label}'),
                   Text(
                     'Points ${Team.humanTeam.label} : '
                     '${gameState.roundPoints[Team.humanTeam] ?? 0}',
@@ -222,6 +228,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     'Points ${Team.opponentTeam.label} : '
                     '${gameState.roundPoints[Team.opponentTeam] ?? 0}',
+                  ),
+                  Text(
+                    'Score ${Team.humanTeam.label} : '
+                    '${gameState.roundScore[Team.humanTeam] ?? 0}',
+                  ),
+                  Text(
+                    'Score ${Team.opponentTeam.label} : '
+                    '${gameState.roundScore[Team.opponentTeam] ?? 0}',
                   ),
                 ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[

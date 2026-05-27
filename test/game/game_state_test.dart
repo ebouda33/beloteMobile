@@ -266,6 +266,121 @@ void main() {
       expect(gameState.roundPoints[Team.opponentTeam], 0);
     });
 
+    test('keeps card points as score when the taker fulfills the contract', () {
+      const trick = [
+        PlayedCard(
+          player: PlayerSeat.human,
+          card: BeloteCard(suit: Suit.hearts, rank: Rank.jack),
+        ),
+        PlayedCard(
+          player: PlayerSeat.leftOpponent,
+          card: BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+        ),
+        PlayedCard(
+          player: PlayerSeat.partner,
+          card: BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+        ),
+        PlayedCard(
+          player: PlayerSeat.rightOpponent,
+          card: BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+        ),
+      ];
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [],
+          PlayerSeat.leftOpponent: [],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        lastTrickWinner: PlayerSeat.human,
+        wonTricks: const {
+          Team.humanTeam: [trick, trick, trick],
+          Team.opponentTeam: [],
+        },
+      );
+
+      expect(gameState.takerTeam, Team.humanTeam);
+      expect(gameState.isContractFulfilled, isTrue);
+      expect(gameState.roundScore, gameState.roundPoints);
+    });
+
+    test('awards all round points to defenders when the taker falls', () {
+      const takerTrick = [
+        PlayedCard(
+          player: PlayerSeat.human,
+          card: BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+        ),
+      ];
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [],
+          PlayerSeat.leftOpponent: [],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        lastTrickWinner: PlayerSeat.leftOpponent,
+        wonTricks: const {
+          Team.humanTeam: [takerTrick],
+          Team.opponentTeam: [],
+        },
+      );
+
+      expect(gameState.roundPoints[Team.humanTeam], 11);
+      expect(gameState.isContractFulfilled, isFalse);
+      expect(gameState.roundScore[Team.humanTeam], 0);
+      expect(gameState.roundScore[Team.opponentTeam], 162);
+    });
+
+    test('awards capot score to the team that wins all tricks', () {
+      const trick = [
+        PlayedCard(
+          player: PlayerSeat.human,
+          card: BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+        ),
+      ];
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [],
+          PlayerSeat.leftOpponent: [],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        lastTrickWinner: PlayerSeat.partner,
+        wonTricks: const {
+          Team.humanTeam: [
+            trick,
+            trick,
+            trick,
+            trick,
+            trick,
+            trick,
+            trick,
+            trick,
+          ],
+          Team.opponentTeam: [],
+        },
+      );
+
+      expect(gameState.capotTeam, Team.humanTeam);
+      expect(gameState.roundScore[Team.humanTeam], 252);
+      expect(gameState.roundScore[Team.opponentTeam], 0);
+    });
+
     test('only exposes playable cards for the current player', () {
       final gameState = createInitialGameState(random: Random(1)).chooseTrump();
       final requestedSuit = gameState.humanHand.first.suit;
