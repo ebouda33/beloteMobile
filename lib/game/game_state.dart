@@ -75,6 +75,22 @@ class GameState {
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
 
+  Map<Team, int> get roundPoints {
+    final trump = trumpSuit;
+    if (trump == null) {
+      return const {Team.humanTeam: 0, Team.opponentTeam: 0};
+    }
+
+    return {
+      for (final team in Team.values)
+        team:
+            _pointsForWonTricks(wonTricks[team] ?? const [], trump) +
+            (lastTrickWinner != null && _teamOf(lastTrickWinner!) == team
+                ? 10
+                : 0),
+    };
+  }
+
   int get completedTrickCount {
     return wonTricks.values.fold(
       0,
@@ -384,6 +400,12 @@ Map<Team, List<List<PlayedCard>>> _addWonTrick(
         if (team == winningTeam) trick,
       ],
   };
+}
+
+int _pointsForWonTricks(List<List<PlayedCard>> tricks, Suit trumpSuit) {
+  return tricks.expand((trick) => trick).fold(0, (total, playedCard) {
+    return total + playedCard.card.points(trumpSuit: trumpSuit);
+  });
 }
 
 PlayerSeat _winnerOfTrick(List<PlayedCard> trick, Suit trumpSuit) {

@@ -45,6 +45,10 @@ Premier niveau valide :
   comme prochain joueur courant ;
 - cartes jouables renforcees avec suivi de couleur, coupe obligatoire, defausse
   autorisee si le partenaire est maitre et montee a l'atout quand possible ;
+- enchainement des 8 plis d'une manche ajoute avec suivi des plis remportes par
+  equipe et detection de fin de manche ;
+- premier calcul des points de manche ajoute avec points des cartes et bonus de
+  10 points pour le dernier pli ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -61,14 +65,17 @@ automatiquement pour completer le pli courant. Le dernier pli complete reste
 visible dans l'interface avec son gagnant. La liste des cartes jouables limite
 maintenant les actions invalides : suivre la couleur demandee si possible,
 couper quand il faut, pouvoir defausser si le partenaire est maitre du pli et
-monter a l'atout quand une carte plus forte est disponible.
+monter a l'atout quand une carte plus forte est disponible. La manche peut
+desormais aller jusqu'a 8 plis. Les plis remportes sont conserves par equipe,
+la fin de manche est detectee, puis les points des cartes gagnees sont calcules
+avec le bonus de 10 points du dernier pli.
 
 Prochaine reprise :
 
-1. enchainer plusieurs plis dans une meme manche ;
-2. conserver les plis remportes par chaque equipe ;
-3. detecter la fin des 8 plis ;
-4. preparer le calcul des points de manche.
+1. valider si l'equipe preneuse remplit son contrat ;
+2. traiter les cas de chute et de capot ;
+3. cumuler les scores entre les manches ;
+4. preparer l'affichage du score de partie.
 
 ## Principes de conception
 

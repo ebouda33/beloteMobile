@@ -221,9 +221,49 @@ void main() {
             (gameState.wonTricks[Team.opponentTeam]?.length ?? 0),
         8,
       );
+      expect(
+        (gameState.roundPoints[Team.humanTeam] ?? 0) +
+            (gameState.roundPoints[Team.opponentTeam] ?? 0),
+        162,
+      );
       for (final seat in PlayerSeat.values) {
         expect(gameState.hands[seat], isEmpty);
       }
+    });
+
+    test('adds the last trick bonus to the final round points', () {
+      const humanCard = BeloteCard(suit: Suit.clubs, rank: Rank.ace);
+      const leftCard = BeloteCard(suit: Suit.clubs, rank: Rank.seven);
+      const partnerCard = BeloteCard(suit: Suit.clubs, rank: Rank.ten);
+      const rightCard = BeloteCard(suit: Suit.clubs, rank: Rank.eight);
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [],
+          PlayerSeat.leftOpponent: [],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        lastTrickWinner: PlayerSeat.partner,
+        wonTricks: const {
+          Team.humanTeam: [
+            [
+              PlayedCard(player: PlayerSeat.human, card: humanCard),
+              PlayedCard(player: PlayerSeat.leftOpponent, card: leftCard),
+              PlayedCard(player: PlayerSeat.partner, card: partnerCard),
+              PlayedCard(player: PlayerSeat.rightOpponent, card: rightCard),
+            ],
+          ],
+          Team.opponentTeam: [],
+        },
+      );
+
+      expect(gameState.roundPoints[Team.humanTeam], 31);
+      expect(gameState.roundPoints[Team.opponentTeam], 0);
     });
 
     test('only exposes playable cards for the current player', () {

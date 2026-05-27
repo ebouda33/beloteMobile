@@ -27,6 +27,10 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
+- Une manche peut aller jusqu'aux 8 plis, avec suivi des plis remportes par
+  equipe et detection de fin de manche.
+- Premier calcul de points de manche : points des cartes gagnees et bonus de
+  10 points pour le dernier pli.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -52,7 +56,7 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres le renforcement des cartes jouables :
+Derniere verification effectuee apres le premier calcul de points de manche :
 `dart format lib test`, `flutter test test/game/game_state_test.dart`,
 `flutter test test/widget_test.dart`, `flutter test` et `flutter analyze`
 passent.
@@ -65,5 +69,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : enchainer plusieurs plis dans une manche, garder
-les plis remportes par equipe et detecter la fin des 8 plis.
+Prochaine etape recommandee : ajouter la validation du contrat preneur, les cas
+de chute/capot, puis cumuler le score entre les manches.

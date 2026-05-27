@@ -48,6 +48,45 @@ void main() {
     expect(find.text('Pli en cours'), findsNothing);
   });
 
+  testWidgets('shows round points when the round is complete', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BeloteApp());
+
+    await tester.tap(find.text('Nouvelle partie'));
+    await tester.pump();
+
+    await tester.tap(find.textContaining('Prendre '));
+    await tester.pump();
+
+    while (find
+        .text('Manche terminee. Points de cartes calcules.')
+        .evaluate()
+        .isEmpty) {
+      final continueButton = find.text('Continuer');
+      if (continueButton.evaluate().isNotEmpty) {
+        await tester.ensureVisible(continueButton);
+        await tester.tap(continueButton);
+        await tester.pump();
+        continue;
+      }
+
+      final playableCard = find.byType(ActionChip).first;
+      expect(playableCard, findsOneWidget);
+      await tester.ensureVisible(playableCard);
+      await tester.tap(playableCard);
+      await tester.pump();
+    }
+
+    expect(
+      find.text('Manche terminee. Points de cartes calcules.'),
+      findsOneWidget,
+    );
+    expect(find.text('Plis joues : 8/8'), findsOneWidget);
+    expect(find.textContaining('Points Votre equipe : '), findsOneWidget);
+    expect(find.textContaining('Points Equipe adverse : '), findsOneWidget);
+  });
+
   testWidgets('passes on the turned trump card and can redeal', (
     WidgetTester tester,
   ) async {

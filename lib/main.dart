@@ -213,7 +213,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
                 if (gameState.phase == GamePhase.roundComplete) ...[
                   const SizedBox(height: 12),
-                  const Text('Manche terminee. Calcul des points a venir.'),
+                  const Text('Manche terminee. Points de cartes calcules.'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Points ${Team.humanTeam.label} : '
+                    '${gameState.roundPoints[Team.humanTeam] ?? 0}',
+                  ),
+                  Text(
+                    'Points ${Team.opponentTeam.label} : '
+                    '${gameState.roundPoints[Team.opponentTeam] ?? 0}',
+                  ),
                 ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[
                   const SizedBox(height: 12),
