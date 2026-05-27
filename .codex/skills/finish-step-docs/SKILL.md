@@ -26,11 +26,18 @@ Keep the repository documentation aligned with the latest completed work. Captur
 4. State what remains to do as short, actionable next steps. For this Belote app, prefer items such as game state, bidding/trump selection, turn flow, scoring, UI refinement, persistence, and platform validation only when they follow from the current docs.
 5. Keep edits concise and factual. Do not add changelog-style noise unless the existing document already uses that pattern.
 6. Run formatting only if code or generated Markdown tooling requires it. For Markdown-only edits, no automated test is usually required; if behavior docs changed alongside code, run the relevant Flutter tests from the project `test` skill.
-7. Report:
+7. Commit the completed step when there are changes:
+   - Re-check `git status --short` and `git diff --stat`.
+   - Stage only files that belong to the completed step and its documentation.
+   - Use a short imperative commit message that describes the completed step.
+   - If there are no uncommitted changes, do not create an empty commit; report that the step was already committed or that the workspace is clean.
+   - Do not push unless the user explicitly asks for a push.
+8. Report:
    - files updated;
    - completed step recorded;
    - remaining next steps added;
    - verification commands run or why none were needed.
+   - commit hash and message, or why no commit was created.
 
 ## Repository Conventions
 
@@ -38,7 +45,7 @@ Keep the repository documentation aligned with the latest completed work. Captur
 - Keep `AGENTS.md` in English unless the file has been intentionally converted.
 - Preserve existing headings when possible; adjust section content instead of rewriting the whole file.
 - Use exact commands from the repo: `flutter run -d chrome`, `flutter test`, `flutter analyze`, and `dart format ...`.
-- Do not commit documentation changes unless the user explicitly asks.
+- When the user triggers this skill after a completed step, create the commit as part of the workflow if there are step-related changes.
 
 ## Quality Bar
 
