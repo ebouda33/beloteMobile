@@ -40,10 +40,9 @@ void main() {
     await tester.tap(find.byType(ActionChip).first);
     await tester.pump();
 
-    expect(find.text('Joueur courant : Adversaire gauche'), findsOneWidget);
-    expect(find.text('Pli en cours'), findsOneWidget);
-    expect(find.byType(ActionChip), findsNothing);
-    expect(find.byType(Chip), findsNWidgets(8));
+    expect(find.text('Dernier pli'), findsOneWidget);
+    expect(find.textContaining('Gagnant : '), findsOneWidget);
+    expect(find.text('Pli en cours'), findsNothing);
   });
 
   testWidgets('passes on the turned trump card and can redeal', (

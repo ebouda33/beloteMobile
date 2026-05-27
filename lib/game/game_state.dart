@@ -42,6 +42,8 @@ class GameState {
     this.passedSeats = const {},
     this.currentPlayer,
     this.currentTrick = const [],
+    this.lastCompletedTrick = const [],
+    this.lastTrickWinner,
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -54,6 +56,8 @@ class GameState {
   final Set<PlayerSeat> passedSeats;
   final PlayerSeat? currentPlayer;
   final List<PlayedCard> currentTrick;
+  final List<PlayedCard> lastCompletedTrick;
+  final PlayerSeat? lastTrickWinner;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
 
@@ -62,7 +66,65 @@ class GameState {
       return const [];
     }
 
-    return hands[seat] ?? const [];
+    final hand = hands[seat] ?? const [];
+    if (currentTrick.isEmpty) {
+      return hand;
+    }
+
+    final trump = trumpSuit!;
+    final requestedSuit = currentTrick.first.card.suit;
+    final cardsInRequestedSuit = hand
+        .where((card) => card.suit == requestedSuit)
+        .toList();
+    if (cardsInRequestedSuit.isNotEmpty) {
+      if (requestedSuit == trump) {
+        final higherTrumps = _cardsThatBeatCurrentWinner(cardsInRequestedSuit);
+        if (higherTrumps.isNotEmpty) {
+          return higherTrumps;
+        }
+      }
+
+      return cardsInRequestedSuit;
+    }
+
+    if (_isPartnerCurrentlyWinning(seat)) {
+      return hand;
+    }
+
+    final trumpCards = hand.where((card) => card.suit == trump).toList();
+    if (trumpCards.isEmpty) {
+      return hand;
+    }
+
+    final higherTrumps = _cardsThatBeatCurrentWinner(trumpCards);
+    if (higherTrumps.isNotEmpty) {
+      return higherTrumps;
+    }
+
+    return trumpCards;
+  }
+
+  bool _isPartnerCurrentlyWinning(PlayerSeat seat) {
+    if (currentTrick.isEmpty) {
+      return false;
+    }
+
+    return _partnerOf(seat) ==
+        _winningPlayedCard(currentTrick, trumpSuit!).player;
+  }
+
+  List<BeloteCard> _cardsThatBeatCurrentWinner(List<BeloteCard> cards) {
+    final currentWinner = _winningPlayedCard(currentTrick, trumpSuit!).card;
+    return cards
+        .where(
+          (card) => _beats(
+            challenger: card,
+            currentWinner: currentWinner,
+            requestedSuit: currentTrick.first.card.suit,
+            trumpSuit: trumpSuit!,
+          ),
+        )
+        .toList();
   }
 
   GameState passTrump({PlayerSeat seat = PlayerSeat.human}) {
@@ -87,6 +149,8 @@ class GameState {
       passedSeats: updatedPassedSeats,
       currentPlayer: currentPlayer,
       currentTrick: currentTrick,
+      lastCompletedTrick: lastCompletedTrick,
+      lastTrickWinner: lastTrickWinner,
     );
   }
 
@@ -126,6 +190,35 @@ class GameState {
     );
   }
 
+  GameState playAutomaticTurns() {
+    var updatedState = this;
+    var guard = 0;
+
+    while (updatedState.phase == GamePhase.playingTrick &&
+        updatedState.currentPlayer != null &&
+        updatedState.currentPlayer != updatedState.humanSeat &&
+        updatedState._hasCardsInAnyHand() &&
+        guard < 32) {
+      final seat = updatedState.currentPlayer!;
+      final playableCards = updatedState.playableCards(seat);
+      if (playableCards.isEmpty) {
+        break;
+      }
+
+      updatedState = updatedState.playCard(
+        updatedState._chooseAutomaticCard(playableCards),
+        seat: seat,
+      );
+      guard += 1;
+
+      if (updatedState.currentTrick.isEmpty) {
+        break;
+      }
+    }
+
+    return updatedState;
+  }
+
   GameState playCard(BeloteCard card, {PlayerSeat seat = PlayerSeat.human}) {
     if (phase != GamePhase.playingTrick) {
       throw StateError('Cards cannot be played before the trick phase.');
@@ -138,12 +231,22 @@ class GameState {
     if (!playerHand.contains(card)) {
       throw ArgumentError.value(card, 'card', 'Card is not in player hand.');
     }
+    if (!playableCards(seat).contains(card)) {
+      throw ArgumentError.value(card, 'card', 'Card is not playable.');
+    }
 
     final updatedHands = {
       for (final playerSeat in PlayerSeat.values)
         playerSeat: [...hands[playerSeat] ?? const <BeloteCard>[]],
     };
     updatedHands[seat]!.remove(card);
+    final updatedTrick = [
+      ...currentTrick,
+      PlayedCard(player: seat, card: card),
+    ];
+    final trickWinner = updatedTrick.length == PlayerSeat.values.length
+        ? _winnerOfTrick(updatedTrick, trumpSuit!)
+        : null;
 
     return GameState(
       hands: updatedHands,
@@ -154,12 +257,36 @@ class GameState {
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
       passedSeats: passedSeats,
-      currentPlayer: _nextSeatAfter(seat),
-      currentTrick: [
-        ...currentTrick,
-        PlayedCard(player: seat, card: card),
-      ],
+      currentPlayer: trickWinner ?? _nextSeatAfter(seat),
+      currentTrick: trickWinner == null ? updatedTrick : const [],
+      lastCompletedTrick: trickWinner == null
+          ? lastCompletedTrick
+          : updatedTrick,
+      lastTrickWinner: trickWinner ?? lastTrickWinner,
     );
+  }
+
+  bool _hasCardsInAnyHand() {
+    return hands.values.any((hand) => hand.isNotEmpty);
+  }
+
+  BeloteCard _chooseAutomaticCard(List<BeloteCard> playableCards) {
+    final trump = trumpSuit!;
+    final sortedCards = [...playableCards]
+      ..sort((first, second) {
+        final pointsComparison = first
+            .points(trumpSuit: trump)
+            .compareTo(second.points(trumpSuit: trump));
+        if (pointsComparison != 0) {
+          return pointsComparison;
+        }
+
+        return first
+            .strength(trumpSuit: trump)
+            .compareTo(second.strength(trumpSuit: trump));
+      });
+
+    return sortedCards.first;
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(
@@ -188,6 +315,67 @@ PlayerSeat _nextSeatAfter(PlayerSeat seat) {
   final nextIndex =
       (PlayerSeat.values.indexOf(seat) + 1) % PlayerSeat.values.length;
   return PlayerSeat.values[nextIndex];
+}
+
+PlayerSeat _partnerOf(PlayerSeat seat) {
+  return switch (seat) {
+    PlayerSeat.human => PlayerSeat.partner,
+    PlayerSeat.partner => PlayerSeat.human,
+    PlayerSeat.leftOpponent => PlayerSeat.rightOpponent,
+    PlayerSeat.rightOpponent => PlayerSeat.leftOpponent,
+  };
+}
+
+PlayerSeat _winnerOfTrick(List<PlayedCard> trick, Suit trumpSuit) {
+  if (trick.length != PlayerSeat.values.length) {
+    throw ArgumentError.value(
+      trick.length,
+      'trick.length',
+      'Expected 4 cards.',
+    );
+  }
+
+  return _winningPlayedCard(trick, trumpSuit).player;
+}
+
+PlayedCard _winningPlayedCard(List<PlayedCard> trick, Suit trumpSuit) {
+  final requestedSuit = trick.first.card.suit;
+  var winningCard = trick.first;
+  for (final playedCard in trick.skip(1)) {
+    if (_beats(
+      challenger: playedCard.card,
+      currentWinner: winningCard.card,
+      requestedSuit: requestedSuit,
+      trumpSuit: trumpSuit,
+    )) {
+      winningCard = playedCard;
+    }
+  }
+
+  return winningCard;
+}
+
+bool _beats({
+  required BeloteCard challenger,
+  required BeloteCard currentWinner,
+  required Suit requestedSuit,
+  required Suit trumpSuit,
+}) {
+  if (challenger.suit == currentWinner.suit) {
+    return challenger.strength(trumpSuit: trumpSuit) >
+        currentWinner.strength(trumpSuit: trumpSuit);
+  }
+
+  if (challenger.suit == trumpSuit && currentWinner.suit != trumpSuit) {
+    return true;
+  }
+
+  if (currentWinner.suit == trumpSuit) {
+    return false;
+  }
+
+  return challenger.suit == requestedSuit &&
+      currentWinner.suit != requestedSuit;
 }
 
 GameState createInitialGameState({Random? random}) {

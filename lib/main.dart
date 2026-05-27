@@ -68,7 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.playCard(card);
+      _gameState = gameState.playCard(card).playAutomaticTurns();
+    });
+  }
+
+  void _playAutomaticTurns() {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    setState(() {
+      _gameState = gameState.playAutomaticTurns();
     });
   }
 
@@ -153,6 +164,37 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                     ],
+                  ),
+                ],
+                if (gameState.lastCompletedTrick.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Dernier pli',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  if (gameState.lastTrickWinner case final lastTrickWinner?)
+                    Text('Gagnant : ${lastTrickWinner.label}'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final playedCard in gameState.lastCompletedTrick)
+                        Chip(
+                          label: Text(
+                            '${playedCard.player.label} : ${playedCard.card.label}',
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+                if (gameState.phase == GamePhase.playingTrick &&
+                    gameState.currentPlayer != gameState.humanSeat) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: _playAutomaticTurns,
+                    child: const Text('Continuer'),
                   ),
                 ],
                 if (gameState.phase == GamePhase.choosingTrump) ...[

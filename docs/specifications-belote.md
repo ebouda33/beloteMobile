@@ -40,6 +40,11 @@ Premier niveau valide :
 - cas ou tous les joueurs passent gere avec une action de redistribution ;
 - debut de pli ajoute avec joueur courant, cartes jouables pour le joueur humain
   et affichage de la carte posee dans le pli en cours ;
+- jeu automatique des adversaires ajoute pour completer le pli courant ;
+- gagnant du pli determine selon l'atout et la couleur demandee, puis defini
+  comme prochain joueur courant ;
+- cartes jouables renforcees avec suivi de couleur, coupe obligatoire, defausse
+  autorisee si le partenaire est maitre et montee a l'atout quand possible ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -51,14 +56,19 @@ joueurs passent automatiquement apres le refus du joueur humain, puis
 l'interface propose de redistribuer. Quand le joueur humain prend l'atout, il
 devient le premier joueur courant de la phase de pli. Ses cartes sont jouables
 dans l'interface, la carte posee est retiree de sa main, ajoutee au pli en cours
-et le tour avance au joueur suivant.
+et le tour avance au joueur suivant. Les adversaires peuvent ensuite jouer
+automatiquement pour completer le pli courant. Le dernier pli complete reste
+visible dans l'interface avec son gagnant. La liste des cartes jouables limite
+maintenant les actions invalides : suivre la couleur demandee si possible,
+couper quand il faut, pouvoir defausser si le partenaire est maitre du pli et
+monter a l'atout quand une carte plus forte est disponible.
 
 Prochaine reprise :
 
-1. ajouter le jeu automatique des trois joueurs IA pour completer un pli ;
-2. determiner le gagnant d'un pli selon l'atout et la couleur demandee ;
-3. faire ouvrir le pli suivant par le gagnant ;
-4. commencer a valider les regles de suivi de couleur, de coupe et de montee.
+1. enchainer plusieurs plis dans une meme manche ;
+2. conserver les plis remportes par chaque equipe ;
+3. detecter la fin des 8 plis ;
+4. preparer le calcul des points de manche.
 
 ## Principes de conception
 

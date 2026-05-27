@@ -22,6 +22,11 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Debut de pli jouable : apres la prise d'atout, le joueur courant est affiche,
   les cartes jouables du joueur humain sont cliquables et la carte posee apparait
   dans le pli en cours.
+- Les adversaires jouent automatiquement pour completer un pli, le gagnant est
+  calcule selon l'atout et la couleur demandee, puis il devient joueur courant.
+- Les cartes jouables respectent les premieres contraintes de pli : suivre la
+  couleur demandee, couper si necessaire, defausser si le partenaire est maitre
+  et monter a l'atout quand c'est possible.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -47,9 +52,10 @@ flutter run -d chrome
 flutter test
 ```
 
-Derniere verification effectuee apres l'ajout du premier pli jouable :
+Derniere verification effectuee apres le renforcement des cartes jouables :
 `dart format lib test`, `flutter test test/game/game_state_test.dart`,
-`flutter test` et `flutter analyze` passent.
+`flutter test test/widget_test.dart`, `flutter test` et `flutter analyze`
+passent.
 
 ## Documentation
 
@@ -59,5 +65,5 @@ Derniere verification effectuee apres l'ajout du premier pli jouable :
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : ajouter le jeu automatique des adversaires pour
-completer un pli, puis determiner le gagnant du pli.
+Prochaine etape recommandee : enchainer plusieurs plis dans une manche, garder
+les plis remportes par equipe et detecter la fin des 8 plis.
