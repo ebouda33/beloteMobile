@@ -37,6 +37,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   nouvelle manche apres score et detection du score cible de 501 points.
 - Affichage du vainqueur de partie quand le score cible est atteint, avec
   fermeture du flux de nouvelle manche.
+- Bonus belote/rebelote de 20 points ajoute automatiquement quand le meme
+  equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -75,5 +77,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : preparer l'ajout de belote/rebelote, puis
-affiner les actions disponibles en fin de partie si besoin.
+Prochaine etape recommandee : affiner les actions disponibles en fin de partie
+et la presentation du score final si besoin.

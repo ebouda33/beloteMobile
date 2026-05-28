@@ -317,6 +317,44 @@ void main() {
       expect(gameState.roundPoints[Team.opponentTeam], 0);
     });
 
+    test(
+      'awards belote and rebelote bonus when the same team plays both trump honors',
+      () {
+        const trumpKing = BeloteCard(suit: Suit.hearts, rank: Rank.king);
+        const trumpQueen = BeloteCard(suit: Suit.hearts, rank: Rank.queen);
+        const discard = BeloteCard(suit: Suit.clubs, rank: Rank.seven);
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [trumpKing, trumpQueen],
+            PlayerSeat.leftOpponent: [discard],
+            PlayerSeat.partner: [discard],
+            PlayerSeat.rightOpponent: [discard],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.human,
+        );
+
+        final afterFirstTrick = gameState
+            .playCard(trumpKing)
+            .playAutomaticTurns();
+        expect(afterFirstTrick.roundBonusPoints[Team.humanTeam], 0);
+        expect(afterFirstTrick.beloteBonusTeam, isNull);
+
+        final afterSecondTrick = afterFirstTrick
+            .playCard(trumpQueen)
+            .playAutomaticTurns();
+
+        expect(afterSecondTrick.roundBonusPoints[Team.humanTeam], 20);
+        expect(afterSecondTrick.beloteBonusTeam, Team.humanTeam);
+        expect(afterSecondTrick.roundScore[Team.humanTeam], 20);
+        expect(afterSecondTrick.roundScore[Team.opponentTeam], 0);
+      },
+    );
+
     test('keeps card points as score when the taker fulfills the contract', () {
       const trick = [
         PlayedCard(

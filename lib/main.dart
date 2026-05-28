@@ -241,6 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(fulfilled ? 'Contrat reussi' : 'Contrat chute'),
                   if (gameState.capotTeam case final capotTeam?)
                     Text('Capot : ${capotTeam.label}'),
+                  if (gameState.beloteBonusTeam case final beloteBonusTeam?)
+                    Text('Belote / rebelote : ${beloteBonusTeam.label} (+20)'),
                   Text(
                     'Points ${Team.humanTeam.label} : '
                     '${gameState.roundPoints[Team.humanTeam] ?? 0}',

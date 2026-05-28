@@ -59,6 +59,9 @@ class GameState {
     this.lastCompletedTrick = const [],
     this.lastTrickWinner,
     this.wonTricks = const {Team.humanTeam: [], Team.opponentTeam: []},
+    this.roundBonusPoints = const {Team.humanTeam: 0, Team.opponentTeam: 0},
+    this.beloteTeam,
+    this.beloteRanksPlayed = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   });
 
@@ -75,6 +78,9 @@ class GameState {
   final List<PlayedCard> lastCompletedTrick;
   final PlayerSeat? lastTrickWinner;
   final Map<Team, List<List<PlayedCard>>> wonTricks;
+  final Map<Team, int> roundBonusPoints;
+  final Team? beloteTeam;
+  final Set<Rank> beloteRanksPlayed;
   final Map<Team, int> gameScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
@@ -135,13 +141,26 @@ class GameState {
     return _capotTeamFor(phase: phase, wonTricks: wonTricks);
   }
 
+  Team? get beloteBonusTeam {
+    for (final team in Team.values) {
+      if ((roundBonusPoints[team] ?? 0) > 0) {
+        return team;
+      }
+    }
+
+    return null;
+  }
+
   Map<Team, int> get roundScore {
-    return _roundScoreFor(
-      phase: phase,
-      trumpSuit: trumpSuit,
-      trumpTaker: trumpTaker,
-      lastTrickWinner: lastTrickWinner,
-      wonTricks: wonTricks,
+    return _addScores(
+      _roundScoreFor(
+        phase: phase,
+        trumpSuit: trumpSuit,
+        trumpTaker: trumpTaker,
+        lastTrickWinner: lastTrickWinner,
+        wonTricks: wonTricks,
+      ),
+      roundBonusPoints,
     );
   }
 
@@ -243,6 +262,9 @@ class GameState {
       lastCompletedTrick: lastCompletedTrick,
       lastTrickWinner: lastTrickWinner,
       wonTricks: wonTricks,
+      roundBonusPoints: roundBonusPoints,
+      beloteTeam: beloteTeam,
+      beloteRanksPlayed: beloteRanksPlayed,
       gameScore: gameScore,
     );
   }
@@ -281,6 +303,9 @@ class GameState {
       passedSeats: passedSeats,
       currentPlayer: humanSeat,
       wonTricks: wonTricks,
+      roundBonusPoints: roundBonusPoints,
+      beloteTeam: beloteTeam,
+      beloteRanksPlayed: beloteRanksPlayed,
       gameScore: gameScore,
     );
   }
@@ -352,6 +377,28 @@ class GameState {
       for (final playerSeat in PlayerSeat.values)
         playerSeat: [...hands[playerSeat] ?? const <BeloteCard>[]],
     };
+    final updatedRoundBonusPoints = {
+      for (final team in Team.values) team: roundBonusPoints[team] ?? 0,
+    };
+    var updatedBeloteTeam = beloteTeam;
+    var updatedBeloteRanksPlayed = {...beloteRanksPlayed};
+    final seatTeam = _teamOf(seat);
+    final trump = trumpSuit!;
+    if (card.suit == trump &&
+        (card.rank == Rank.king || card.rank == Rank.queen)) {
+      final otherRank = card.rank == Rank.king ? Rank.queen : Rank.king;
+      final otherTrumpMarriageCard = BeloteCard(suit: trump, rank: otherRank);
+      if (updatedBeloteTeam == seatTeam &&
+          updatedBeloteRanksPlayed.contains(otherRank)) {
+        updatedRoundBonusPoints[seatTeam] =
+            (updatedRoundBonusPoints[seatTeam] ?? 0) + 20;
+        updatedBeloteTeam = null;
+        updatedBeloteRanksPlayed = {};
+      } else if (playerHand.contains(otherTrumpMarriageCard)) {
+        updatedBeloteTeam = seatTeam;
+        updatedBeloteRanksPlayed = {card.rank};
+      }
+    }
     updatedHands[seat]!.remove(card);
     final updatedTrick = [
       ...currentTrick,
@@ -397,6 +444,9 @@ class GameState {
           : updatedTrick,
       lastTrickWinner: trickWinner ?? lastTrickWinner,
       wonTricks: updatedWonTricks,
+      roundBonusPoints: updatedRoundBonusPoints,
+      beloteTeam: updatedBeloteTeam,
+      beloteRanksPlayed: updatedBeloteRanksPlayed,
       gameScore: updatedGameScore,
     );
   }
