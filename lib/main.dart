@@ -261,11 +261,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   if (gameState.isGameComplete) ...[
                     const SizedBox(height: 12),
-                    Text(
-                      gameState.winningTeam == null
-                          ? 'Partie terminee. Egalite.'
-                          : 'Partie terminee. Vainqueur : '
-                                '${gameState.winningTeam!.label}',
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            gameState.winningTeam == null
+                                ? 'Partie terminee. Egalite.'
+                                : 'Partie terminee. Vainqueur : '
+                                      '${gameState.winningTeam!.label}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Score final - ${Team.humanTeam.label} : '
+                            '${gameState.gameScore[Team.humanTeam] ?? 0}',
+                          ),
+                          Text(
+                            'Score final - ${Team.opponentTeam.label} : '
+                            '${gameState.gameScore[Team.opponentTeam] ?? 0}',
+                          ),
+                        ],
+                      ),
                     ),
                   ] else ...[
                     const SizedBox(height: 12),

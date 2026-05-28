@@ -55,7 +55,7 @@ Premier niveau valide :
 - score de partie cumule entre les manches, nouvelle manche apres score et
   detection du score cible de 501 points ajoutes ;
 - affichage du vainqueur de partie quand 501 points est atteint, avec
-  fermeture du flux de nouvelle manche ;
+  fermeture du flux de nouvelle manche et recapitulatif du score final ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
 - tests de base ajoutes et executes avec succes.
@@ -86,15 +86,16 @@ de capot, l'equipe qui gagne les 8 plis marque 252 points. Le score applique de
 chaque manche est maintenant ajoute au score de partie. Une nouvelle manche
 peut etre lancee apres le score tant qu'aucune equipe n'a atteint 501 points.
 Quand une equipe atteint 501 points, l'interface affiche clairement le
-vainqueur de partie et n'expose plus l'action de nouvelle manche.
+vainqueur de partie, un recapitulatif du score final, et n'expose plus l'action
+de nouvelle manche.
 Le bonus belote/rebelote est calcule automatiquement quand la meme equipe joue
 le roi et la dame d'atout, puis il est ajoute au score de manche et affiche
 dans le recapitulatif.
 
 Prochaine reprise :
 
-1. affiner les actions disponibles en fin de partie ;
-2. ameliorer la presentation du score final si besoin ;
+1. affiner les actions disponibles en fin de partie si besoin ;
+2. preparer l'ajout de nouvelles annonces ou variantes ;
 3. ajouter des tests de score de partie avec plusieurs manches.
 
 ## Principes de conception

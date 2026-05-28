@@ -116,6 +116,14 @@ void main() {
       find.textContaining('Partie terminee. Vainqueur : '),
       findsOneWidget,
     );
+    expect(
+      find.textContaining('Score final - Votre equipe : '),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Score final - Equipe adverse : '),
+      findsOneWidget,
+    );
     expect(find.text('Nouvelle manche'), findsNothing);
   });
 
