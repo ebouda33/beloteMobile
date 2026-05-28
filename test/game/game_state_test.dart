@@ -265,7 +265,21 @@ void main() {
       );
 
       expect(gameState.isGameComplete, isTrue);
+      expect(gameState.winningTeam, Team.humanTeam);
       expect(gameState.startNextRound, throwsStateError);
+    });
+
+    test('returns no winning team before the target score is reached', () {
+      final gameState = GameState(
+        hands: const {},
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        gameScore: const {Team.humanTeam: 480, Team.opponentTeam: 320},
+      );
+
+      expect(gameState.isGameComplete, isFalse);
+      expect(gameState.winningTeam, isNull);
     });
 
     test('adds the last trick bonus to the final round points', () {

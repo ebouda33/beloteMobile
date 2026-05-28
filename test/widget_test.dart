@@ -59,59 +59,64 @@ void main() {
     await tester.tap(find.textContaining('Prendre '));
     await tester.pump();
 
-    while (find
-        .text('Manche terminee. Points de cartes calcules.')
-        .evaluate()
-        .isEmpty) {
-      final continueButton = find.text('Continuer');
-      if (continueButton.evaluate().isNotEmpty) {
-        await tester.ensureVisible(continueButton);
-        await tester.tap(continueButton);
+    var roundsPlayed = 0;
+    while (find.textContaining('Partie terminee.').evaluate().isEmpty &&
+        roundsPlayed < 12) {
+      while (find
+          .text('Manche terminee. Points de cartes calcules.')
+          .evaluate()
+          .isEmpty) {
+        final continueButton = find.text('Continuer');
+        if (continueButton.evaluate().isNotEmpty) {
+          await tester.ensureVisible(continueButton);
+          await tester.tap(continueButton);
+          await tester.pump();
+          continue;
+        }
+
+        final playableCard = find.byType(ActionChip).first;
+        expect(playableCard, findsOneWidget);
+        await tester.ensureVisible(playableCard);
+        await tester.tap(playableCard);
         await tester.pump();
-        continue;
       }
 
-      final playableCard = find.byType(ActionChip).first;
-      expect(playableCard, findsOneWidget);
-      await tester.ensureVisible(playableCard);
-      await tester.tap(playableCard);
-      await tester.pump();
+      expect(find.text('Plis joues : 8/8'), findsOneWidget);
+      expect(find.textContaining('Points Votre equipe : '), findsOneWidget);
+      expect(find.textContaining('Points Equipe adverse : '), findsOneWidget);
+      expect(find.textContaining('Equipe preneuse : '), findsOneWidget);
+      expect(
+        find.textContaining(RegExp('Contrat (reussi|chute)')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Score Votre equipe : '), findsOneWidget);
+      expect(find.textContaining('Score Equipe adverse : '), findsOneWidget);
+      expect(
+        find.textContaining('Score partie - Votre equipe : '),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Score partie - Equipe adverse : '),
+        findsOneWidget,
+      );
+
+      if (find.text('Nouvelle manche').evaluate().isNotEmpty) {
+        await tester.ensureVisible(find.text('Nouvelle manche'));
+        await tester.tap(find.text('Nouvelle manche'));
+        await tester.pump();
+
+        expect(find.text('Atout : a choisir'), findsOneWidget);
+        await tester.tap(find.textContaining('Prendre '));
+        await tester.pump();
+        roundsPlayed += 1;
+      }
     }
 
     expect(
-      find.text('Manche terminee. Points de cartes calcules.'),
+      find.textContaining('Partie terminee. Vainqueur : '),
       findsOneWidget,
     );
-    expect(find.text('Plis joues : 8/8'), findsOneWidget);
-    expect(find.textContaining('Points Votre equipe : '), findsOneWidget);
-    expect(find.textContaining('Points Equipe adverse : '), findsOneWidget);
-    expect(find.textContaining('Equipe preneuse : '), findsOneWidget);
-    expect(
-      find.textContaining(RegExp('Contrat (reussi|chute)')),
-      findsOneWidget,
-    );
-    expect(find.textContaining('Score Votre equipe : '), findsOneWidget);
-    expect(find.textContaining('Score Equipe adverse : '), findsOneWidget);
-    expect(
-      find.textContaining('Score partie - Votre equipe : '),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Score partie - Equipe adverse : '),
-      findsOneWidget,
-    );
-    expect(find.text('Nouvelle manche'), findsOneWidget);
-
-    await tester.ensureVisible(find.text('Nouvelle manche'));
-    await tester.tap(find.text('Nouvelle manche'));
-    await tester.pump();
-
-    expect(find.text('Atout : a choisir'), findsOneWidget);
-    expect(find.byType(Chip), findsNWidgets(5));
-    expect(
-      find.textContaining('Score partie - Votre equipe : '),
-      findsOneWidget,
-    );
+    expect(find.text('Nouvelle manche'), findsNothing);
   });
 
   testWidgets('passes on the turned trump card and can redeal', (

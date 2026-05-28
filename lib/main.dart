@@ -259,7 +259,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   if (gameState.isGameComplete) ...[
                     const SizedBox(height: 12),
-                    const Text('Partie terminee.'),
+                    Text(
+                      gameState.winningTeam == null
+                          ? 'Partie terminee. Egalite.'
+                          : 'Partie terminee. Vainqueur : '
+                                '${gameState.winningTeam!.label}',
+                    ),
                   ] else ...[
                     const SizedBox(height: 12),
                     OutlinedButton(

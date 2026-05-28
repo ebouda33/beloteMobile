@@ -35,6 +35,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   chute a 162 points pour la defense et capot a 252 points.
 - Score de partie cumule entre les manches, affichage du score courant,
   nouvelle manche apres score et detection du score cible de 501 points.
+- Affichage du vainqueur de partie quand le score cible est atteint, avec
+  fermeture du flux de nouvelle manche.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
 
@@ -73,5 +75,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : ajouter l'affichage clair du vainqueur de partie
-et affiner le flux de fin de partie avant d'ajouter belote/rebelote.
+Prochaine etape recommandee : preparer l'ajout de belote/rebelote, puis
+affiner les actions disponibles en fin de partie si besoin.

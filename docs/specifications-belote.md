@@ -53,6 +53,8 @@ Premier niveau valide :
   chute attribuant 162 points a la defense et capot a 252 points ;
 - score de partie cumule entre les manches, nouvelle manche apres score et
   detection du score cible de 501 points ajoutes ;
+- affichage du vainqueur de partie quand 501 points est atteint, avec
+  fermeture du flux de nouvelle manche ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -76,15 +78,16 @@ avec le bonus de 10 points du dernier pli. Le score applique de la manche tient
 compte de l'equipe preneuse : si elle atteint au moins 82 points, les points de
 cartes sont conserves ; en cas de chute, la defense marque 162 points ; en cas
 de capot, l'equipe qui gagne les 8 plis marque 252 points. Le score applique de
-chaque manche est maintenant ajoute au score de partie. Une nouvelle manche peut
-etre lancee apres le score tant qu'aucune equipe n'a atteint 501 points.
+chaque manche est maintenant ajoute au score de partie. Une nouvelle manche
+peut etre lancee apres le score tant qu'aucune equipe n'a atteint 501 points.
+Quand une equipe atteint 501 points, l'interface affiche clairement le
+vainqueur de partie et n'expose plus l'action de nouvelle manche.
 
 Prochaine reprise :
 
-1. afficher clairement l'equipe gagnante quand 501 points sont atteints ;
-2. affiner les actions disponibles en fin de partie ;
-3. preparer l'ajout de belote/rebelote ;
-4. ajouter des tests de score de partie avec plusieurs manches.
+1. affiner les actions disponibles en fin de partie ;
+2. preparer l'ajout de belote/rebelote ;
+3. ajouter des tests de score de partie avec plusieurs manches.
 
 ## Principes de conception
 

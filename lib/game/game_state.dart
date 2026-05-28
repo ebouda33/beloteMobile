@@ -83,6 +83,28 @@ class GameState {
     return gameScore.values.any((score) => score >= targetScore);
   }
 
+  Team? get winningTeam {
+    if (!isGameComplete) {
+      return null;
+    }
+
+    final humanScore = gameScore[Team.humanTeam] ?? 0;
+    final opponentScore = gameScore[Team.opponentTeam] ?? 0;
+    if (humanScore == opponentScore) {
+      final humanRoundScore = roundScore[Team.humanTeam] ?? 0;
+      final opponentRoundScore = roundScore[Team.opponentTeam] ?? 0;
+      if (humanRoundScore == opponentRoundScore) {
+        return Team.humanTeam;
+      }
+
+      return humanRoundScore > opponentRoundScore
+          ? Team.humanTeam
+          : Team.opponentTeam;
+    }
+
+    return humanScore > opponentScore ? Team.humanTeam : Team.opponentTeam;
+  }
+
   Map<Team, int> get roundPoints {
     final trump = trumpSuit;
     if (trump == null) {
