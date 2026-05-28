@@ -41,6 +41,8 @@ Premier niveau valide :
 - cas ou tous les joueurs passent gere avec une action de redistribution ;
 - debut de pli ajoute avec joueur courant, cartes jouables pour le joueur humain
   et affichage de la carte posee dans le pli en cours ;
+- tapis de jeu central ajoute avec vraies cartes visibles, mains adverses cachees
+  et carte retournee affichee au centre pendant le choix de l'atout ;
 - jeu automatique des adversaires ajoute pour completer le pli courant ;
 - gagnant du pli determine selon l'atout et la couleur demandee, puis defini
   comme prochain joueur courant ;
@@ -91,6 +93,11 @@ de nouvelle manche.
 Le bonus belote/rebelote est calcule automatiquement quand la meme equipe joue
 le roi et la dame d'atout, puis il est ajoute au score de manche et affiche
 dans le recapitulatif.
+
+La presentation visuelle du tapis repose desormais sur de vraies cartes :
+la main humaine reste visible et cliquable, les mains adverses sont montrees
+dos caches, et la carte retournee est placee au centre du tapis pendant la
+phase de choix de l'atout.
 
 Prochaine reprise :
 
