@@ -16,8 +16,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Debut d'etat de partie local : les quatre mains initiales sont conservees, le
   joueur humain est identifie et la carte retournee propose l'atout.
 - Encheres simples sur la carte retournee : le joueur peut prendre ou passer.
-- Quand l'atout est pris, les mains sont completees a 8 cartes, le preneur est
-  conserve et affiche.
+- Quand l'atout est pris, les mains sont completees a 8 cartes, triees par
+  couleur puis par force dans la couleur, le preneur est conserve et affiche.
 - Quand tous les joueurs passent, l'interface propose de redistribuer.
 - Debut de pli jouable : apres la prise d'atout, le joueur courant est affiche,
   les cartes jouables du joueur humain sont cliquables et la carte posee apparait

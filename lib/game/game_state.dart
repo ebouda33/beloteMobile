@@ -292,13 +292,18 @@ class GameState {
       throw StateError('A player who passed cannot take this trump card.');
     }
 
+    final trumpSuit = turnedCard.suit;
+
     return GameState(
-      hands: _completeHandsAfterTrumpTaken(taker),
+      hands: _sortHandsForTrump(
+        _completeHandsAfterTrumpTaken(taker),
+        trumpSuit,
+      ),
       turnedCard: turnedCard,
       remainingDeck: const [],
       humanSeat: humanSeat,
       phase: GamePhase.playingTrick,
-      trumpSuit: turnedCard.suit,
+      trumpSuit: trumpSuit,
       trumpTaker: taker,
       passedSeats: passedSeats,
       currentPlayer: humanSeat,
@@ -494,6 +499,32 @@ class GameState {
 
     return completedHands;
   }
+
+  Map<PlayerSeat, List<BeloteCard>> _sortHandsForTrump(
+    Map<PlayerSeat, List<BeloteCard>> hands,
+    Suit trumpSuit,
+  ) {
+    return {
+      for (final seat in PlayerSeat.values)
+        seat: (() {
+          final sortedHand = [...(hands[seat] ?? const <BeloteCard>[])];
+          sortedHand.sort((first, second) {
+            final suitComparison = _suitOrder(
+              first.suit,
+              trumpSuit,
+            ).compareTo(_suitOrder(second.suit, trumpSuit));
+            if (suitComparison != 0) {
+              return suitComparison;
+            }
+
+            return second
+                .strength(trumpSuit: trumpSuit)
+                .compareTo(first.strength(trumpSuit: trumpSuit));
+          });
+          return sortedHand;
+        })(),
+    };
+  }
 }
 
 PlayerSeat _nextSeatAfter(PlayerSeat seat) {
@@ -523,6 +554,14 @@ Team _opponentOf(Team team) {
     Team.humanTeam => Team.opponentTeam,
     Team.opponentTeam => Team.humanTeam,
   };
+}
+
+int _suitOrder(Suit suit, Suit trumpSuit) {
+  if (suit == trumpSuit) {
+    return 0;
+  }
+
+  return 1 + Suit.values.indexOf(suit);
 }
 
 Map<Team, int> _roundScoreFor({

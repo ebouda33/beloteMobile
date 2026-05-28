@@ -36,7 +36,8 @@ Premier niveau valide :
   le joueur humain et la phase de choix de l'atout ;
 - refus de la carte retournee ajoute ;
 - prise de la carte retournee ajoutee avec distribution complete a 8 cartes par
-  joueur, conservation du preneur et affichage de l'atout ;
+  joueur, tri des mains avant le premier pli, conservation du preneur et
+  affichage de l'atout ;
 - cas ou tous les joueurs passent gere avec une action de redistribution ;
 - debut de pli ajoute avec joueur courant, cartes jouables pour le joueur humain
   et affichage de la carte posee dans le pli en cours ;
@@ -70,7 +71,9 @@ devient le premier joueur courant de la phase de pli. Ses cartes sont jouables
 dans l'interface, la carte posee est retiree de sa main, ajoutee au pli en cours
 et le tour avance au joueur suivant. Les adversaires peuvent ensuite jouer
 automatiquement pour completer le pli courant. Le dernier pli complete reste
-visible dans l'interface avec son gagnant. La liste des cartes jouables limite
+ visible dans l'interface avec son gagnant. La main du joueur humain est triee
+ au moment de la prise, avant le premier pli, par couleur puis par force dans la
+ couleur. La liste des cartes jouables limite
 maintenant les actions invalides : suivre la couleur demandee si possible,
 couper quand il faut, pouvoir defausser si le partenaire est maitre du pli et
 monter a l'atout quand une carte plus forte est disponible. La manche peut

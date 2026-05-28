@@ -56,6 +56,70 @@ void main() {
       },
     );
 
+    test('sorts the hands when trump is taken before the first trick', () {
+      const turnedCard = BeloteCard(suit: Suit.hearts, rank: Rank.queen);
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [
+            BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+            BeloteCard(suit: Suit.hearts, rank: Rank.king),
+            BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+            BeloteCard(suit: Suit.spades, rank: Rank.nine),
+          ],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+            BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+            BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+          ],
+          PlayerSeat.partner: [
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.nine),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.jack),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.queen),
+          ],
+          PlayerSeat.rightOpponent: [
+            BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            BeloteCard(suit: Suit.spades, rank: Rank.eight),
+            BeloteCard(suit: Suit.spades, rank: Rank.ten),
+            BeloteCard(suit: Suit.spades, rank: Rank.jack),
+            BeloteCard(suit: Suit.spades, rank: Rank.queen),
+          ],
+        },
+        turnedCard: turnedCard,
+        remainingDeck: const [
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+          BeloteCard(suit: Suit.spades, rank: Rank.ace),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.king),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          BeloteCard(suit: Suit.clubs, rank: Rank.king),
+          BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+          BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          BeloteCard(suit: Suit.spades, rank: Rank.king),
+          BeloteCard(suit: Suit.spades, rank: Rank.seven),
+          BeloteCard(suit: Suit.hearts, rank: Rank.eight),
+          BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+        ],
+        phase: GamePhase.choosingTrump,
+      );
+
+      final updatedState = gameState.chooseTrump();
+
+      expect(updatedState.humanHand, const [
+        BeloteCard(suit: Suit.hearts, rank: Rank.king),
+        BeloteCard(suit: Suit.hearts, rank: Rank.queen),
+        BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+        BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+        BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+        BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+        BeloteCard(suit: Suit.spades, rank: Rank.ace),
+        BeloteCard(suit: Suit.spades, rank: Rank.nine),
+      ]);
+    });
+
     test('can select trump for another player after earlier passes', () {
       final gameState = createInitialGameState(
         random: Random(1),
@@ -472,8 +536,11 @@ void main() {
 
     test('only exposes playable cards for the current player', () {
       final gameState = createInitialGameState(random: Random(1)).chooseTrump();
-      final requestedSuit = gameState.humanHand.first.suit;
-      final updatedState = gameState.playCard(gameState.humanHand.first);
+      final leadCard = gameState.humanHand.firstWhere(
+        (card) => card.suit != gameState.trumpSuit,
+      );
+      final requestedSuit = leadCard.suit;
+      final updatedState = gameState.playCard(leadCard);
       final leftOpponentHand = updatedState.hands[PlayerSeat.leftOpponent]!;
       final expectedLeftOpponentPlayableCards = leftOpponentHand
           .where((card) => card.suit == requestedSuit)
