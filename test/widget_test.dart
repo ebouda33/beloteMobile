@@ -44,10 +44,16 @@ void main() {
     );
     expect(find.text('Atout : a choisir'), findsOneWidget);
     expect(find.textContaining('Carte retournee : '), findsOneWidget);
+    expect(find.textContaining('Prendre '), findsNothing);
+    expect(find.text('Passer'), findsNothing);
+
+    await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
+
+    expect(find.text('Votre choix'), findsOneWidget);
     expect(find.textContaining('Prendre '), findsOneWidget);
     expect(find.text('Passer'), findsOneWidget);
 
-    await tapVisible(tester, find.textContaining('Prendre '));
+    await tapVisible(tester, find.text('Prendre'));
 
     expect(find.text('Atout : a choisir'), findsNothing);
     expect(find.text('Preneur : Vous'), findsOneWidget);
@@ -63,6 +69,9 @@ void main() {
     await tester.pumpWidget(const BeloteApp());
 
     await tapVisible(tester, find.text('Nouvelle partie'));
+    await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
+
+    expect(find.text('Votre choix'), findsOneWidget);
     await tapVisible(tester, find.text('Passer'));
 
     expect(find.text('Atout : a choisir'), findsOneWidget);
@@ -77,7 +86,7 @@ void main() {
     await tapVisible(tester, find.text('Redistribuer'));
 
     expect(humanCards(), findsNWidgets(5));
-    expect(find.textContaining('Prendre '), findsOneWidget);
-    expect(find.text('Passer'), findsOneWidget);
+    expect(find.textContaining('Prendre '), findsNothing);
+    expect(find.text('Passer'), findsNothing);
   });
 }

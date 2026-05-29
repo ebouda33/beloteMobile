@@ -8,10 +8,12 @@ class GameBoardView extends StatelessWidget {
     super.key,
     required this.gameState,
     required this.onCardTap,
+    required this.onTurnedCardTap,
   });
 
   final GameState gameState;
   final ValueChanged<BeloteCard> onCardTap;
+  final VoidCallback onTurnedCardTap;
 
   static const Color _forestDeep = Color(0xFF182A23);
   static const Color _forest = Color(0xFF243C32);
@@ -80,59 +82,92 @@ class GameBoardView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _SeatHand(
-            key: const ValueKey('partner-hand'),
-            title: PlayerSeat.partner.label,
-            count: gameState.hands[PlayerSeat.partner]?.length ?? 0,
-            cards: gameState.hands[PlayerSeat.partner] ?? const [],
-            faceDown: true,
-            orientation: Axis.horizontal,
-            active: gameState.currentPlayer == PlayerSeat.partner,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _SeatHand(
-                  key: const ValueKey('left-opponent-hand'),
-                  title: PlayerSeat.leftOpponent.label,
-                  count: gameState.hands[PlayerSeat.leftOpponent]?.length ?? 0,
-                  cards: gameState.hands[PlayerSeat.leftOpponent] ?? const [],
-                  faceDown: true,
-                  orientation: Axis.vertical,
-                  compact: true,
-                  active: gameState.currentPlayer == PlayerSeat.leftOpponent,
-                ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF2A4638), Color(0xFF1A2E25)],
               ),
-              const SizedBox(width: 12),
-              Expanded(flex: 2, child: _TrickArea(gameState: gameState)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _SeatHand(
-                  key: const ValueKey('right-opponent-hand'),
-                  title: PlayerSeat.rightOpponent.label,
-                  count: gameState.hands[PlayerSeat.rightOpponent]?.length ?? 0,
-                  cards: gameState.hands[PlayerSeat.rightOpponent] ?? const [],
+              border: Border.all(color: _brass.withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              children: [
+                _SeatHand(
+                  key: const ValueKey('partner-hand'),
+                  title: PlayerSeat.partner.label,
+                  count: gameState.hands[PlayerSeat.partner]?.length ?? 0,
+                  cards: gameState.hands[PlayerSeat.partner] ?? const [],
                   faceDown: true,
-                  orientation: Axis.vertical,
-                  compact: true,
-                  active: gameState.currentPlayer == PlayerSeat.rightOpponent,
+                  orientation: Axis.horizontal,
+                  active: gameState.currentPlayer == PlayerSeat.partner,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _SeatHand(
-            key: const ValueKey('human-hand'),
-            title: PlayerSeat.human.label,
-            count: gameState.humanHand.length,
-            cards: gameState.humanHand,
-            faceDown: false,
-            orientation: Axis.horizontal,
-            active: gameState.currentPlayer == gameState.humanSeat,
-            playableCards: playableCards.toSet(),
-            onCardTap: onCardTap,
+                const SizedBox(height: 14),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _SeatHand(
+                        key: const ValueKey('left-opponent-hand'),
+                        title: PlayerSeat.leftOpponent.label,
+                        count:
+                            gameState.hands[PlayerSeat.leftOpponent]?.length ??
+                            0,
+                        cards:
+                            gameState.hands[PlayerSeat.leftOpponent] ??
+                            const [],
+                        faceDown: true,
+                        orientation: Axis.vertical,
+                        compact: true,
+                        active:
+                            gameState.currentPlayer == PlayerSeat.leftOpponent,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: _TrickArea(
+                        gameState: gameState,
+                        onTurnedCardTap: onTurnedCardTap,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _SeatHand(
+                        key: const ValueKey('right-opponent-hand'),
+                        title: PlayerSeat.rightOpponent.label,
+                        count:
+                            gameState.hands[PlayerSeat.rightOpponent]?.length ??
+                            0,
+                        cards:
+                            gameState.hands[PlayerSeat.rightOpponent] ??
+                            const [],
+                        faceDown: true,
+                        orientation: Axis.vertical,
+                        compact: true,
+                        active:
+                            gameState.currentPlayer == PlayerSeat.rightOpponent,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _SeatHand(
+                  key: const ValueKey('human-hand'),
+                  title: PlayerSeat.human.label,
+                  count: gameState.humanHand.length,
+                  cards: gameState.humanHand,
+                  faceDown: false,
+                  orientation: Axis.horizontal,
+                  active: gameState.currentPlayer == gameState.humanSeat,
+                  playableCards: playableCards.toSet(),
+                  onCardTap: onCardTap,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -166,19 +201,23 @@ class _SeatHand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visibleCards = cards
-        .map(
-          (card) => PlayingCardView(
-            card: card,
-            faceDown: faceDown,
-            compact: compact,
-            playable: playableCards.contains(card),
-            onTap: onCardTap == null || faceDown
-                ? null
-                : () => onCardTap!(card),
-          ),
-        )
-        .toList();
+    final visibleCards = List.generate(cards.length, (index) {
+      final card = cards[index];
+      final baseCard = PlayingCardView(
+        card: card,
+        faceDown: faceDown,
+        compact: compact,
+        playable: playableCards.contains(card),
+        onTap: onCardTap == null || faceDown ? null : () => onCardTap!(card),
+      );
+
+      if (faceDown) {
+        final spread = (index - (cards.length - 1) / 2) * 0.03;
+        return Transform.rotate(angle: spread, child: baseCard);
+      }
+
+      return baseCard;
+    });
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -234,9 +273,10 @@ class _SeatHand extends StatelessWidget {
 }
 
 class _TrickArea extends StatelessWidget {
-  const _TrickArea({required this.gameState});
+  const _TrickArea({required this.gameState, required this.onTurnedCardTap});
 
   final GameState gameState;
+  final VoidCallback onTurnedCardTap;
 
   @override
   Widget build(BuildContext context) {
@@ -288,46 +328,61 @@ class _TrickArea extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Expanded(
-              child: Center(
-                child: showTurnedCard
-                    ? PlayingCardView(
-                        key: const ValueKey('turned-card'),
-                        card: gameState.turnedCard,
-                      )
-                    : playedCards.isEmpty
-                    ? const Text(
-                        'Le centre du tapis s anime ici.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFFD8CCB7),
-                          fontSize: 14,
-                        ),
-                      )
-                    : Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          for (final playedCard in playedCards)
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                PlayingCardView(
-                                  card: playedCard.card,
-                                  compact: true,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  playedCard.player.label,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFFD8CCB7),
-                                  ),
-                                ),
-                              ],
-                            ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFF0D9A9).withValues(alpha: 0.15),
+                          const Color(0xFFF0D9A9).withValues(alpha: 0.0),
                         ],
                       ),
+                    ),
+                  ),
+                  if (showTurnedCard)
+                    InkWell(
+                      onTap: onTurnedCardTap,
+                      borderRadius: BorderRadius.circular(12),
+                      child: PlayingCardView(
+                        key: const ValueKey('turned-card'),
+                        card: gameState.turnedCard,
+                      ),
+                    )
+                  else if (playedCards.isEmpty)
+                    const Text(
+                      'Le centre du tapis s anime ici.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFFD8CCB7), fontSize: 14),
+                    )
+                  else ...[
+                    for (final playedCard in playedCards)
+                      Align(
+                        alignment: _alignmentForSeat(playedCard.player),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PlayingCardView(
+                              card: playedCard.card,
+                              compact: true,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              playedCard.player.label,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFD8CCB7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -612,5 +667,14 @@ String _suitGlyph(Suit suit) {
     Suit.diamonds => '♦',
     Suit.hearts => '♥',
     Suit.spades => '♠',
+  };
+}
+
+Alignment _alignmentForSeat(PlayerSeat seat) {
+  return switch (seat) {
+    PlayerSeat.human => Alignment.bottomCenter,
+    PlayerSeat.leftOpponent => Alignment.centerLeft,
+    PlayerSeat.partner => Alignment.topCenter,
+    PlayerSeat.rightOpponent => Alignment.centerRight,
   };
 }

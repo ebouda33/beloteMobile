@@ -43,6 +43,8 @@ Premier niveau valide :
   et affichage de la carte posee dans le pli en cours ;
 - tapis de jeu central ajoute avec vraies cartes visibles, mains adverses cachees
   et carte retournee affichee au centre pendant le choix de l'atout ;
+- clic sur la carte retournee ajoute pour ouvrir une confirmation `Votre choix`
+  avec les actions `Prendre` et `Passer` ;
 - jeu automatique des adversaires ajoute pour completer le pli courant ;
 - gagnant du pli determine selon l'atout et la couleur demandee, puis defini
   comme prochain joueur courant ;
@@ -97,7 +99,8 @@ dans le recapitulatif.
 La presentation visuelle du tapis repose desormais sur de vraies cartes :
 la main humaine reste visible et cliquable, les mains adverses sont montrees
 dos caches, et la carte retournee est placee au centre du tapis pendant la
-phase de choix de l'atout.
+phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
+`Votre choix` avec deux actions explicites: `Prendre` et `Passer`.
 
 Prochaine reprise :
 

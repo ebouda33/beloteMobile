@@ -170,6 +170,48 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _showTrumpChoiceDialog() async {
+    final gameState = _gameState;
+    if (gameState == null) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Votre choix'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Prendre ${gameState.turnedCard.suit.label} ?'),
+              const SizedBox(height: 14),
+              Center(child: PlayingCardView(card: gameState.turnedCard)),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _passTrump();
+              },
+              child: const Text('Passer'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _chooseTrump();
+              },
+              child: const Text('Prendre'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _playCard(BeloteCard card) {
     final gameState = _gameState;
     if (gameState == null) {
@@ -324,7 +366,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     if (_gameState case final gameState?) ...[
                       const SizedBox(height: 20),
-                      GameBoardView(gameState: gameState, onCardTap: _playCard),
+                      GameBoardView(
+                        gameState: gameState,
+                        onCardTap: _playCard,
+                        onTurnedCardTap: _showTrumpChoiceDialog,
+                      ),
                       const SizedBox(height: 20),
                       Wrap(
                         spacing: 12,
@@ -505,30 +551,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (gameState.phase == GamePhase.choosingTrump) ...[
                         const SizedBox(height: 20),
                         _surfacePanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _sectionTitle('Atout'),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  OutlinedButton.icon(
-                                    onPressed: _chooseTrump,
-                                    icon: const Icon(Icons.casino_outlined),
-                                    label: Text(
-                                      'Prendre ${gameState.turnedCard.suit.label}',
-                                    ),
-                                  ),
-                                  TextButton.icon(
-                                    onPressed: _passTrump,
-                                    icon: const Icon(Icons.close),
-                                    label: const Text('Passer'),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: const Text(
+                            'Cliquez la carte retournee pour choisir votre atout.',
                           ),
                         ),
                       ],

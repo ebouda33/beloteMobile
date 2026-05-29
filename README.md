@@ -22,6 +22,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Debut de pli jouable : apres la prise d'atout, le joueur courant est affiche,
   les cartes jouables du joueur humain sont cliquables et la carte posee apparait
   dans le pli en cours.
+- La carte retournee se clique pour ouvrir une confirmation `Votre choix` avec
+  les actions `Prendre` et `Passer`.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.
