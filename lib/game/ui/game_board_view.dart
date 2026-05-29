@@ -9,11 +9,13 @@ class GameBoardView extends StatelessWidget {
     required this.gameState,
     required this.onCardTap,
     required this.onTurnedCardTap,
+    required this.showOpponentCards,
   });
 
   final GameState gameState;
   final ValueChanged<BeloteCard> onCardTap;
   final VoidCallback onTurnedCardTap;
+  final bool showOpponentCards;
 
   static const Color _forestDeep = Color(0xFF182A23);
   static const Color _forest = Color(0xFF243C32);
@@ -55,7 +57,7 @@ class GameBoardView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -68,8 +70,13 @@ class GameBoardView extends StatelessWidget {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Les cartes adverses restent cachees.',
-                    style: TextStyle(fontSize: 13, color: Color(0xFFD8CCB7)),
+                    showOpponentCards
+                        ? 'Les cartes adverses sont visibles.'
+                        : 'Les cartes adverses restent cachees.',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFFD8CCB7),
+                    ),
                   ),
                 ],
               ),
@@ -101,7 +108,7 @@ class GameBoardView extends StatelessWidget {
                   title: PlayerSeat.partner.label,
                   count: gameState.hands[PlayerSeat.partner]?.length ?? 0,
                   cards: gameState.hands[PlayerSeat.partner] ?? const [],
-                  faceDown: true,
+                  faceDown: !showOpponentCards,
                   orientation: Axis.horizontal,
                   active: gameState.currentPlayer == PlayerSeat.partner,
                 ),
@@ -119,7 +126,7 @@ class GameBoardView extends StatelessWidget {
                         cards:
                             gameState.hands[PlayerSeat.leftOpponent] ??
                             const [],
-                        faceDown: true,
+                        faceDown: !showOpponentCards,
                         orientation: Axis.vertical,
                         compact: true,
                         active:
@@ -145,7 +152,7 @@ class GameBoardView extends StatelessWidget {
                         cards:
                             gameState.hands[PlayerSeat.rightOpponent] ??
                             const [],
-                        faceDown: true,
+                        faceDown: !showOpponentCards,
                         orientation: Axis.vertical,
                         compact: true,
                         active:
@@ -206,7 +213,7 @@ class _SeatHand extends StatelessWidget {
       final baseCard = PlayingCardView(
         card: card,
         faceDown: faceDown,
-        compact: compact,
+        compact: compact || (!faceDown && onCardTap == null),
         playable: playableCards.contains(card),
         onTap: onCardTap == null || faceDown ? null : () => onCardTap!(card),
       );
@@ -257,7 +264,9 @@ class _SeatHand extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            if (!faceDown && orientation == Axis.horizontal)
+            if (!faceDown && onCardTap == null)
+              Wrap(spacing: 6, runSpacing: 6, children: visibleCards)
+            else if (!faceDown && orientation == Axis.horizontal)
               Wrap(spacing: 8, runSpacing: 8, children: visibleCards)
             else
               _CardStack(
@@ -500,7 +509,7 @@ class PlayingCardView extends StatelessWidget {
           ),
           child: faceDown
               ? _CardBack()
-              : _CardFace(card: card, playable: playable),
+              : _CardFace(card: card, playable: playable, compact: compact),
         ),
       ),
     );
@@ -508,10 +517,15 @@ class PlayingCardView extends StatelessWidget {
 }
 
 class _CardFace extends StatelessWidget {
-  const _CardFace({required this.card, required this.playable});
+  const _CardFace({
+    required this.card,
+    required this.playable,
+    required this.compact,
+  });
 
   final BeloteCard card;
   final bool playable;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -528,29 +542,10 @@ class _CardFace extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
-            top: 2,
-            left: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  card.rank.label,
-                  style: TextStyle(fontSize: playable ? 11 : 12, height: 1),
-                ),
-                Text(
-                  _suitGlyph(card.suit),
-                  style: TextStyle(fontSize: playable ? 10 : 11, height: 1),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 2,
-            right: 2,
-            child: RotatedBox(
-              quarterTurns: 2,
+          if (!compact) ...[
+            Positioned(
+              top: 2,
+              left: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -566,12 +561,53 @@ class _CardFace extends StatelessWidget {
                 ],
               ),
             ),
-          ),
+            Positioned(
+              bottom: 2,
+              right: 2,
+              child: RotatedBox(
+                quarterTurns: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      card.rank.label,
+                      style: TextStyle(fontSize: playable ? 11 : 12, height: 1),
+                    ),
+                    Text(
+                      _suitGlyph(card.suit),
+                      style: TextStyle(fontSize: playable ? 10 : 11, height: 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            Positioned(
+              top: 2,
+              left: 2,
+              child: Text(
+                card.rank.label,
+                style: TextStyle(fontSize: playable ? 11 : 12, height: 1),
+              ),
+            ),
+            Positioned(
+              bottom: 2,
+              right: 2,
+              child: RotatedBox(
+                quarterTurns: 2,
+                child: Text(
+                  card.rank.label,
+                  style: TextStyle(fontSize: playable ? 11 : 12, height: 1),
+                ),
+              ),
+            ),
+          ],
           Center(
             child: Text(
               _suitGlyph(card.suit),
               style: TextStyle(
-                fontSize: playable ? 20 : 24,
+                fontSize: compact ? 18 : (playable ? 20 : 24),
                 color: suitColor.withValues(alpha: 0.9),
               ),
             ),

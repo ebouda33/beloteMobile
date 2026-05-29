@@ -9,6 +9,8 @@ enum PlayerSeat { human, leftOpponent, partner, rightOpponent }
 
 enum Team { humanTeam, opponentTeam }
 
+enum AiLevel { debutant, expert }
+
 extension PlayerSeatLabel on PlayerSeat {
   String get label {
     return switch (this) {
@@ -50,6 +52,7 @@ class GameState {
     required this.turnedCard,
     required this.remainingDeck,
     this.humanSeat = PlayerSeat.human,
+    this.aiLevel = AiLevel.debutant,
     this.phase = GamePhase.choosingTrump,
     this.biddingRound = 1,
     this.biddingStarterSeat = PlayerSeat.human,
@@ -71,6 +74,7 @@ class GameState {
   final BeloteCard turnedCard;
   final List<BeloteCard> remainingDeck;
   final PlayerSeat humanSeat;
+  final AiLevel aiLevel;
   final GamePhase phase;
   final int biddingRound;
   final PlayerSeat biddingStarterSeat;
@@ -269,6 +273,7 @@ class GameState {
           turnedCard: turnedCard,
           remainingDeck: remainingDeck,
           humanSeat: humanSeat,
+          aiLevel: aiLevel,
           phase: GamePhase.choosingTrump,
           biddingRound: 2,
           biddingStarterSeat: biddingStarterSeat,
@@ -291,6 +296,7 @@ class GameState {
         gameScore: gameScore,
         humanSeat: humanSeat,
         biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
+        aiLevel: aiLevel,
       );
     }
 
@@ -299,6 +305,7 @@ class GameState {
       turnedCard: turnedCard,
       remainingDeck: remainingDeck,
       humanSeat: humanSeat,
+      aiLevel: aiLevel,
       phase: GamePhase.waitingForTrumpTaker,
       biddingRound: biddingRound,
       biddingStarterSeat: biddingStarterSeat,
@@ -318,44 +325,35 @@ class GameState {
   }
 
   GameState passRemainingPlayers() {
+    return resolveAutomaticTrumpTurns();
+  }
+
+  GameState resolveAutomaticTrumpTurns() {
     var updatedState = this;
     var guard = 0;
+
     while (updatedState.phase == GamePhase.choosingTrump ||
         updatedState.phase == GamePhase.waitingForTrumpTaker) {
       final currentPlayer = updatedState.currentPlayer;
       if (currentPlayer == null || currentPlayer == updatedState.humanSeat) {
         break;
       }
-      updatedState = updatedState.passTrump(seat: currentPlayer);
+
+      final automaticTrumpSuit = _automaticTrumpSuitFor(
+        updatedState,
+        currentPlayer,
+      );
+      updatedState = automaticTrumpSuit == null
+          ? updatedState.passTrump(seat: currentPlayer)
+          : updatedState.chooseTrump(
+              taker: currentPlayer,
+              trumpSuit: automaticTrumpSuit,
+            );
+
       guard += 1;
       if (guard >= PlayerSeat.values.length * 4) {
         break;
       }
-    }
-
-    if (updatedState.phase == GamePhase.waitingForTrumpTaker &&
-        updatedState.currentPlayer == updatedState.humanSeat) {
-      return GameState(
-        hands: updatedState.hands,
-        turnedCard: updatedState.turnedCard,
-        remainingDeck: updatedState.remainingDeck,
-        humanSeat: updatedState.humanSeat,
-        phase: GamePhase.choosingTrump,
-        biddingRound: updatedState.biddingRound,
-        biddingStarterSeat: updatedState.biddingStarterSeat,
-        trumpSuit: updatedState.trumpSuit,
-        trumpTaker: updatedState.trumpTaker,
-        passedSeats: updatedState.passedSeats,
-        currentPlayer: updatedState.currentPlayer,
-        currentTrick: updatedState.currentTrick,
-        lastCompletedTrick: updatedState.lastCompletedTrick,
-        lastTrickWinner: updatedState.lastTrickWinner,
-        wonTricks: updatedState.wonTricks,
-        roundBonusPoints: updatedState.roundBonusPoints,
-        beloteTeam: updatedState.beloteTeam,
-        beloteRanksPlayed: updatedState.beloteRanksPlayed,
-        gameScore: updatedState.gameScore,
-      );
     }
 
     return updatedState;
@@ -393,13 +391,14 @@ class GameState {
       turnedCard: turnedCard,
       remainingDeck: const [],
       humanSeat: humanSeat,
+      aiLevel: aiLevel,
       phase: GamePhase.playingTrick,
       biddingRound: biddingRound,
       biddingStarterSeat: biddingStarterSeat,
       trumpSuit: selectedTrumpSuit,
       trumpTaker: taker,
       passedSeats: passedSeats,
-      currentPlayer: humanSeat,
+      currentPlayer: taker,
       wonTricks: wonTricks,
       roundBonusPoints: roundBonusPoints,
       beloteTeam: beloteTeam,
@@ -424,6 +423,7 @@ class GameState {
       gameScore: gameScore,
       humanSeat: humanSeat,
       biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
+      aiLevel: aiLevel,
     );
   }
 
@@ -530,6 +530,7 @@ class GameState {
       turnedCard: turnedCard,
       remainingDeck: remainingDeck,
       humanSeat: humanSeat,
+      aiLevel: aiLevel,
       phase: nextPhase,
       biddingRound: biddingRound,
       biddingStarterSeat: biddingStarterSeat,
@@ -821,6 +822,7 @@ GameState _createRoundGameState({
   Map<Team, int> gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   PlayerSeat humanSeat = PlayerSeat.human,
   PlayerSeat biddingStarterSeat = PlayerSeat.human,
+  AiLevel aiLevel = AiLevel.debutant,
 }) {
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
@@ -834,9 +836,71 @@ GameState _createRoundGameState({
     turnedCard: initialDeal.turnedCard,
     remainingDeck: initialDeal.remainingDeck,
     humanSeat: humanSeat,
+    aiLevel: aiLevel,
     biddingRound: 1,
     biddingStarterSeat: biddingStarterSeat,
     currentPlayer: biddingStarterSeat,
     gameScore: gameScore,
   );
+}
+
+Suit? _automaticTrumpSuitFor(GameState gameState, PlayerSeat seat) {
+  switch (gameState.aiLevel) {
+    case AiLevel.debutant:
+      return _debutantTrumpSuitFor(gameState, seat);
+    case AiLevel.expert:
+      return _debutantTrumpSuitFor(gameState, seat);
+  }
+}
+
+Suit? _debutantTrumpSuitFor(GameState gameState, PlayerSeat seat) {
+  final availableSuits = gameState.availableTrumpSuits;
+  if (availableSuits.isEmpty) {
+    return null;
+  }
+
+  final prospectiveHand = [
+    ...(gameState.hands[seat] ?? const <BeloteCard>[]),
+    gameState.turnedCard,
+  ];
+
+  final rankedSuitScores = [
+    for (final suit in availableSuits)
+      MapEntry(suit, _debutantTrumpSuitScore(prospectiveHand, suit)),
+  ]..sort((first, second) => second.value.compareTo(first.value));
+
+  final bestScore = rankedSuitScores.first.value;
+  final takeThreshold = gameState.biddingRound == 1 ? 24 : 17;
+  if (bestScore < takeThreshold) {
+    return null;
+  }
+
+  return rankedSuitScores.first.key;
+}
+
+int _debutantTrumpSuitScore(List<BeloteCard> hand, Suit trumpSuit) {
+  var score = 0;
+  var trumpCardCount = 0;
+  var hasJack = false;
+  var hasNine = false;
+
+  for (final card in hand.where((card) => card.suit == trumpSuit)) {
+    trumpCardCount += 1;
+    score += card.strength(trumpSuit: trumpSuit);
+    hasJack = hasJack || card.rank == Rank.jack;
+    hasNine = hasNine || card.rank == Rank.nine;
+  }
+
+  score += trumpCardCount * 2;
+  if (trumpCardCount >= 4) {
+    score += 4;
+  }
+  if (hasJack) {
+    score += 4;
+  }
+  if (hasNine) {
+    score += 3;
+  }
+
+  return score;
 }

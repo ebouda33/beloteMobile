@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 import 'game/cards/belote_card.dart';
 import 'game/game_state.dart';
@@ -11,7 +12,9 @@ void main() {
 }
 
 class BeloteApp extends StatelessWidget {
-  const BeloteApp({super.key});
+  const BeloteApp({super.key, this.random});
+
+  final Random? random;
 
   @override
   Widget build(BuildContext context) {
@@ -127,13 +130,15 @@ class BeloteApp extends StatelessWidget {
           side: const BorderSide(color: Color(0xFFD1B88A)),
         ),
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(random: random),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.random});
+
+  final Random? random;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -141,10 +146,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   GameState? _gameState;
+  bool _showOpponentCards = false;
 
   void _startNewGame() {
     setState(() {
-      _gameState = createInitialGameState();
+      _gameState = createInitialGameState(
+        random: widget.random,
+      ).resolveAutomaticTrumpTurns().playAutomaticTurns();
+      _showOpponentCards = false;
     });
   }
 
@@ -155,7 +164,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.chooseTrump(trumpSuit: trumpSuit);
+      _gameState = gameState
+          .chooseTrump(trumpSuit: trumpSuit)
+          .playAutomaticTurns();
     });
   }
 
@@ -166,7 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.passTrump().passRemainingPlayers();
+      _gameState = gameState
+          .passTrump()
+          .resolveAutomaticTrumpTurns()
+          .playAutomaticTurns();
     });
   }
 
@@ -264,7 +278,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.startNextRound().passRemainingPlayers();
+      _gameState = gameState
+          .startNextRound(random: widget.random)
+          .resolveAutomaticTrumpTurns()
+          .playAutomaticTurns();
     });
   }
 
@@ -309,6 +326,24 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: forestDeep,
         title: const Text('Belote Mobile'),
         actions: [
+          IconButton(
+            tooltip: _showOpponentCards
+                ? 'Masquer les cartes des joueurs'
+                : 'Voir les cartes des joueurs',
+            onPressed: _gameState == null
+                ? null
+                : () {
+                    setState(() {
+                      _showOpponentCards = !_showOpponentCards;
+                    });
+                  },
+            icon: Icon(
+              _showOpponentCards
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+            ),
+            color: paper,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -393,6 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         gameState: gameState,
                         onCardTap: _playCard,
                         onTurnedCardTap: _showTrumpChoiceDialog,
+                        showOpponentCards: _showOpponentCards,
                       ),
                       const SizedBox(height: 20),
                       Wrap(
@@ -576,10 +612,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (gameState.phase == GamePhase.choosingTrump) ...[
                         const SizedBox(height: 20),
                         _surfacePanel(
-                          child: Text(
-                            gameState.biddingRound == 1
-                                ? 'Cliquez la carte retournee pour choisir votre atout.'
-                                : 'Premier tour passe. Choisissez une autre couleur.',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                gameState.biddingRound == 1
+                                    ? 'Cliquez la carte retournee pour choisir votre atout.'
+                                    : 'Premier tour passe. Choisissez une autre couleur.',
+                              ),
+                              if (_showOpponentCards) ...[
+                                const SizedBox(height: 8),
+                                const Text('Cartes des joueurs visibles.'),
+                              ],
+                            ],
                           ),
                         ),
                       ],

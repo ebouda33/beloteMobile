@@ -44,6 +44,9 @@ Premier niveau valide :
   et affichage de la carte posee dans le pli en cours ;
 - tapis de jeu central ajoute avec vraies cartes visibles, mains adverses cachees
   et carte retournee affichee au centre du tapis pendant le choix de l'atout ;
+- option visuelle ajoutee pour reveler ou masquer les cartes des adversaires ;
+- les cartes compactes gardent la valeur dans les coins et la couleur au centre
+  pour les cartes adverses revelees et les cartes jouees sur le tapis ;
 - clic sur la carte retournee ajoute pour ouvrir une confirmation `Votre choix`
   avec `Prendre` et `Passer` au premier tour, puis un choix des 3 couleurs
   restantes au second tour ;
@@ -104,7 +107,9 @@ la main humaine reste visible et cliquable, les mains adverses sont montrees
 dos caches, et la carte retournee est placee au centre du tapis pendant la
 phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
 `Votre choix` avec `Prendre` et `Passer` au premier tour, puis les 3 couleurs
-restantes au second tour.
+restantes au second tour. Une option visuelle permet de reveler les cartes
+des adversaires, avec un rendu compact ou la valeur reste dans les coins et la
+couleur au centre.
 
 Prochaine reprise :
 

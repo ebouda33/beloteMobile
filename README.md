@@ -31,6 +31,10 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.
+- Option visuelle ajoutee pour reveler ou masquer les cartes des adversaires
+  depuis la barre du haut.
+- Quand les cartes adverses sont revelees ou sur le tapis, leur couleur reste
+  au centre de la carte et la valeur reste dans les coins.
 - Les adversaires jouent automatiquement pour completer un pli, le gagnant est
   calcule selon l'atout et la couleur demandee, puis il devient joueur courant.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
