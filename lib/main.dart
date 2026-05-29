@@ -148,14 +148,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _chooseTrump() {
+  void _chooseTrump({Suit? trumpSuit}) {
     final gameState = _gameState;
     if (gameState == null) {
       return;
     }
 
     setState(() {
-      _gameState = gameState.chooseTrump();
+      _gameState = gameState.chooseTrump(trumpSuit: trumpSuit);
     });
   }
 
@@ -185,9 +185,31 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Prendre ${gameState.turnedCard.suit.label} ?'),
+              Text(
+                gameState.biddingRound == 1
+                    ? 'Prendre ${gameState.turnedCard.suit.label} ?'
+                    : 'Choisissez une autre couleur que '
+                          '${gameState.turnedCard.suit.label}.',
+              ),
               const SizedBox(height: 14),
               Center(child: PlayingCardView(card: gameState.turnedCard)),
+              if (gameState.biddingRound == 2) ...[
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final suit in gameState.availableTrumpSuits)
+                      FilledButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          _chooseTrump(trumpSuit: suit);
+                        },
+                        child: Text('Prendre ${suit.label}'),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -199,13 +221,14 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: const Text('Passer'),
             ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _chooseTrump();
-              },
-              child: const Text('Prendre'),
-            ),
+            if (gameState.biddingRound == 1)
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _chooseTrump();
+                },
+                child: const Text('Prendre'),
+              ),
           ],
         );
       },
@@ -241,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _gameState = gameState.startNextRound();
+      _gameState = gameState.startNextRound().passRemainingPlayers();
     });
   }
 
@@ -378,7 +401,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           _statusPill(
                             gameState.trumpSuit == null
-                                ? 'Atout : a choisir'
+                                ? (gameState.biddingRound == 1
+                                      ? 'Atout : a choisir'
+                                      : 'Atout : 2e tour')
                                 : 'Atout : ${gameState.trumpSuit!.label}',
                           ),
                           _statusPill(
@@ -551,8 +576,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (gameState.phase == GamePhase.choosingTrump) ...[
                         const SizedBox(height: 20),
                         _surfacePanel(
-                          child: const Text(
-                            'Cliquez la carte retournee pour choisir votre atout.',
+                          child: Text(
+                            gameState.biddingRound == 1
+                                ? 'Cliquez la carte retournee pour choisir votre atout.'
+                                : 'Premier tour passe. Choisissez une autre couleur.',
                           ),
                         ),
                       ],

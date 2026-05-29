@@ -51,6 +51,8 @@ class GameState {
     required this.remainingDeck,
     this.humanSeat = PlayerSeat.human,
     this.phase = GamePhase.choosingTrump,
+    this.biddingRound = 1,
+    this.biddingStarterSeat = PlayerSeat.human,
     this.trumpSuit,
     this.trumpTaker,
     this.passedSeats = const {},
@@ -70,6 +72,8 @@ class GameState {
   final List<BeloteCard> remainingDeck;
   final PlayerSeat humanSeat;
   final GamePhase phase;
+  final int biddingRound;
+  final PlayerSeat biddingStarterSeat;
   final Suit? trumpSuit;
   final PlayerSeat? trumpTaker;
   final Set<PlayerSeat> passedSeats;
@@ -84,6 +88,17 @@ class GameState {
   final Map<Team, int> gameScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
+
+  List<Suit> get availableTrumpSuits {
+    if (biddingRound == 1) {
+      return [turnedCard.suit];
+    }
+
+    return [
+      for (final suit in Suit.values)
+        if (suit != turnedCard.suit) suit,
+    ];
+  }
 
   bool get isGameComplete {
     return gameScore.values.any((score) => score >= targetScore);
@@ -242,22 +257,55 @@ class GameState {
         phase != GamePhase.waitingForTrumpTaker) {
       throw StateError('Trump choice is no longer available.');
     }
+    if (currentPlayer != null && currentPlayer != seat) {
+      throw StateError('It is not this player turn.');
+    }
 
     final updatedPassedSeats = {...passedSeats, seat};
-    final nextPhase = updatedPassedSeats.length == PlayerSeat.values.length
-        ? GamePhase.allPlayersPassed
-        : GamePhase.waitingForTrumpTaker;
+    if (updatedPassedSeats.length == PlayerSeat.values.length) {
+      if (biddingRound == 1) {
+        return GameState(
+          hands: hands,
+          turnedCard: turnedCard,
+          remainingDeck: remainingDeck,
+          humanSeat: humanSeat,
+          phase: GamePhase.choosingTrump,
+          biddingRound: 2,
+          biddingStarterSeat: biddingStarterSeat,
+          trumpSuit: trumpSuit,
+          trumpTaker: trumpTaker,
+          passedSeats: const {},
+          currentPlayer: biddingStarterSeat,
+          currentTrick: currentTrick,
+          lastCompletedTrick: lastCompletedTrick,
+          lastTrickWinner: lastTrickWinner,
+          wonTricks: wonTricks,
+          roundBonusPoints: roundBonusPoints,
+          beloteTeam: beloteTeam,
+          beloteRanksPlayed: beloteRanksPlayed,
+          gameScore: gameScore,
+        );
+      }
+
+      return _createRoundGameState(
+        gameScore: gameScore,
+        humanSeat: humanSeat,
+        biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
+      );
+    }
 
     return GameState(
       hands: hands,
       turnedCard: turnedCard,
       remainingDeck: remainingDeck,
       humanSeat: humanSeat,
-      phase: nextPhase,
+      phase: GamePhase.waitingForTrumpTaker,
+      biddingRound: biddingRound,
+      biddingStarterSeat: biddingStarterSeat,
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
       passedSeats: updatedPassedSeats,
-      currentPlayer: currentPlayer,
+      currentPlayer: _nextSeatAfter(seat),
       currentTrick: currentTrick,
       lastCompletedTrick: lastCompletedTrick,
       lastTrickWinner: lastTrickWinner,
@@ -271,19 +319,52 @@ class GameState {
 
   GameState passRemainingPlayers() {
     var updatedState = this;
-    for (final seat in PlayerSeat.values) {
-      if (updatedState.phase == GamePhase.allPlayersPassed ||
-          updatedState.passedSeats.contains(seat)) {
-        continue;
+    var guard = 0;
+    while (updatedState.phase == GamePhase.choosingTrump ||
+        updatedState.phase == GamePhase.waitingForTrumpTaker) {
+      final currentPlayer = updatedState.currentPlayer;
+      if (currentPlayer == null || currentPlayer == updatedState.humanSeat) {
+        break;
       }
+      updatedState = updatedState.passTrump(seat: currentPlayer);
+      guard += 1;
+      if (guard >= PlayerSeat.values.length * 4) {
+        break;
+      }
+    }
 
-      updatedState = updatedState.passTrump(seat: seat);
+    if (updatedState.phase == GamePhase.waitingForTrumpTaker &&
+        updatedState.currentPlayer == updatedState.humanSeat) {
+      return GameState(
+        hands: updatedState.hands,
+        turnedCard: updatedState.turnedCard,
+        remainingDeck: updatedState.remainingDeck,
+        humanSeat: updatedState.humanSeat,
+        phase: GamePhase.choosingTrump,
+        biddingRound: updatedState.biddingRound,
+        biddingStarterSeat: updatedState.biddingStarterSeat,
+        trumpSuit: updatedState.trumpSuit,
+        trumpTaker: updatedState.trumpTaker,
+        passedSeats: updatedState.passedSeats,
+        currentPlayer: updatedState.currentPlayer,
+        currentTrick: updatedState.currentTrick,
+        lastCompletedTrick: updatedState.lastCompletedTrick,
+        lastTrickWinner: updatedState.lastTrickWinner,
+        wonTricks: updatedState.wonTricks,
+        roundBonusPoints: updatedState.roundBonusPoints,
+        beloteTeam: updatedState.beloteTeam,
+        beloteRanksPlayed: updatedState.beloteRanksPlayed,
+        gameScore: updatedState.gameScore,
+      );
     }
 
     return updatedState;
   }
 
-  GameState chooseTrump({PlayerSeat taker = PlayerSeat.human}) {
+  GameState chooseTrump({
+    PlayerSeat taker = PlayerSeat.human,
+    Suit? trumpSuit,
+  }) {
     if (phase != GamePhase.choosingTrump &&
         phase != GamePhase.waitingForTrumpTaker) {
       throw StateError('Trump has already been selected.');
@@ -291,19 +372,31 @@ class GameState {
     if (passedSeats.contains(taker)) {
       throw StateError('A player who passed cannot take this trump card.');
     }
+    if (currentPlayer != null && currentPlayer != taker) {
+      throw StateError('It is not this player turn.');
+    }
 
-    final trumpSuit = turnedCard.suit;
+    final selectedTrumpSuit = trumpSuit ?? turnedCard.suit;
+    if (!availableTrumpSuits.contains(selectedTrumpSuit)) {
+      throw ArgumentError.value(
+        selectedTrumpSuit,
+        'trumpSuit',
+        'This suit cannot be selected in the current bidding round.',
+      );
+    }
 
     return GameState(
       hands: _sortHandsForTrump(
         _completeHandsAfterTrumpTaken(taker),
-        trumpSuit,
+        selectedTrumpSuit,
       ),
       turnedCard: turnedCard,
       remainingDeck: const [],
       humanSeat: humanSeat,
       phase: GamePhase.playingTrick,
-      trumpSuit: trumpSuit,
+      biddingRound: biddingRound,
+      biddingStarterSeat: biddingStarterSeat,
+      trumpSuit: selectedTrumpSuit,
       trumpTaker: taker,
       passedSeats: passedSeats,
       currentPlayer: humanSeat,
@@ -330,6 +423,7 @@ class GameState {
       random: random,
       gameScore: gameScore,
       humanSeat: humanSeat,
+      biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
     );
   }
 
@@ -437,6 +531,8 @@ class GameState {
       remainingDeck: remainingDeck,
       humanSeat: humanSeat,
       phase: nextPhase,
+      biddingRound: biddingRound,
+      biddingStarterSeat: biddingStarterSeat,
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
       passedSeats: passedSeats,
@@ -724,6 +820,7 @@ GameState _createRoundGameState({
   Random? random,
   Map<Team, int> gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   PlayerSeat humanSeat = PlayerSeat.human,
+  PlayerSeat biddingStarterSeat = PlayerSeat.human,
 }) {
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
@@ -737,6 +834,9 @@ GameState _createRoundGameState({
     turnedCard: initialDeal.turnedCard,
     remainingDeck: initialDeal.remainingDeck,
     humanSeat: humanSeat,
+    biddingRound: 1,
+    biddingStarterSeat: biddingStarterSeat,
+    currentPlayer: biddingStarterSeat,
     gameScore: gameScore,
   );
 }

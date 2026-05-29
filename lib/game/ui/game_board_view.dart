@@ -25,7 +25,7 @@ class GameBoardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final playableCards = gameState.playableCards(gameState.humanSeat);
     final trumpLabel = gameState.trumpSuit == null
-        ? 'Atout a choisir'
+        ? (gameState.biddingRound == 1 ? 'Atout a choisir' : 'Atout : 2e tour')
         : 'Atout : ${gameState.trumpSuit!.label}';
 
     return Container(
@@ -345,12 +345,16 @@ class _TrickArea extends StatelessWidget {
                     ),
                   ),
                   if (showTurnedCard)
-                    InkWell(
-                      onTap: onTurnedCardTap,
-                      borderRadius: BorderRadius.circular(12),
-                      child: PlayingCardView(
-                        key: const ValueKey('turned-card'),
-                        card: gameState.turnedCard,
+                    SizedBox.expand(
+                      child: Center(
+                        child: InkWell(
+                          onTap: onTurnedCardTap,
+                          borderRadius: BorderRadius.circular(12),
+                          child: PlayingCardView(
+                            key: const ValueKey('turned-card'),
+                            card: gameState.turnedCard,
+                          ),
+                        ),
                       ),
                     )
                   else if (playedCards.isEmpty)

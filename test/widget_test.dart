@@ -63,7 +63,7 @@ void main() {
     expect(find.text('Passer'), findsNothing);
   });
 
-  testWidgets('passes on the turned trump card and can redeal', (
+  testWidgets('opens a second bidding round after everyone passes once', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const BeloteApp());
@@ -74,18 +74,29 @@ void main() {
     expect(find.text('Votre choix'), findsOneWidget);
     await tapVisible(tester, find.text('Passer'));
 
-    expect(find.text('Atout : a choisir'), findsOneWidget);
+    expect(find.textContaining('Atout : 2e tour'), findsNWidgets(2));
     expect(
-      find.text('Tous les joueurs ont passe. Redistribuez.'),
+      find.text('Premier tour passe. Choisissez une autre couleur.'),
       findsOneWidget,
     );
-    expect(find.text('Redistribuer'), findsOneWidget);
     expect(find.textContaining('Prendre '), findsNothing);
     expect(find.text('Passer'), findsNothing);
 
-    await tapVisible(tester, find.text('Redistribuer'));
+    await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
 
-    expect(humanCards(), findsNWidgets(5));
+    expect(find.text('Votre choix'), findsOneWidget);
+    expect(
+      find.textContaining('Choisissez une autre couleur que'),
+      findsOneWidget,
+    );
+    expect(find.text('Passer'), findsOneWidget);
+    expect(find.textContaining('Prendre '), findsNWidgets(3));
+
+    await tapVisible(tester, find.textContaining('Prendre ').first);
+
+    expect(find.text('Preneur : Vous'), findsOneWidget);
+    expect(find.text('Joueur courant : Vous'), findsOneWidget);
+    expect(humanCards(), findsNWidgets(8));
     expect(find.textContaining('Prendre '), findsNothing);
     expect(find.text('Passer'), findsNothing);
   });

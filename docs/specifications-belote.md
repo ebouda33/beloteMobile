@@ -38,13 +38,15 @@ Premier niveau valide :
 - prise de la carte retournee ajoutee avec distribution complete a 8 cartes par
   joueur, tri des mains avant le premier pli, conservation du preneur et
   affichage de l'atout ;
-- cas ou tous les joueurs passent gere avec une action de redistribution ;
+- cas ou tous les joueurs passent deux fois gere avec redistribution et
+  rotation du premier joueur ;
 - debut de pli ajoute avec joueur courant, cartes jouables pour le joueur humain
   et affichage de la carte posee dans le pli en cours ;
 - tapis de jeu central ajoute avec vraies cartes visibles, mains adverses cachees
-  et carte retournee affichee au centre pendant le choix de l'atout ;
+  et carte retournee affichee au centre du tapis pendant le choix de l'atout ;
 - clic sur la carte retournee ajoute pour ouvrir une confirmation `Votre choix`
-  avec les actions `Prendre` et `Passer` ;
+  avec `Prendre` et `Passer` au premier tour, puis un choix des 3 couleurs
+  restantes au second tour ;
 - jeu automatique des adversaires ajoute pour completer le pli courant ;
 - gagnant du pli determine selon l'atout et la couleur demandee, puis defini
   comme prochain joueur courant ;
@@ -67,17 +69,18 @@ Premier niveau valide :
 Le premier etat de partie local est en place : une nouvelle partie melange le
 paquet, distribue 5 cartes par siege de joueur, retourne une carte du paquet,
 puis affiche la main du joueur humain. La couleur de la carte retournee est
-l'atout propose. Le joueur humain peut prendre cette couleur, ce qui complete
-les mains et demarre la phase de pli, ou passer. Pour la V1 actuelle, les autres
-joueurs passent automatiquement apres le refus du joueur humain, puis
-l'interface propose de redistribuer. Quand le joueur humain prend l'atout, il
-devient le premier joueur courant de la phase de pli. Ses cartes sont jouables
-dans l'interface, la carte posee est retiree de sa main, ajoutee au pli en cours
-et le tour avance au joueur suivant. Les adversaires peuvent ensuite jouer
-automatiquement pour completer le pli courant. Le dernier pli complete reste
- visible dans l'interface avec son gagnant. La main du joueur humain est triee
- au moment de la prise, avant le premier pli, par couleur puis par force dans la
- couleur. La liste des cartes jouables limite
+l'atout propose au premier tour d'enchere. Le joueur humain peut prendre cette
+couleur, ce qui complete les mains et demarre la phase de pli, ou passer. Si
+tous les joueurs passent au premier tour, un second tour d'enchere s'ouvre avec
+les 3 autres couleurs possibles. Si tout le monde passe encore, une nouvelle
+donne est lancee avec rotation du premier joueur. Quand le joueur humain prend
+l'atout, il devient le premier joueur courant de la phase de pli. Ses cartes
+sont jouables dans l'interface, la carte posee est retiree de sa main, ajoutee
+au pli en cours et le tour avance au joueur suivant. Les adversaires peuvent
+ensuite jouer automatiquement pour completer le pli courant. Le dernier pli
+complete reste visible dans l'interface avec son gagnant. La main du joueur
+humain est triee au moment de la prise, avant le premier pli, par couleur puis
+par force dans la couleur. La liste des cartes jouables limite
 maintenant les actions invalides : suivre la couleur demandee si possible,
 couper quand il faut, pouvoir defausser si le partenaire est maitre du pli et
 monter a l'atout quand une carte plus forte est disponible. La manche peut
@@ -100,7 +103,8 @@ La presentation visuelle du tapis repose desormais sur de vraies cartes :
 la main humaine reste visible et cliquable, les mains adverses sont montrees
 dos caches, et la carte retournee est placee au centre du tapis pendant la
 phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
-`Votre choix` avec deux actions explicites: `Prendre` et `Passer`.
+`Votre choix` avec `Prendre` et `Passer` au premier tour, puis les 3 couleurs
+restantes au second tour.
 
 Prochaine reprise :
 

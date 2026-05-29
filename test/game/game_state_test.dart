@@ -162,31 +162,81 @@ void main() {
       expect(updatedState.hands, gameState.hands);
       expect(updatedState.turnedCard, gameState.turnedCard);
       expect(updatedState.passedSeats, {PlayerSeat.human});
+      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+      expect(updatedState.biddingRound, 1);
     });
 
-    test('moves to all players passed when every player rejects trump', () {
+    test(
+      'starts a second bidding round after every player rejects the turned suit',
+      () {
+        final gameState = createInitialGameState(random: Random(1))
+            .passTrump()
+            .passTrump(seat: PlayerSeat.leftOpponent)
+            .passTrump(seat: PlayerSeat.partner)
+            .passTrump(seat: PlayerSeat.rightOpponent);
+
+        expect(gameState.trumpSuit, isNull);
+        expect(gameState.trumpTaker, isNull);
+        expect(gameState.phase, GamePhase.choosingTrump);
+        expect(gameState.biddingRound, 2);
+        expect(gameState.currentPlayer, PlayerSeat.human);
+        expect(gameState.passedSeats, isEmpty);
+      },
+    );
+
+    test(
+      'passes every remaining player and opens the second bidding round',
+      () {
+        final gameState = createInitialGameState(
+          random: Random(1),
+        ).passTrump().passRemainingPlayers();
+
+        expect(gameState.trumpSuit, isNull);
+        expect(gameState.trumpTaker, isNull);
+        expect(gameState.phase, GamePhase.choosingTrump);
+        expect(gameState.biddingRound, 2);
+        expect(gameState.currentPlayer, PlayerSeat.human);
+        expect(gameState.passedSeats, isEmpty);
+      },
+    );
+
+    test('allows a second-round trump choice on another suit', () {
       final gameState = createInitialGameState(random: Random(1))
           .passTrump()
           .passTrump(seat: PlayerSeat.leftOpponent)
           .passTrump(seat: PlayerSeat.partner)
           .passTrump(seat: PlayerSeat.rightOpponent);
 
-      expect(gameState.trumpSuit, isNull);
-      expect(gameState.trumpTaker, isNull);
-      expect(gameState.phase, GamePhase.allPlayersPassed);
-      expect(gameState.passedSeats, PlayerSeat.values.toSet());
+      final updatedState = gameState.chooseTrump(trumpSuit: Suit.clubs);
+
+      expect(updatedState.trumpSuit, Suit.clubs);
+      expect(updatedState.trumpTaker, PlayerSeat.human);
+      expect(updatedState.phase, GamePhase.playingTrick);
+      expect(updatedState.currentPlayer, PlayerSeat.human);
     });
 
-    test('passes every remaining player for the current trump card', () {
-      final gameState = createInitialGameState(
-        random: Random(1),
-      ).passTrump().passRemainingPlayers();
+    test(
+      'redeals a fresh round and rotates the starter when the second bidding round also fails',
+      () {
+        final secondRound = createInitialGameState(
+          random: Random(1),
+        ).passTrump().passRemainingPlayers();
 
-      expect(gameState.trumpSuit, isNull);
-      expect(gameState.trumpTaker, isNull);
-      expect(gameState.phase, GamePhase.allPlayersPassed);
-      expect(gameState.passedSeats, PlayerSeat.values.toSet());
-    });
+        final redealtState = secondRound.passTrump().passRemainingPlayers();
+
+        expect(redealtState.phase, GamePhase.choosingTrump);
+        expect(redealtState.biddingRound, 1);
+        expect(redealtState.biddingStarterSeat, PlayerSeat.leftOpponent);
+        expect(redealtState.currentPlayer, PlayerSeat.human);
+        expect(redealtState.passedSeats, {
+          PlayerSeat.leftOpponent,
+          PlayerSeat.partner,
+          PlayerSeat.rightOpponent,
+        });
+        expect(redealtState.trumpSuit, isNull);
+        expect(redealtState.trumpTaker, isNull);
+      },
+    );
 
     test('rejects passing after trump is already selected', () {
       final gameState = createInitialGameState(random: Random(1)).chooseTrump();
