@@ -26,9 +26,7 @@ class GameBoardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playableCards = gameState.playableCards(gameState.humanSeat);
-    final trumpLabel = gameState.trumpSuit == null
-        ? (gameState.biddingRound == 1 ? 'Atout a choisir' : 'Atout : 2e tour')
-        : 'Atout : ${gameState.trumpSuit!.label}';
+    final showBiddingSpeech = gameState.completedTrickCount == 0;
 
     return Container(
       key: const ValueKey('game-table'),
@@ -81,10 +79,15 @@ class GameBoardView extends StatelessWidget {
                 ],
               ),
               _StatusBadge(
-                text: trumpLabel,
+                key: const ValueKey('trump-badge'),
+                text: '',
                 background: _brass.withValues(alpha: 0.14),
                 border: _brass.withValues(alpha: 0.55),
                 foreground: _paper,
+                child: _TrumpBadgeContent(
+                  trumpSuit: gameState.trumpSuit,
+                  biddingRound: gameState.biddingRound,
+                ),
               ),
             ],
           ),
@@ -111,6 +114,9 @@ class GameBoardView extends StatelessWidget {
                   faceDown: !showOpponentCards,
                   orientation: Axis.horizontal,
                   active: gameState.currentPlayer == PlayerSeat.partner,
+                  speechBubble: showBiddingSpeech
+                      ? gameState.biddingSpeechForSeat(PlayerSeat.partner)
+                      : null,
                 ),
                 const SizedBox(height: 14),
                 Row(
@@ -131,6 +137,11 @@ class GameBoardView extends StatelessWidget {
                         compact: true,
                         active:
                             gameState.currentPlayer == PlayerSeat.leftOpponent,
+                        speechBubble: showBiddingSpeech
+                            ? gameState.biddingSpeechForSeat(
+                                PlayerSeat.leftOpponent,
+                              )
+                            : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -157,6 +168,11 @@ class GameBoardView extends StatelessWidget {
                         compact: true,
                         active:
                             gameState.currentPlayer == PlayerSeat.rightOpponent,
+                        speechBubble: showBiddingSpeech
+                            ? gameState.biddingSpeechForSeat(
+                                PlayerSeat.rightOpponent,
+                              )
+                            : null,
                       ),
                     ),
                   ],
@@ -172,6 +188,9 @@ class GameBoardView extends StatelessWidget {
                   active: gameState.currentPlayer == gameState.humanSeat,
                   playableCards: playableCards.toSet(),
                   onCardTap: onCardTap,
+                  speechBubble: showBiddingSpeech
+                      ? gameState.biddingSpeechForSeat(gameState.humanSeat)
+                      : null,
                 ),
               ],
             ),
@@ -194,6 +213,7 @@ class _SeatHand extends StatelessWidget {
     this.compact = false,
     this.playableCards = const {},
     this.onCardTap,
+    this.speechBubble,
   });
 
   final String title;
@@ -205,17 +225,26 @@ class _SeatHand extends StatelessWidget {
   final bool compact;
   final Set<BeloteCard> playableCards;
   final ValueChanged<BeloteCard>? onCardTap;
+  final String? speechBubble;
 
   @override
   Widget build(BuildContext context) {
     final visibleCards = List.generate(cards.length, (index) {
       final card = cards[index];
       final baseCard = PlayingCardView(
+        key: ValueKey('card-${card.id}'),
         card: card,
         faceDown: faceDown,
         compact: compact || (!faceDown && onCardTap == null),
         playable: playableCards.contains(card),
-        onTap: onCardTap == null || faceDown ? null : () => onCardTap!(card),
+        dimmed:
+            onCardTap != null &&
+            !faceDown &&
+            playableCards.isNotEmpty &&
+            !playableCards.contains(card),
+        onTap: onCardTap == null || faceDown || !playableCards.contains(card)
+            ? null
+            : () => onCardTap!(card),
       );
 
       if (faceDown) {
@@ -263,6 +292,13 @@ class _SeatHand extends StatelessWidget {
                 ),
               ],
             ),
+            if (speechBubble != null) ...[
+              const SizedBox(height: 8),
+              _SpeechBubble(
+                text: speechBubble!,
+                take: speechBubble!.startsWith('Prend'),
+              ),
+            ],
             const SizedBox(height: 8),
             if (!faceDown && onCardTap == null)
               Wrap(spacing: 6, runSpacing: 6, children: visibleCards)
@@ -332,6 +368,14 @@ class _TrickArea extends StatelessWidget {
                     background: GameBoardView._brass.withValues(alpha: 0.14),
                     border: GameBoardView._brass.withValues(alpha: 0.45),
                     foreground: GameBoardView._paper,
+                  ),
+                if (gameState.trumpTakerLabel case final takerLabel?)
+                  _StatusBadge(
+                    key: const ValueKey('trump-taker-badge'),
+                    text: takerLabel,
+                    background: const Color(0xFFE7D1D1),
+                    border: const Color(0xFF9C5757),
+                    foreground: const Color(0xFF4A1C1C),
                   ),
               ],
             ),
@@ -454,6 +498,7 @@ class PlayingCardView extends StatelessWidget {
     this.faceDown = false,
     this.compact = false,
     this.playable = false,
+    this.dimmed = false,
     this.onTap,
   });
 
@@ -461,6 +506,7 @@ class PlayingCardView extends StatelessWidget {
   final bool faceDown;
   final bool compact;
   final bool playable;
+  final bool dimmed;
   final VoidCallback? onTap;
 
   @override
@@ -468,19 +514,70 @@ class PlayingCardView extends StatelessWidget {
     final width = compact ? 42.0 : 56.0;
     final height = compact ? 60.0 : 82.0;
 
-    return Material(
+    return _PlayingCardFrame(
+      cardId: card.id,
+      width: width,
+      height: height,
+      faceDown: faceDown,
+      compact: compact,
+      playable: playable,
+      dimmed: dimmed,
+      onTap: onTap,
+      child: faceDown
+          ? _CardBack()
+          : _CardFace(card: card, playable: playable, compact: compact),
+    );
+  }
+}
+
+class _PlayingCardFrame extends StatefulWidget {
+  const _PlayingCardFrame({
+    required this.cardId,
+    required this.width,
+    required this.height,
+    required this.faceDown,
+    required this.compact,
+    required this.playable,
+    required this.dimmed,
+    required this.onTap,
+    required this.child,
+  });
+
+  final String cardId;
+  final double width;
+  final double height;
+  final bool faceDown;
+  final bool compact;
+  final bool playable;
+  final bool dimmed;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  State<_PlayingCardFrame> createState() => _PlayingCardFrameState();
+}
+
+class _PlayingCardFrameState extends State<_PlayingCardFrame> {
+  bool _hovered = false;
+
+  bool get _canHover =>
+      widget.playable && widget.onTap != null && !widget.faceDown;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget card = Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: width,
-          height: height,
+          width: widget.width,
+          height: widget.height,
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            gradient: faceDown
+            gradient: widget.faceDown
                 ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -492,12 +589,12 @@ class PlayingCardView extends StatelessWidget {
                     colors: [Color(0xFFFCF8F1), Color(0xFFF2E5D0)],
                   ),
             border: Border.all(
-              color: faceDown
+              color: widget.faceDown
                   ? const Color(0xFFC4A15A)
-                  : playable
+                  : widget.playable
                   ? const Color(0xFFC4A15A)
                   : const Color(0xFFD8CCB7),
-              width: playable ? 2.2 : 1.2,
+              width: widget.playable ? 2.2 : 1.2,
             ),
             boxShadow: const [
               BoxShadow(
@@ -507,12 +604,49 @@ class PlayingCardView extends StatelessWidget {
               ),
             ],
           ),
-          child: faceDown
-              ? _CardBack()
-              : _CardFace(card: card, playable: playable, compact: compact),
+          child: widget.child,
         ),
       ),
     );
+
+    if (_canHover) {
+      card = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) {
+          setState(() {
+            _hovered = true;
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            _hovered = false;
+          });
+        },
+        child: TweenAnimationBuilder<double>(
+          key: ValueKey('hover-${widget.cardId}'),
+          tween: Tween<double>(begin: 0, end: _hovered ? 1 : 0),
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, -6 * value),
+              child: Transform.scale(scale: 1 + (0.04 * value), child: child),
+            );
+          },
+          child: card,
+        ),
+      );
+    }
+
+    if (widget.dimmed) {
+      card = AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: 0.52,
+        child: card,
+      );
+    }
+
+    return card;
   }
 }
 
@@ -669,16 +803,19 @@ class _CardBack extends StatelessWidget {
 
 class _StatusBadge extends StatelessWidget {
   const _StatusBadge({
+    super.key,
     required this.text,
     required this.background,
     required this.border,
     required this.foreground,
+    this.child,
   });
 
   final String text;
   final Color background;
   final Color border;
   final Color foreground;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -689,14 +826,132 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: border),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
+      child:
+          child ??
+          Text(
+            text,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+    );
+  }
+}
+
+class _TrumpBadgeContent extends StatelessWidget {
+  const _TrumpBadgeContent({
+    required this.trumpSuit,
+    required this.biddingRound,
+  });
+
+  final Suit? trumpSuit;
+  final int biddingRound;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = trumpSuit == null
+        ? const Color(0xFF7A5E34)
+        : switch (trumpSuit!) {
+            Suit.clubs || Suit.spades => GameBoardView._forestDeep,
+            Suit.diamonds || Suit.hearts => GameBoardView._burgundy,
+          };
+
+    final icon = trumpSuit == null
+        ? (biddingRound == 1
+              ? Icons.help_outline_rounded
+              : Icons.rotate_right_rounded)
+        : null;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Atout',
+          style: TextStyle(
+            color: GameBoardView._paper,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-      ),
+        const SizedBox(width: 8),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: GameBoardView._paper.withValues(alpha: 0.92),
+            shape: BoxShape.circle,
+            border: Border.all(color: iconColor.withValues(alpha: 0.35)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(3),
+            child: icon == null
+                ? Text(
+                    _suitGlyph(trumpSuit!),
+                    style: TextStyle(
+                      color: iconColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                : Icon(icon, size: 14, color: iconColor),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SpeechBubble extends StatelessWidget {
+  const _SpeechBubble({required this.text, required this.take});
+
+  final String text;
+  final bool take;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = take ? const Color(0xFFE7D1D1) : const Color(0xFFE8E0D4);
+    final border = take ? const Color(0xFF9C5757) : const Color(0xFFB9A991);
+    final foreground = take ? const Color(0xFF4A1C1C) : const Color(0xFF4E4338);
+    final tailColor = background;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: border),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Positioned(
+          left: 18,
+          bottom: -5,
+          child: Transform.rotate(
+            angle: 0.78539816339,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: tailColor,
+                border: Border(
+                  right: BorderSide(color: border, width: 1),
+                  bottom: BorderSide(color: border, width: 1),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

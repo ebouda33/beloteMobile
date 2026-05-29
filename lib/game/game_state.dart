@@ -148,6 +148,33 @@ class GameState {
     return taker == null ? null : _teamOf(taker);
   }
 
+  String? get trumpTakerLabel {
+    final taker = trumpTaker;
+    if (taker == null) {
+      return null;
+    }
+
+    final marker = biddingRound == 1 ? '*' : '**';
+    return 'Preneur : ${taker.label} $marker';
+  }
+
+  String? biddingSpeechForSeat(PlayerSeat seat) {
+    if (trumpTaker == seat) {
+      final trump = trumpSuit;
+      if (trump == null) {
+        return 'Prend';
+      }
+
+      return 'Prend ${trump.label}';
+    }
+
+    if (passedSeats.contains(seat)) {
+      return 'Passe';
+    }
+
+    return null;
+  }
+
   bool? get isContractFulfilled {
     if (phase != GamePhase.roundComplete || takerTeam == null) {
       return null;
@@ -334,21 +361,12 @@ class GameState {
 
     while (updatedState.phase == GamePhase.choosingTrump ||
         updatedState.phase == GamePhase.waitingForTrumpTaker) {
-      final currentPlayer = updatedState.currentPlayer;
-      if (currentPlayer == null || currentPlayer == updatedState.humanSeat) {
+      final nextState = updatedState.resolveAutomaticTrumpTurn();
+      if (identical(nextState, updatedState)) {
         break;
       }
 
-      final automaticTrumpSuit = _automaticTrumpSuitFor(
-        updatedState,
-        currentPlayer,
-      );
-      updatedState = automaticTrumpSuit == null
-          ? updatedState.passTrump(seat: currentPlayer)
-          : updatedState.chooseTrump(
-              taker: currentPlayer,
-              trumpSuit: automaticTrumpSuit,
-            );
+      updatedState = nextState;
 
       guard += 1;
       if (guard >= PlayerSeat.values.length * 4) {
@@ -357,6 +375,23 @@ class GameState {
     }
 
     return updatedState;
+  }
+
+  GameState resolveAutomaticTrumpTurn() {
+    if (phase != GamePhase.choosingTrump &&
+        phase != GamePhase.waitingForTrumpTaker) {
+      return this;
+    }
+
+    final seat = currentPlayer;
+    if (seat == null || seat == humanSeat) {
+      return this;
+    }
+
+    final automaticTrumpSuit = _automaticTrumpSuitFor(this, seat);
+    return automaticTrumpSuit == null
+        ? passTrump(seat: seat)
+        : chooseTrump(taker: seat, trumpSuit: automaticTrumpSuit);
   }
 
   GameState chooseTrump({

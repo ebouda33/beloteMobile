@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:math';
 
 import 'game/cards/belote_card.dart';
@@ -147,41 +148,113 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   GameState? _gameState;
   bool _showOpponentCards = false;
+  int _biddingAnimationToken = 0;
+  int _trickAnimationToken = 0;
 
-  void _startNewGame() {
+  Future<void> _startNewGame() async {
     setState(() {
-      _gameState = createInitialGameState(
-        random: widget.random,
-      ).resolveAutomaticTrumpTurns().playAutomaticTurns();
+      _gameState = createInitialGameState(random: widget.random);
       _showOpponentCards = false;
     });
+
+    await _animateAutomaticTrumpBidding();
   }
 
-  void _chooseTrump({Suit? trumpSuit}) {
+  Future<void> _chooseTrump({Suit? trumpSuit}) async {
     final gameState = _gameState;
     if (gameState == null) {
       return;
     }
 
     setState(() {
-      _gameState = gameState
-          .chooseTrump(trumpSuit: trumpSuit)
-          .playAutomaticTurns();
+      _gameState = gameState.chooseTrump(trumpSuit: trumpSuit);
     });
+
+    await _animateAutomaticTrumpBidding();
   }
 
-  void _passTrump() {
+  Future<void> _passTrump() async {
     final gameState = _gameState;
     if (gameState == null) {
       return;
     }
 
     setState(() {
-      _gameState = gameState
-          .passTrump()
-          .resolveAutomaticTrumpTurns()
-          .playAutomaticTurns();
+      _gameState = gameState.passTrump();
     });
+
+    await _animateAutomaticTrumpBidding();
+  }
+
+  Future<void> _animateAutomaticTrumpBidding() async {
+    final token = ++_biddingAnimationToken;
+    const delay = Duration(milliseconds: 420);
+
+    while (mounted) {
+      final gameState = _gameState;
+      if (gameState == null) {
+        return;
+      }
+
+      if (gameState.phase != GamePhase.choosingTrump &&
+          gameState.phase != GamePhase.waitingForTrumpTaker) {
+        break;
+      }
+
+      final currentPlayer = gameState.currentPlayer;
+      if (currentPlayer == null || currentPlayer == gameState.humanSeat) {
+        break;
+      }
+
+      await Future<void>.delayed(delay);
+      if (!mounted || token != _biddingAnimationToken) {
+        return;
+      }
+
+      setState(() {
+        _gameState = gameState.resolveAutomaticTrumpTurn();
+      });
+    }
+
+    final gameState = _gameState;
+    if (gameState == null || !mounted || token != _biddingAnimationToken) {
+      return;
+    }
+
+    await _scheduleAutomaticTrickTurns();
+  }
+
+  Future<void> _scheduleAutomaticTrickTurns() async {
+    final token = ++_trickAnimationToken;
+
+    while (mounted) {
+      final gameState = _gameState;
+      if (gameState == null) {
+        return;
+      }
+
+      if (gameState.phase != GamePhase.playingTrick ||
+          gameState.currentPlayer == null ||
+          gameState.currentPlayer == gameState.humanSeat) {
+        break;
+      }
+
+      final delay =
+          gameState.currentTrick.isEmpty &&
+              gameState.lastTrickWinner != null &&
+              gameState.lastTrickWinner != gameState.humanSeat
+          ? const Duration(milliseconds: 1300)
+          : const Duration(milliseconds: 650);
+
+      await Future<void>.delayed(delay);
+      if (!mounted || token != _trickAnimationToken) {
+        return;
+      }
+
+      setState(() {
+        _gameState = gameState.playAutomaticTurns();
+      });
+    }
   }
 
   Future<void> _showTrumpChoiceDialog() async {
@@ -258,17 +331,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _gameState = gameState.playCard(card).playAutomaticTurns();
     });
-  }
 
-  void _playAutomaticTurns() {
-    final gameState = _gameState;
-    if (gameState == null) {
-      return;
-    }
-
-    setState(() {
-      _gameState = gameState.playAutomaticTurns();
-    });
+    unawaited(_scheduleAutomaticTrickTurns());
   }
 
   void _startNextRound() {
@@ -283,6 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
           .resolveAutomaticTrumpTurns()
           .playAutomaticTurns();
     });
+
+    unawaited(_scheduleAutomaticTrickTurns());
   }
 
   Widget _surfacePanel({required Widget child}) {
@@ -450,8 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Score ${Team.opponentTeam.label} : '
                             '${gameState.gameScore[Team.opponentTeam] ?? 0}',
                           ),
-                          if (gameState.trumpTaker case final trumpTaker?)
-                            _statusPill('Preneur : ${trumpTaker.label}'),
+                          if (gameState.trumpTakerLabel case final label?)
+                            _statusPill(label),
                           if (gameState.currentPlayer case final currentPlayer?)
                             _statusPill(
                               'Joueur courant : ${currentPlayer.label}',
@@ -501,18 +567,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ],
-                          ),
-                        ),
-                      ],
-                      if (gameState.phase == GamePhase.playingTrick &&
-                          gameState.currentPlayer != gameState.humanSeat) ...[
-                        const SizedBox(height: 20),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: OutlinedButton.icon(
-                            onPressed: _playAutomaticTurns,
-                            icon: const Icon(Icons.play_arrow),
-                            label: const Text('Continuer'),
                           ),
                         ),
                       ],

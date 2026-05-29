@@ -31,6 +31,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.
+- Le preneur est affiche sur le tapis central avec un badge dedie, et l'atout
+  est montre par une icone compacte plutot que par un libelle textuel.
 - Option visuelle ajoutee pour reveler ou masquer les cartes des adversaires
   depuis la barre du haut.
 - Quand les cartes adverses sont revelees ou sur le tapis, leur couleur reste
@@ -40,6 +42,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
+- Les cartes impossibles a jouer sont assombries et les cartes jouables se
+  soulevent au survol.
 - Une manche peut aller jusqu'aux 8 plis, avec suivi des plis remportes par
   equipe et detection de fin de manche.
 - Premier calcul de points de manche : points des cartes gagnees et bonus de
@@ -90,5 +94,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : affiner les actions disponibles en fin de partie
-si besoin, puis preparer l'ajout de nouvelles annonces ou variantes.
+Prochaine etape recommandee : continuer le polish de l'interface de jeu ou
+preparer l'ajout de nouvelles annonces ou variantes.
