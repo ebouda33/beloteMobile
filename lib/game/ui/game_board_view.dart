@@ -296,7 +296,7 @@ class _ScoreNotebook extends StatelessWidget {
               child: CustomPaint(painter: _NotebookPagePainter()),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 54, right: 8),
+              padding: const EdgeInsets.only(left: 64, right: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -497,7 +497,7 @@ class _NotebookPagePainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), ruledPaint);
     }
 
-    canvas.drawLine(const Offset(44, 0), Offset(44, size.height), marginPaint);
+    canvas.drawLine(const Offset(52, 0), Offset(52, size.height), marginPaint);
     canvas.drawLine(
       const Offset(0, 74),
       Offset(size.width, 74),
