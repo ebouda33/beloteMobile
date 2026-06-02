@@ -166,10 +166,11 @@ class GameBoardView extends StatelessWidget {
                 _SeatHand(
                   key: const ValueKey('partner-hand'),
                   title: PlayerSeat.partner.label,
-                  count: gameState.hands[PlayerSeat.partner]?.length ?? 0,
                   cards: gameState.hands[PlayerSeat.partner] ?? const [],
                   faceDown: !showOpponentCards,
                   orientation: Axis.horizontal,
+                  fanDirection: _CardFanDirection.down,
+                  isDealer: gameState.dealerSeat == PlayerSeat.partner,
                   active: gameState.currentPlayer == PlayerSeat.partner,
                   speechBubble: showBiddingSpeech
                       ? gameState.biddingSpeechForSeat(PlayerSeat.partner)
@@ -183,15 +184,15 @@ class GameBoardView extends StatelessWidget {
                       child: _SeatHand(
                         key: const ValueKey('left-opponent-hand'),
                         title: PlayerSeat.leftOpponent.label,
-                        count:
-                            gameState.hands[PlayerSeat.leftOpponent]?.length ??
-                            0,
                         cards:
                             gameState.hands[PlayerSeat.leftOpponent] ??
                             const [],
                         faceDown: !showOpponentCards,
                         orientation: Axis.vertical,
                         compact: true,
+                        fanDirection: _CardFanDirection.right,
+                        isDealer:
+                            gameState.dealerSeat == PlayerSeat.leftOpponent,
                         active:
                             gameState.currentPlayer == PlayerSeat.leftOpponent,
                         speechBubble: showBiddingSpeech
@@ -215,15 +216,15 @@ class GameBoardView extends StatelessWidget {
                       child: _SeatHand(
                         key: const ValueKey('right-opponent-hand'),
                         title: PlayerSeat.rightOpponent.label,
-                        count:
-                            gameState.hands[PlayerSeat.rightOpponent]?.length ??
-                            0,
                         cards:
                             gameState.hands[PlayerSeat.rightOpponent] ??
                             const [],
                         faceDown: !showOpponentCards,
                         orientation: Axis.vertical,
                         compact: true,
+                        fanDirection: _CardFanDirection.left,
+                        isDealer:
+                            gameState.dealerSeat == PlayerSeat.rightOpponent,
                         active:
                             gameState.currentPlayer == PlayerSeat.rightOpponent,
                         speechBubble: showBiddingSpeech
@@ -239,10 +240,11 @@ class GameBoardView extends StatelessWidget {
                 _SeatHand(
                   key: const ValueKey('human-hand'),
                   title: PlayerSeat.human.label,
-                  count: gameState.humanHand.length,
                   cards: gameState.humanHand,
                   faceDown: false,
                   orientation: Axis.horizontal,
+                  fanDirection: _CardFanDirection.up,
+                  isDealer: gameState.dealerSeat == gameState.humanSeat,
                   active: gameState.currentPlayer == gameState.humanSeat,
                   playableCards: playableCards.toSet(),
                   onCardTap: onCardTap,
@@ -272,7 +274,7 @@ class _ScoreNotebook extends StatelessWidget {
 
     return Container(
       key: const ValueKey('score-notebook'),
-      width: 340,
+      width: 330,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F0DF),
@@ -296,19 +298,20 @@ class _ScoreNotebook extends StatelessWidget {
               child: CustomPaint(painter: _NotebookPagePainter()),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 78, right: 8),
+              padding: const EdgeInsets.only(left: 92, right: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Scores',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: 0.1,
                       color: Color(0xFF6B5A46),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       const Expanded(
@@ -316,7 +319,7 @@ class _ScoreNotebook extends StatelessWidget {
                         child: Text(
                           'Manche',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF8C785F),
                           ),
@@ -328,7 +331,7 @@ class _ScoreNotebook extends StatelessWidget {
                           'EUX',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF8C785F),
                           ),
@@ -341,19 +344,13 @@ class _ScoreNotebook extends StatelessWidget {
                           'NOUS',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF8C785F),
                           ),
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Color(0xFFBFA57B),
                   ),
                   const SizedBox(height: 8),
                   if (roundHistory.isEmpty)
@@ -423,7 +420,7 @@ class _ScoreNotebook extends StatelessWidget {
                         const SizedBox(height: 8),
                       ],
                     ],
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   const Divider(
                     height: 1,
                     thickness: 1,
@@ -431,13 +428,14 @@ class _ScoreNotebook extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Expanded(
                         flex: 3,
                         child: Text(
                           'Total',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF2B251F),
                           ),
@@ -449,7 +447,7 @@ class _ScoreNotebook extends StatelessWidget {
                           '$opponentTotal',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF2B251F),
                           ),
@@ -462,7 +460,7 @@ class _ScoreNotebook extends StatelessWidget {
                           '$humanTotal',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF2B251F),
                           ),
@@ -497,20 +495,15 @@ class _NotebookPagePainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), ruledPaint);
     }
 
-    canvas.drawLine(const Offset(58, 0), Offset(58, size.height), marginPaint);
+    canvas.drawLine(const Offset(66, 0), Offset(66, size.height), marginPaint);
     canvas.drawLine(
-      const Offset(0, 74),
-      Offset(size.width, 74),
+      const Offset(0, 76),
+      Offset(size.width, 76),
       separatorPaint,
     );
     canvas.drawLine(
-      const Offset(0, 140),
-      Offset(size.width, 140),
-      separatorPaint,
-    );
-    canvas.drawLine(
-      const Offset(0, 202),
-      Offset(size.width, 202),
+      const Offset(0, 200),
+      Offset(size.width, 200),
       separatorPaint,
     );
   }
@@ -523,10 +516,11 @@ class _SeatHand extends StatelessWidget {
   const _SeatHand({
     super.key,
     required this.title,
-    required this.count,
     required this.cards,
     required this.faceDown,
     required this.orientation,
+    required this.fanDirection,
+    required this.isDealer,
     required this.active,
     this.compact = false,
     this.playableCards = const {},
@@ -535,10 +529,11 @@ class _SeatHand extends StatelessWidget {
   });
 
   final String title;
-  final int count;
   final List<BeloteCard> cards;
   final bool faceDown;
   final Axis orientation;
+  final _CardFanDirection fanDirection;
+  final bool isDealer;
   final bool active;
   final bool compact;
   final Set<BeloteCard> playableCards;
@@ -564,11 +559,6 @@ class _SeatHand extends StatelessWidget {
             ? null
             : () => onCardTap!(card),
       );
-
-      if (faceDown) {
-        final spread = (index - (cards.length - 1) / 2) * 0.03;
-        return Transform.rotate(angle: spread, child: baseCard);
-      }
 
       return baseCard;
     });
@@ -602,12 +592,7 @@ class _SeatHand extends StatelessWidget {
                     color: GameBoardView._paper,
                   ),
                 ),
-                _StatusBadge(
-                  text: '$count cartes',
-                  background: const Color(0x143C5C45),
-                  border: const Color(0x52D8CCB7),
-                  foreground: const Color(0xFFEFE7D7),
-                ),
+                if (isDealer) const _DealerChip(),
               ],
             ),
             if (speechBubble != null) ...[
@@ -622,6 +607,12 @@ class _SeatHand extends StatelessWidget {
               Wrap(spacing: 6, runSpacing: 6, children: visibleCards)
             else if (!faceDown && orientation == Axis.horizontal)
               Wrap(spacing: 8, runSpacing: 8, children: visibleCards)
+            else if (faceDown)
+              _CardFan(
+                cards: visibleCards,
+                fanDirection: fanDirection,
+                compact: compact,
+              )
             else
               _CardStack(
                 cards: visibleCards,
@@ -864,6 +855,118 @@ class _CardStack extends StatelessWidget {
               left: orientation == Axis.horizontal ? index * overlap : 0,
               top: orientation == Axis.vertical ? index * overlap : 0,
               child: cards[index],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DealerChip extends StatelessWidget {
+  const _DealerChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('dealer-chip'),
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0D9A9),
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF7D5A23), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x224A3412),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: const Text(
+        'D',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF4A3412),
+        ),
+      ),
+    );
+  }
+}
+
+enum _CardFanDirection { up, down, left, right }
+
+class _CardFan extends StatelessWidget {
+  const _CardFan({
+    required this.cards,
+    required this.fanDirection,
+    required this.compact,
+  });
+
+  final List<Widget> cards;
+  final _CardFanDirection fanDirection;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    if (cards.isEmpty) {
+      return const SizedBox(height: 54);
+    }
+
+    final cardWidth = compact ? 42.0 : 56.0;
+    final cardHeight = compact ? 60.0 : 82.0;
+    final spacing = compact ? 11.0 : 15.0;
+    final totalSpan = (cards.length - 1) * spacing;
+    final width =
+        fanDirection == _CardFanDirection.left ||
+            fanDirection == _CardFanDirection.right
+        ? cardWidth + 14
+        : cardWidth + totalSpan;
+    final height =
+        fanDirection == _CardFanDirection.left ||
+            fanDirection == _CardFanDirection.right
+        ? cardHeight + totalSpan
+        : cardHeight + 14;
+    final center = (cards.length - 1) / 2;
+    final isHorizontalFan =
+        fanDirection == _CardFanDirection.up ||
+        fanDirection == _CardFanDirection.down;
+    final angleDirection = switch (fanDirection) {
+      _CardFanDirection.up => -1,
+      _CardFanDirection.left => -1,
+      _CardFanDirection.down => 1,
+      _CardFanDirection.right => 1,
+    };
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          for (var index = 0; index < cards.length; index++)
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.center,
+                child: Transform.translate(
+                  offset: isHorizontalFan
+                      ? Offset(
+                          (index - center) * spacing,
+                          (index - center).abs() * 1.5,
+                        )
+                      : Offset(
+                          (index - center).abs() * 1.5,
+                          (index - center) * spacing,
+                        ),
+                  child: Transform.rotate(
+                    angle: (index - center) * 0.09 * angleDirection,
+                    child: cards[index],
+                  ),
+                ),
+              ),
             ),
         ],
       ),

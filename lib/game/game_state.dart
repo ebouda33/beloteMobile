@@ -55,6 +55,7 @@ class GameState {
     this.aiLevel = AiLevel.debutant,
     this.phase = GamePhase.choosingTrump,
     this.biddingRound = 1,
+    this.dealerSeat = PlayerSeat.rightOpponent,
     this.biddingStarterSeat = PlayerSeat.human,
     this.trumpSuit,
     this.trumpTaker,
@@ -78,6 +79,7 @@ class GameState {
   final AiLevel aiLevel;
   final GamePhase phase;
   final int biddingRound;
+  final PlayerSeat dealerSeat;
   final PlayerSeat biddingStarterSeat;
   final Suit? trumpSuit;
   final PlayerSeat? trumpTaker;
@@ -305,6 +307,7 @@ class GameState {
           aiLevel: aiLevel,
           phase: GamePhase.choosingTrump,
           biddingRound: 2,
+          dealerSeat: dealerSeat,
           biddingStarterSeat: biddingStarterSeat,
           trumpSuit: trumpSuit,
           trumpTaker: trumpTaker,
@@ -325,7 +328,7 @@ class GameState {
       return _createRoundGameState(
         gameScore: gameScore,
         humanSeat: humanSeat,
-        biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
+        dealerSeat: _nextSeatAfter(dealerSeat),
         aiLevel: aiLevel,
       );
     }
@@ -338,6 +341,7 @@ class GameState {
       aiLevel: aiLevel,
       phase: GamePhase.waitingForTrumpTaker,
       biddingRound: biddingRound,
+      dealerSeat: dealerSeat,
       biddingStarterSeat: biddingStarterSeat,
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
@@ -433,6 +437,7 @@ class GameState {
       aiLevel: aiLevel,
       phase: GamePhase.playingTrick,
       biddingRound: biddingRound,
+      dealerSeat: dealerSeat,
       biddingStarterSeat: biddingStarterSeat,
       trumpSuit: selectedTrumpSuit,
       trumpTaker: taker,
@@ -462,7 +467,7 @@ class GameState {
       random: random,
       gameScore: gameScore,
       humanSeat: humanSeat,
-      biddingStarterSeat: _nextSeatAfter(biddingStarterSeat),
+      dealerSeat: _nextSeatAfter(dealerSeat),
       aiLevel: aiLevel,
     );
   }
@@ -590,6 +595,7 @@ class GameState {
       aiLevel: aiLevel,
       phase: nextPhase,
       biddingRound: biddingRound,
+      dealerSeat: dealerSeat,
       biddingStarterSeat: biddingStarterSeat,
       trumpSuit: trumpSuit,
       trumpTaker: trumpTaker,
@@ -686,6 +692,10 @@ PlayerSeat _nextSeatAfter(PlayerSeat seat) {
   final nextIndex =
       (PlayerSeat.values.indexOf(seat) + 1) % PlayerSeat.values.length;
   return PlayerSeat.values[nextIndex];
+}
+
+PlayerSeat _randomSeat(Random random) {
+  return PlayerSeat.values[random.nextInt(PlayerSeat.values.length)];
 }
 
 PlayerSeat _partnerOf(PlayerSeat seat) {
@@ -874,15 +884,23 @@ bool _beats({
 GameState createInitialGameState({
   Random? random,
   AiLevel aiLevel = AiLevel.debutant,
+  bool randomizeDealerSeat = false,
 }) {
-  return _createRoundGameState(random: random, aiLevel: aiLevel);
+  final dealerSeat = randomizeDealerSeat
+      ? _randomSeat(random ?? Random())
+      : PlayerSeat.rightOpponent;
+  return _createRoundGameState(
+    random: random,
+    aiLevel: aiLevel,
+    dealerSeat: dealerSeat,
+  );
 }
 
 GameState _createRoundGameState({
   Random? random,
   Map<Team, int> gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   PlayerSeat humanSeat = PlayerSeat.human,
-  PlayerSeat biddingStarterSeat = PlayerSeat.human,
+  PlayerSeat dealerSeat = PlayerSeat.rightOpponent,
   AiLevel aiLevel = AiLevel.debutant,
 }) {
   final initialDeal = dealInitialHandsAndTurnCard(
@@ -899,8 +917,9 @@ GameState _createRoundGameState({
     humanSeat: humanSeat,
     aiLevel: aiLevel,
     biddingRound: 1,
-    biddingStarterSeat: biddingStarterSeat,
-    currentPlayer: biddingStarterSeat,
+    dealerSeat: dealerSeat,
+    biddingStarterSeat: _nextSeatAfter(dealerSeat),
+    currentPlayer: _nextSeatAfter(dealerSeat),
     gameScore: gameScore,
   );
 }

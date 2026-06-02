@@ -13,9 +13,10 @@ void main() {
 }
 
 class BeloteApp extends StatelessWidget {
-  const BeloteApp({super.key, this.random});
+  const BeloteApp({super.key, this.random, this.randomizeDealerSeat = true});
 
   final Random? random;
+  final bool randomizeDealerSeat;
 
   @override
   Widget build(BuildContext context) {
@@ -131,15 +132,19 @@ class BeloteApp extends StatelessWidget {
           side: const BorderSide(color: Color(0xFFD1B88A)),
         ),
       ),
-      home: HomeScreen(random: random),
+      home: HomeScreen(
+        random: random,
+        randomizeDealerSeat: randomizeDealerSeat,
+      ),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.random});
+  const HomeScreen({super.key, this.random, this.randomizeDealerSeat = true});
 
   final Random? random;
+  final bool randomizeDealerSeat;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -158,6 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _gameState = createInitialGameState(
         random: widget.random,
         aiLevel: _aiLevel,
+        randomizeDealerSeat: widget.randomizeDealerSeat,
       );
       _showOpponentCards = false;
       _showLastTrick = false;

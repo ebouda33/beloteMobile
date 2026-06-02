@@ -650,6 +650,7 @@ void main() {
 
         expect(redealtState.phase, GamePhase.choosingTrump);
         expect(redealtState.biddingRound, 1);
+        expect(redealtState.dealerSeat, PlayerSeat.human);
         expect(redealtState.biddingStarterSeat, PlayerSeat.leftOpponent);
         expect(redealtState.currentPlayer, PlayerSeat.leftOpponent);
         expect(redealtState.passedSeats, isEmpty);

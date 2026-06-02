@@ -54,7 +54,7 @@ void main() {
   testWidgets('starts a local game and shows the player hand', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const BeloteApp());
+    await tester.pumpWidget(const BeloteApp(randomizeDealerSeat: false));
 
     await tapVisible(tester, find.text('Nouvelle partie'));
 
@@ -90,6 +90,7 @@ void main() {
     await tapVisible(tester, find.text('Prendre'));
 
     expect(find.byKey(const ValueKey('trump-badge')), findsOneWidget);
+    expect(find.byKey(const ValueKey('dealer-chip')), findsOneWidget);
     expect(find.text('Preneur : Vous *'), findsOneWidget);
     expect(humanCards(), findsNWidgets(8));
     expect(find.textContaining('Prendre '), findsNothing);
@@ -144,7 +145,7 @@ void main() {
   testWidgets('passes on the turned trump card and closes the dialog', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const BeloteApp());
+    await tester.pumpWidget(const BeloteApp(randomizeDealerSeat: false));
 
     await tapVisible(tester, find.text('Nouvelle partie'));
     await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
