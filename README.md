@@ -46,6 +46,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   soulevent au survol.
 - Un selecteur `Debutant / Expert` permet de choisir le niveau des adversaires
   locaux depuis l'ecran d'accueil.
+- La zone score est simplifiee en tableau avec deux colonnes `EUX` / `NOUS`,
+  une ligne par manche et un total automatique en bas.
 - Une manche peut aller jusqu'aux 8 plis, avec suivi des plis remportes par
   equipe et detection de fin de manche.
 - Premier calcul de points de manche : points des cartes gagnees et bonus de
@@ -96,6 +98,5 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : continuer le polish de l'interface de jeu ou
-preparer l'ajout de nouvelles annonces ou variantes. Le prochain point logique
-est d'etendre l'intelligence des robots a la phase de jeu elle-meme.
+Prochaine etape recommandee : poursuivre le polish visuel du plateau et de la
+zone score, ou etendre l'intelligence des robots a la phase de jeu elle-meme.

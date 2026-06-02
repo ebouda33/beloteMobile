@@ -10,12 +10,22 @@ class GameBoardView extends StatelessWidget {
     required this.onCardTap,
     required this.onTurnedCardTap,
     required this.showOpponentCards,
+    required this.showLastTrick,
+    required this.onToggleLastTrick,
+    required this.onStartNextRound,
+    required this.onToggleOpponentCards,
+    required this.showOpponentCardsActionLabel,
   });
 
   final GameState gameState;
   final ValueChanged<BeloteCard> onCardTap;
   final VoidCallback onTurnedCardTap;
   final bool showOpponentCards;
+  final bool showLastTrick;
+  final VoidCallback onToggleLastTrick;
+  final VoidCallback onStartNextRound;
+  final VoidCallback onToggleOpponentCards;
+  final String showOpponentCardsActionLabel;
 
   static const Color _forestDeep = Color(0xFF182A23);
   static const Color _forest = Color(0xFF243C32);
@@ -91,6 +101,53 @@ class GameBoardView extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _ScoreNotebook(gameState: gameState),
+              if (gameState.phase == GamePhase.roundComplete &&
+                  !gameState.isGameComplete)
+                FilledButton.icon(
+                  key: const ValueKey('next-round-button'),
+                  onPressed: onStartNextRound,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Nouvelle manche'),
+                ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                children: [
+                  FilledButton.tonalIcon(
+                    key: const ValueKey('toggle-opponent-cards'),
+                    onPressed: onToggleOpponentCards,
+                    icon: Icon(
+                      showOpponentCards
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    label: Text(showOpponentCardsActionLabel),
+                  ),
+                  FilledButton.tonalIcon(
+                    key: const ValueKey('toggle-last-trick'),
+                    onPressed: onToggleLastTrick,
+                    icon: Icon(
+                      showLastTrick
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    label: Text(
+                      showLastTrick ? 'Cacher le dernier pli' : 'Dernier pli',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
@@ -150,6 +207,7 @@ class GameBoardView extends StatelessWidget {
                       child: _TrickArea(
                         gameState: gameState,
                         onTurnedCardTap: onTurnedCardTap,
+                        showLastTrick: showLastTrick,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -199,6 +257,266 @@ class GameBoardView extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ScoreNotebook extends StatelessWidget {
+  const _ScoreNotebook({required this.gameState});
+
+  final GameState gameState;
+
+  @override
+  Widget build(BuildContext context) {
+    final roundHistory = gameState.roundHistory;
+    final humanTotal = gameState.gameScore[Team.humanTeam] ?? 0;
+    final opponentTotal = gameState.gameScore[Team.opponentTeam] ?? 0;
+
+    return Container(
+      key: const ValueKey('score-notebook'),
+      width: 350,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F0DF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFC4A15A).withValues(alpha: 0.55),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x152B251F),
+            blurRadius: 14,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(painter: _NotebookPagePainter()),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 54, right: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Scores',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF6B5A46),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Expanded(
+                        flex: 3,
+                        child: Text(
+                          'Manche',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF8C785F),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 66,
+                        child: Text(
+                          'EUX',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF8C785F),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 66,
+                        child: Text(
+                          'NOUS',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF8C785F),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFBFA57B),
+                  ),
+                  const SizedBox(height: 8),
+                  if (roundHistory.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        'Aucune manche jouee',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6B5A46),
+                        ),
+                      ),
+                    )
+                  else
+                    for (
+                      var index = 0;
+                      index < roundHistory.length;
+                      index++
+                    ) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              'Manche ${index + 1}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2B251F),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 66,
+                            child: Text(
+                              '${roundHistory[index][Team.opponentTeam] ?? 0}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2B251F),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 66,
+                            child: Text(
+                              '${roundHistory[index][Team.humanTeam] ?? 0}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2B251F),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (index != roundHistory.length - 1) ...[
+                        const SizedBox(height: 8),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Color(0xFFCFB991),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ],
+                  const SizedBox(height: 10),
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFBFA57B),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Expanded(
+                        flex: 3,
+                        child: Text(
+                          'Total',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2B251F),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 66,
+                        child: Text(
+                          '$opponentTotal',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2B251F),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 66,
+                        child: Text(
+                          '$humanTotal',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2B251F),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotebookPagePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ruledPaint = Paint()
+      ..color = const Color(0xFFE5CEA4).withValues(alpha: 0.72)
+      ..strokeWidth = 1;
+    final marginPaint = Paint()
+      ..color = const Color(0xFFD99A90).withValues(alpha: 0.85)
+      ..strokeWidth = 1.6;
+    final separatorPaint = Paint()
+      ..color = const Color(0xFFC8B184).withValues(alpha: 0.78)
+      ..strokeWidth = 1;
+
+    for (double y = 18; y < size.height; y += 18) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), ruledPaint);
+    }
+
+    canvas.drawLine(const Offset(44, 0), Offset(44, size.height), marginPaint);
+    canvas.drawLine(
+      const Offset(0, 74),
+      Offset(size.width, 74),
+      separatorPaint,
+    );
+    canvas.drawLine(
+      const Offset(0, 140),
+      Offset(size.width, 140),
+      separatorPaint,
+    );
+    canvas.drawLine(
+      const Offset(0, 202),
+      Offset(size.width, 202),
+      separatorPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _NotebookPagePainter oldDelegate) => false;
 }
 
 class _SeatHand extends StatelessWidget {
@@ -318,18 +636,27 @@ class _SeatHand extends StatelessWidget {
 }
 
 class _TrickArea extends StatelessWidget {
-  const _TrickArea({required this.gameState, required this.onTurnedCardTap});
+  const _TrickArea({
+    required this.gameState,
+    required this.onTurnedCardTap,
+    required this.showLastTrick,
+  });
 
   final GameState gameState;
   final VoidCallback onTurnedCardTap;
+  final bool showLastTrick;
 
   @override
   Widget build(BuildContext context) {
     final showTurnedCard =
         gameState.phase == GamePhase.choosingTrump ||
         gameState.phase == GamePhase.waitingForTrumpTaker;
+    final showCenteredLastTrick =
+        showLastTrick && gameState.lastCompletedTrick.isNotEmpty;
     final playedCards = showTurnedCard
         ? const <PlayedCard>[]
+        : showLastTrick && gameState.lastCompletedTrick.isNotEmpty
+        ? gameState.lastCompletedTrick
         : gameState.currentTrick.isNotEmpty
         ? gameState.currentTrick
         : gameState.lastCompletedTrick;
@@ -410,6 +737,56 @@ class _TrickArea extends StatelessWidget {
                         ),
                       ),
                     )
+                  else if (showCenteredLastTrick)
+                    SizedBox.expand(
+                      child: Center(
+                        child: SizedBox(
+                          width: 240,
+                          height: 220,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                top: 0,
+                                child: _StatusBadge(
+                                  key: const ValueKey('last-trick-display'),
+                                  text: 'Dernier pli',
+                                  background: const Color(0xFFE7D1D1),
+                                  border: const Color(0xFF9C5757),
+                                  foreground: const Color(0xFF4A1C1C),
+                                ),
+                              ),
+                              for (final playedCard in playedCards)
+                                Align(
+                                  alignment: _alignmentForSeat(
+                                    playedCard.player,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      PlayingCardView(
+                                        key: ValueKey(
+                                          'trick-card-${playedCard.player.name}-${playedCard.card.id}',
+                                        ),
+                                        card: playedCard.card,
+                                        compact: true,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        playedCard.player.label,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFD8CCB7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
                   else if (playedCards.isEmpty)
                     const Text(
                       'Le centre du tapis s anime ici.',
@@ -424,6 +801,9 @@ class _TrickArea extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             PlayingCardView(
+                              key: ValueKey(
+                                'trick-card-${playedCard.player.name}-${playedCard.card.id}',
+                              ),
                               card: playedCard.card,
                               compact: true,
                             ),

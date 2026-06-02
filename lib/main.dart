@@ -148,6 +148,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   GameState? _gameState;
   bool _showOpponentCards = false;
+  bool _showLastTrick = false;
   AiLevel _aiLevel = AiLevel.debutant;
   int _biddingAnimationToken = 0;
   int _trickAnimationToken = 0;
@@ -159,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
         aiLevel: _aiLevel,
       );
       _showOpponentCards = false;
+      _showLastTrick = false;
     });
 
     await _animateAutomaticTrumpBidding();
@@ -350,6 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .startNextRound(random: widget.random)
           .resolveAutomaticTrumpTurns()
           .playAutomaticTurns();
+      _showLastTrick = false;
     });
 
     unawaited(_scheduleAutomaticTrickTurns());
@@ -377,13 +380,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     const forestDeep = Color(0xFF182A23);
@@ -396,24 +392,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: forestDeep,
         title: const Text('Belote Mobile'),
         actions: [
-          IconButton(
-            tooltip: _showOpponentCards
-                ? 'Masquer les cartes des joueurs'
-                : 'Voir les cartes des joueurs',
-            onPressed: _gameState == null
-                ? null
-                : () {
-                    setState(() {
-                      _showOpponentCards = !_showOpponentCards;
-                    });
-                  },
-            icon: Icon(
-              _showOpponentCards
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-            ),
-            color: paper,
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -521,221 +499,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         onCardTap: _playCard,
                         onTurnedCardTap: _showTrumpChoiceDialog,
                         showOpponentCards: _showOpponentCards,
+                        showLastTrick: _showLastTrick,
+                        onToggleLastTrick: () {
+                          setState(() {
+                            _showLastTrick = !_showLastTrick;
+                          });
+                        },
+                        onStartNextRound: _startNextRound,
+                        onToggleOpponentCards: () {
+                          setState(() {
+                            _showOpponentCards = !_showOpponentCards;
+                          });
+                        },
+                        showOpponentCardsActionLabel: _showOpponentCards
+                            ? 'Masquer les cartes des joueurs'
+                            : 'Voir les cartes des joueurs',
                       ),
-                      const SizedBox(height: 20),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          _statusPill(
-                            gameState.trumpSuit == null
-                                ? (gameState.biddingRound == 1
-                                      ? 'Atout : a choisir'
-                                      : 'Atout : 2e tour')
-                                : 'Atout : ${gameState.trumpSuit!.label}',
-                          ),
-                          _statusPill(
-                            'Score ${Team.humanTeam.label} : '
-                            '${gameState.gameScore[Team.humanTeam] ?? 0}',
-                          ),
-                          _statusPill(
-                            'Score ${Team.opponentTeam.label} : '
-                            '${gameState.gameScore[Team.opponentTeam] ?? 0}',
-                          ),
-                          if (gameState.trumpTakerLabel case final label?)
-                            _statusPill(label),
-                          if (gameState.currentPlayer case final currentPlayer?)
-                            _statusPill(
-                              'Joueur courant : ${currentPlayer.label}',
-                            ),
-                          _statusPill(
-                            'Carte retournee : ${gameState.turnedCard.label}',
-                          ),
-                          _statusPill(
-                            'Plis joues : ${gameState.completedTrickCount}/8',
-                          ),
-                        ],
-                      ),
-                      if (gameState.phase == GamePhase.playingTrick ||
-                          gameState.phase == GamePhase.roundComplete) ...[
-                        const SizedBox(height: 20),
-                        _surfacePanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _sectionTitle('Dernier pli'),
-                              const SizedBox(height: 12),
-                              if (gameState.lastCompletedTrick.isEmpty)
-                                const Text('Aucun pli termine pour le moment.')
-                              else ...[
-                                if (gameState.lastTrickWinner
-                                    case final lastTrickWinner?)
-                                  Text('Gagnant : ${lastTrickWinner.label}'),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 10,
-                                  runSpacing: 10,
-                                  children: [
-                                    for (final playedCard
-                                        in gameState.lastCompletedTrick)
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          PlayingCardView(
-                                            card: playedCard.card,
-                                            compact: true,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(playedCard.player.label),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (gameState.phase == GamePhase.roundComplete) ...[
-                        const SizedBox(height: 20),
-                        _surfacePanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _sectionTitle('Fin de manche'),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Manche terminee. Points de cartes calcules.',
-                              ),
-                              const SizedBox(height: 8),
-                              if (gameState.takerTeam case final takerTeam?)
-                                Text('Equipe preneuse : ${takerTeam.label}'),
-                              if (gameState.isContractFulfilled
-                                  case final fulfilled?)
-                                Text(
-                                  fulfilled
-                                      ? 'Contrat reussi'
-                                      : 'Contrat chute',
-                                ),
-                              if (gameState.capotTeam case final capotTeam?)
-                                Text('Capot : ${capotTeam.label}'),
-                              if (gameState.beloteBonusTeam
-                                  case final beloteBonusTeam?)
-                                Text(
-                                  'Belote / rebelote : ${beloteBonusTeam.label} (+20)',
-                                ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Points ${Team.humanTeam.label} : '
-                                '${gameState.roundPoints[Team.humanTeam] ?? 0}',
-                              ),
-                              Text(
-                                'Points ${Team.opponentTeam.label} : '
-                                '${gameState.roundPoints[Team.opponentTeam] ?? 0}',
-                              ),
-                              Text(
-                                'Score ${Team.humanTeam.label} : '
-                                '${gameState.roundScore[Team.humanTeam] ?? 0}',
-                              ),
-                              Text(
-                                'Score ${Team.opponentTeam.label} : '
-                                '${gameState.roundScore[Team.opponentTeam] ?? 0}',
-                              ),
-                              if (gameState.isGameComplete) ...[
-                                const SizedBox(height: 14),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF7ECD8),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: brass),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        gameState.winningTeam == null
-                                            ? 'Partie terminee. Egalite.'
-                                            : 'Partie terminee. Vainqueur : '
-                                                  '${gameState.winningTeam!.label}',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Score final - ${Team.humanTeam.label} : '
-                                        '${gameState.gameScore[Team.humanTeam] ?? 0}',
-                                      ),
-                                      Text(
-                                        'Score final - ${Team.opponentTeam.label} : '
-                                        '${gameState.gameScore[Team.opponentTeam] ?? 0}',
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ] else ...[
-                                const SizedBox(height: 14),
-                                OutlinedButton.icon(
-                                  onPressed: _startNextRound,
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('Nouvelle manche'),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (gameState.phase == GamePhase.choosingTrump) ...[
-                        const SizedBox(height: 20),
-                        _surfacePanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                gameState.biddingRound == 1
-                                    ? 'Cliquez la carte retournee pour choisir votre atout.'
-                                    : 'Premier tour passe. Choisissez une autre couleur.',
-                              ),
-                              if (_showOpponentCards) ...[
-                                const SizedBox(height: 8),
-                                const Text('Cartes des joueurs visibles.'),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (gameState.phase ==
-                          GamePhase.waitingForTrumpTaker) ...[
-                        const SizedBox(height: 20),
-                        _surfacePanel(
-                          child: const Text(
-                            'Vous avez passe. En attente des autres joueurs.',
-                          ),
-                        ),
-                      ],
-                      if (gameState.phase == GamePhase.allPlayersPassed) ...[
-                        const SizedBox(height: 20),
-                        _surfacePanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Tous les joueurs ont passe. Redistribuez.',
-                              ),
-                              const SizedBox(height: 12),
-                              OutlinedButton.icon(
-                                onPressed: _startNewGame,
-                                icon: const Icon(Icons.shuffle),
-                                label: const Text('Redistribuer'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ],
                 ),
@@ -746,21 +525,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-Widget _statusPill(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF7EFE0),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(
-        color: const Color(0xFFC4A15A).withValues(alpha: 0.45),
-      ),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    ),
-  );
 }

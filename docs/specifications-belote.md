@@ -77,6 +77,8 @@ Premier niveau valide :
   fermeture du flux de nouvelle manche et recapitulatif du score final ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
+- zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une
+  ligne par manche et un total automatique en bas ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -125,7 +127,7 @@ permet maintenant de choisir entre IA `Debutant` et `Expert`.
 
 Prochaine reprise :
 
-1. continuer le polish de l'interface de jeu ;
+1. poursuivre le polish visuel du plateau et de la zone score ;
 2. preparer l'ajout de nouvelles annonces ou variantes ;
 3. etendre l'intelligence des robots a la phase de jeu elle-meme.
 

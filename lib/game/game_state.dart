@@ -65,6 +65,7 @@ class GameState {
     this.lastTrickWinner,
     this.wonTricks = const {Team.humanTeam: [], Team.opponentTeam: []},
     this.roundBonusPoints = const {Team.humanTeam: 0, Team.opponentTeam: 0},
+    this.roundHistory = const [],
     this.beloteTeam,
     this.beloteRanksPlayed = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
@@ -87,6 +88,7 @@ class GameState {
   final PlayerSeat? lastTrickWinner;
   final Map<Team, List<List<PlayedCard>>> wonTricks;
   final Map<Team, int> roundBonusPoints;
+  final List<Map<Team, int>> roundHistory;
   final Team? beloteTeam;
   final Set<Rank> beloteRanksPlayed;
   final Map<Team, int> gameScore;
@@ -313,6 +315,7 @@ class GameState {
           lastTrickWinner: lastTrickWinner,
           wonTricks: wonTricks,
           roundBonusPoints: roundBonusPoints,
+          roundHistory: roundHistory,
           beloteTeam: beloteTeam,
           beloteRanksPlayed: beloteRanksPlayed,
           gameScore: gameScore,
@@ -345,6 +348,7 @@ class GameState {
       lastTrickWinner: lastTrickWinner,
       wonTricks: wonTricks,
       roundBonusPoints: roundBonusPoints,
+      roundHistory: roundHistory,
       beloteTeam: beloteTeam,
       beloteRanksPlayed: beloteRanksPlayed,
       gameScore: gameScore,
@@ -436,6 +440,7 @@ class GameState {
       currentPlayer: taker,
       wonTricks: wonTricks,
       roundBonusPoints: roundBonusPoints,
+      roundHistory: roundHistory,
       beloteTeam: beloteTeam,
       beloteRanksPlayed: beloteRanksPlayed,
       gameScore: gameScore,
@@ -559,6 +564,23 @@ class GameState {
             ),
           )
         : gameScore;
+    final updatedRoundHistory = isRoundComplete
+        ? [
+            ...roundHistory,
+            Map<Team, int>.unmodifiable(
+              _addScores(
+                _roundScoreFor(
+                  phase: nextPhase,
+                  trumpSuit: trumpSuit!,
+                  trumpTaker: trumpTaker,
+                  lastTrickWinner: trickWinner,
+                  wonTricks: updatedWonTricks,
+                ),
+                updatedRoundBonusPoints,
+              ),
+            ),
+          ]
+        : roundHistory;
 
     return GameState(
       hands: updatedHands,
@@ -582,6 +604,7 @@ class GameState {
       lastTrickWinner: trickWinner ?? lastTrickWinner,
       wonTricks: updatedWonTricks,
       roundBonusPoints: updatedRoundBonusPoints,
+      roundHistory: updatedRoundHistory,
       beloteTeam: updatedBeloteTeam,
       beloteRanksPlayed: updatedBeloteRanksPlayed,
       gameScore: updatedGameScore,

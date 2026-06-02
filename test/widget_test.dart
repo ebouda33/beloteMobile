@@ -59,10 +59,16 @@ void main() {
     await tapVisible(tester, find.text('Nouvelle partie'));
 
     expect(find.byKey(const ValueKey('game-table')), findsOneWidget);
+    expect(find.byKey(const ValueKey('score-notebook')), findsOneWidget);
+    expect(find.text('Scores'), findsOneWidget);
+    expect(find.text('EUX'), findsOneWidget);
+    expect(find.text('NOUS'), findsOneWidget);
     expect(find.byKey(const ValueKey('human-hand')), findsOneWidget);
     expect(find.byKey(const ValueKey('turned-card')), findsOneWidget);
     expect(find.byKey(const ValueKey('trump-badge')), findsOneWidget);
     expect(find.text('Atout'), findsOneWidget);
+    expect(find.byKey(const ValueKey('toggle-opponent-cards')), findsOneWidget);
+    expect(find.byKey(const ValueKey('toggle-last-trick')), findsOneWidget);
     expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
     expect(humanCards(), findsNWidgets(5));
     expect(
@@ -72,7 +78,6 @@ void main() {
       ),
       findsNWidgets(5),
     );
-    expect(find.textContaining('Carte retournee : '), findsOneWidget);
     expect(find.textContaining('Prendre '), findsNothing);
     expect(find.text('Passer'), findsNothing);
 
@@ -85,8 +90,7 @@ void main() {
     await tapVisible(tester, find.text('Prendre'));
 
     expect(find.byKey(const ValueKey('trump-badge')), findsOneWidget);
-    expect(find.text('Preneur : Vous *'), findsNWidgets(2));
-    expect(find.text('Joueur courant : Vous'), findsOneWidget);
+    expect(find.text('Preneur : Vous *'), findsOneWidget);
     expect(humanCards(), findsNWidgets(8));
     expect(find.textContaining('Prendre '), findsNothing);
     expect(find.text('Passer'), findsNothing);
@@ -105,7 +109,10 @@ void main() {
     expect(partnerCardsBefore, isNotEmpty);
     expect(partnerCardsBefore.every((card) => card.faceDown), isTrue);
 
-    await tapVisible(tester, find.byTooltip('Voir les cartes des joueurs'));
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('toggle-opponent-cards')),
+    );
 
     final partnerCardsAfter = tester
         .widgetList<PlayingCardView>(opponentCards('partner-hand'))
@@ -113,7 +120,7 @@ void main() {
     expect(partnerCardsAfter, isNotEmpty);
     expect(partnerCardsAfter.every((card) => !card.faceDown), isTrue);
 
-    expect(find.byTooltip('Masquer les cartes des joueurs'), findsOneWidget);
+    expect(find.byKey(const ValueKey('toggle-opponent-cards')), findsOneWidget);
   });
 
   testWidgets('renders compact cards with suit only', (
@@ -192,6 +199,11 @@ void main() {
               onCardTap: (_) {},
               onTurnedCardTap: () {},
               showOpponentCards: true,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
             ),
           ),
         ),
@@ -292,6 +304,11 @@ void main() {
               onCardTap: (_) {},
               onTurnedCardTap: () {},
               showOpponentCards: true,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
             ),
           ),
         ),
@@ -344,6 +361,11 @@ void main() {
               onCardTap: (_) {},
               onTurnedCardTap: () {},
               showOpponentCards: false,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
             ),
           ),
         ),
@@ -377,5 +399,148 @@ void main() {
           .first,
     );
     expect(hoverTransform.transform.storage[13], lessThanOrEqualTo(0));
+  });
+
+  testWidgets('shows the last trick in the middle of the table', (
+    WidgetTester tester,
+  ) async {
+    var showLastTrick = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: GameBoardView(
+                  gameState: GameState(
+                    hands: const {
+                      PlayerSeat.human: [
+                        BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+                        BeloteCard(suit: Suit.hearts, rank: Rank.king),
+                      ],
+                      PlayerSeat.leftOpponent: [
+                        BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+                        BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+                      ],
+                      PlayerSeat.partner: [
+                        BeloteCard(suit: Suit.spades, rank: Rank.seven),
+                        BeloteCard(suit: Suit.spades, rank: Rank.eight),
+                      ],
+                      PlayerSeat.rightOpponent: [
+                        BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+                        BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+                      ],
+                    },
+                    turnedCard: const BeloteCard(
+                      suit: Suit.hearts,
+                      rank: Rank.queen,
+                    ),
+                    remainingDeck: const [],
+                    phase: GamePhase.playingTrick,
+                    biddingRound: 2,
+                    trumpSuit: Suit.clubs,
+                    trumpTaker: PlayerSeat.leftOpponent,
+                    passedSeats: {PlayerSeat.partner, PlayerSeat.rightOpponent},
+                    currentPlayer: PlayerSeat.human,
+                    currentTrick: const [
+                      PlayedCard(
+                        player: PlayerSeat.leftOpponent,
+                        card: BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+                      ),
+                    ],
+                    lastCompletedTrick: const [
+                      PlayedCard(
+                        player: PlayerSeat.leftOpponent,
+                        card: BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+                      ),
+                      PlayedCard(
+                        player: PlayerSeat.partner,
+                        card: BeloteCard(suit: Suit.spades, rank: Rank.king),
+                      ),
+                      PlayedCard(
+                        player: PlayerSeat.rightOpponent,
+                        card: BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+                      ),
+                      PlayedCard(
+                        player: PlayerSeat.human,
+                        card: BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+                      ),
+                    ],
+                    lastTrickWinner: PlayerSeat.leftOpponent,
+                    wonTricks: {
+                      Team.humanTeam: const [],
+                      Team.opponentTeam: const [
+                        [
+                          PlayedCard(
+                            player: PlayerSeat.leftOpponent,
+                            card: BeloteCard(
+                              suit: Suit.clubs,
+                              rank: Rank.queen,
+                            ),
+                          ),
+                          PlayedCard(
+                            player: PlayerSeat.partner,
+                            card: BeloteCard(
+                              suit: Suit.spades,
+                              rank: Rank.king,
+                            ),
+                          ),
+                          PlayedCard(
+                            player: PlayerSeat.rightOpponent,
+                            card: BeloteCard(
+                              suit: Suit.diamonds,
+                              rank: Rank.ace,
+                            ),
+                          ),
+                          PlayedCard(
+                            player: PlayerSeat.human,
+                            card: BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+                          ),
+                        ],
+                      ],
+                    },
+                  ),
+                  onCardTap: (_) {},
+                  onTurnedCardTap: () {},
+                  showOpponentCards: true,
+                  showLastTrick: showLastTrick,
+                  onToggleLastTrick: () {
+                    setState(() {
+                      showLastTrick = !showLastTrick;
+                    });
+                  },
+                  onStartNextRound: () {},
+                  onToggleOpponentCards: () {},
+                  showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('last-trick-display')), findsNothing);
+
+    await tapVisible(tester, find.byKey(const ValueKey('toggle-last-trick')));
+
+    expect(find.byKey(const ValueKey('last-trick-display')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('trick-card-leftOpponent-clubs-queen')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('trick-card-partner-spades-king')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('trick-card-rightOpponent-diamonds-ace')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('trick-card-human-hearts-ace')),
+      findsOneWidget,
+    );
   });
 }
