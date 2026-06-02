@@ -44,6 +44,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   et monter a l'atout quand c'est possible.
 - Les cartes impossibles a jouer sont assombries et les cartes jouables se
   soulevent au survol.
+- Un selecteur `Debutant / Expert` permet de choisir le niveau des adversaires
+  locaux depuis l'ecran d'accueil.
 - Une manche peut aller jusqu'aux 8 plis, avec suivi des plis remportes par
   equipe et detection de fin de manche.
 - Premier calcul de points de manche : points des cartes gagnees et bonus de
@@ -95,4 +97,5 @@ passent.
 ## Prochaine reprise
 
 Prochaine etape recommandee : continuer le polish de l'interface de jeu ou
-preparer l'ajout de nouvelles annonces ou variantes.
+preparer l'ajout de nouvelles annonces ou variantes. Le prochain point logique
+est d'etendre l'intelligence des robots a la phase de jeu elle-meme.

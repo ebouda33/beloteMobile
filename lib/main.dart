@@ -148,12 +148,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   GameState? _gameState;
   bool _showOpponentCards = false;
+  AiLevel _aiLevel = AiLevel.debutant;
   int _biddingAnimationToken = 0;
   int _trickAnimationToken = 0;
 
   Future<void> _startNewGame() async {
     setState(() {
-      _gameState = createInitialGameState(random: widget.random);
+      _gameState = createInitialGameState(
+        random: widget.random,
+        aiLevel: _aiLevel,
+      );
       _showOpponentCards = false;
     });
 
@@ -484,6 +488,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 label: const Text('Nouvelle partie'),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+                          SegmentedButton<AiLevel>(
+                            key: const ValueKey('ai-level-selector'),
+                            segments: const [
+                              ButtonSegment(
+                                value: AiLevel.debutant,
+                                label: Text('Debutant'),
+                                icon: Icon(Icons.school_outlined),
+                              ),
+                              ButtonSegment(
+                                value: AiLevel.expert,
+                                label: Text('Expert'),
+                                icon: Icon(Icons.psychology_outlined),
+                              ),
+                            ],
+                            selected: {_aiLevel},
+                            onSelectionChanged: (selection) {
+                              setState(() {
+                                _aiLevel = selection.first;
+                              });
+                            },
                           ),
                         ],
                       ),

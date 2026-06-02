@@ -268,6 +268,194 @@ void main() {
       });
     });
 
+    test('expert AI takes a strong first-round trump', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+            BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          ],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.hearts, rank: Rank.jack),
+            BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+            BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+          ],
+          PlayerSeat.partner: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+            BeloteCard(suit: Suit.spades, rank: Rank.ten),
+            BeloteCard(suit: Suit.clubs, rank: Rank.king),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.queen),
+          ],
+          PlayerSeat.rightOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.spades, rank: Rank.eight),
+            BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            BeloteCard(suit: Suit.spades, rank: Rank.queen),
+          ],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.queen),
+        remainingDeck: const [
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+          BeloteCard(suit: Suit.spades, rank: Rank.ace),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.king),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          BeloteCard(suit: Suit.clubs, rank: Rank.king),
+          BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+          BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          BeloteCard(suit: Suit.spades, rank: Rank.king),
+          BeloteCard(suit: Suit.spades, rank: Rank.seven),
+          BeloteCard(suit: Suit.hearts, rank: Rank.eight),
+          BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+        ],
+        phase: GamePhase.choosingTrump,
+        biddingRound: 1,
+        biddingStarterSeat: PlayerSeat.leftOpponent,
+        currentPlayer: PlayerSeat.leftOpponent,
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.resolveAutomaticTrumpTurns();
+
+      expect(updatedState.phase, GamePhase.playingTrick);
+      expect(updatedState.trumpSuit, Suit.hearts);
+      expect(updatedState.trumpTaker, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+    });
+
+    test('expert AI passes when the first-round trump is too weak', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+            BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          ],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+            BeloteCard(suit: Suit.hearts, rank: Rank.eight),
+            BeloteCard(suit: Suit.hearts, rank: Rank.king),
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+          ],
+          PlayerSeat.partner: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+            BeloteCard(suit: Suit.spades, rank: Rank.ten),
+            BeloteCard(suit: Suit.clubs, rank: Rank.king),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.queen),
+          ],
+          PlayerSeat.rightOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.spades, rank: Rank.eight),
+            BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            BeloteCard(suit: Suit.spades, rank: Rank.queen),
+          ],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.queen),
+        remainingDeck: const [
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+          BeloteCard(suit: Suit.spades, rank: Rank.ace),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.king),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          BeloteCard(suit: Suit.clubs, rank: Rank.king),
+          BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+          BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          BeloteCard(suit: Suit.spades, rank: Rank.king),
+          BeloteCard(suit: Suit.spades, rank: Rank.seven),
+          BeloteCard(suit: Suit.hearts, rank: Rank.eight),
+          BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+        ],
+        phase: GamePhase.choosingTrump,
+        biddingRound: 1,
+        biddingStarterSeat: PlayerSeat.leftOpponent,
+        currentPlayer: PlayerSeat.leftOpponent,
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.resolveAutomaticTrumpTurns();
+
+      expect(updatedState.phase, GamePhase.waitingForTrumpTaker);
+      expect(updatedState.trumpSuit, isNull);
+      expect(updatedState.trumpTaker, isNull);
+      expect(updatedState.currentPlayer, PlayerSeat.human);
+      expect(updatedState.passedSeats, {
+        PlayerSeat.leftOpponent,
+        PlayerSeat.partner,
+        PlayerSeat.rightOpponent,
+      });
+    });
+
+    test('expert AI chooses the best suit in the second round', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [
+            BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+            BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          ],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+            BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+            BeloteCard(suit: Suit.clubs, rank: Rank.king),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+          ],
+          PlayerSeat.partner: [
+            BeloteCard(suit: Suit.spades, rank: Rank.ace),
+            BeloteCard(suit: Suit.spades, rank: Rank.ten),
+            BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.king),
+            BeloteCard(suit: Suit.hearts, rank: Rank.queen),
+          ],
+          PlayerSeat.rightOpponent: [
+            BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.spades, rank: Rank.eight),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            BeloteCard(suit: Suit.spades, rank: Rank.queen),
+          ],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.queen),
+        remainingDeck: const [
+          BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+          BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+          BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+          BeloteCard(suit: Suit.hearts, rank: Rank.king),
+          BeloteCard(suit: Suit.spades, rank: Rank.king),
+          BeloteCard(suit: Suit.spades, rank: Rank.nine),
+          BeloteCard(suit: Suit.hearts, rank: Rank.eight),
+          BeloteCard(suit: Suit.hearts, rank: Rank.nine),
+          BeloteCard(suit: Suit.diamonds, rank: Rank.queen),
+        ],
+        phase: GamePhase.choosingTrump,
+        biddingRound: 2,
+        biddingStarterSeat: PlayerSeat.leftOpponent,
+        currentPlayer: PlayerSeat.leftOpponent,
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.resolveAutomaticTrumpTurns();
+
+      expect(updatedState.phase, GamePhase.playingTrick);
+      expect(updatedState.trumpSuit, Suit.clubs);
+      expect(updatedState.trumpTaker, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+    });
+
     test(
       'resolves one automatic trump turn at a time for bidding animations',
       () {

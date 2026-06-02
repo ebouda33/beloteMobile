@@ -46,6 +46,7 @@ Premier niveau valide :
   et carte retournee affichee au centre du tapis pendant le choix de l'atout ;
 - badge compact ajoute dans le tapis pour afficher le preneur, avec une icone
   d'atout a la place d'un libelle textuel complet ;
+- selecteur de niveau IA ajoute dans l'accueil avec `Debutant` et `Expert` ;
 - option visuelle ajoutee pour reveler ou masquer les cartes des adversaires ;
 - les cartes compactes gardent la valeur dans les coins et la couleur au centre
   pour les cartes adverses revelees et les cartes jouees sur le tapis ;
@@ -61,6 +62,9 @@ Premier niveau valide :
   autorisee si le partenaire est maitre et montee a l'atout quand possible ;
 - les cartes impossibles a jouer sont assombries et les cartes jouables se
   soulevent au survol ;
+- le niveau `expert` applique une heuristique d'enchere plus large que le
+  niveau `debutant`, avec une evaluation plus ambitieuse des mains au premier
+  et au second tour ;
 - enchainement des 8 plis d'une manche ajoute avec suivi des plis remportes par
   equipe et detection de fin de manche ;
 - premier calcul des points de manche ajoute avec points des cartes et bonus de
@@ -116,13 +120,14 @@ phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
 restantes au second tour. Une option visuelle permet de reveler les cartes
 des adversaires, avec un rendu compact ou la valeur reste dans les coins et la
 couleur au centre. Le preneur est aussi rappelé dans le tapis central avec un
-badge dedie, et l'atout est affiche sous forme d'icone compacte.
+badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
+permet maintenant de choisir entre IA `Debutant` et `Expert`.
 
 Prochaine reprise :
 
 1. continuer le polish de l'interface de jeu ;
 2. preparer l'ajout de nouvelles annonces ou variantes ;
-3. ajouter des tests de score de partie avec plusieurs manches.
+3. etendre l'intelligence des robots a la phase de jeu elle-meme.
 
 ## Principes de conception
 

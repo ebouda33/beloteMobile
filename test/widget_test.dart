@@ -32,6 +32,23 @@ void main() {
     expect(find.text('Belote Mobile'), findsOneWidget);
     expect(find.text('Belote'), findsOneWidget);
     expect(find.text('Nouvelle partie'), findsOneWidget);
+    expect(find.byKey(const ValueKey('ai-level-selector')), findsOneWidget);
+  });
+
+  testWidgets('can switch the AI level selector', (WidgetTester tester) async {
+    await tester.pumpWidget(const BeloteApp());
+
+    final selectorBefore = tester.widget<SegmentedButton<AiLevel>>(
+      find.byKey(const ValueKey('ai-level-selector')),
+    );
+    expect(selectorBefore.selected, {AiLevel.debutant});
+
+    await tapVisible(tester, find.text('Expert'));
+
+    final selectorAfter = tester.widget<SegmentedButton<AiLevel>>(
+      find.byKey(const ValueKey('ai-level-selector')),
+    );
+    expect(selectorAfter.selected, {AiLevel.expert});
   });
 
   testWidgets('starts a local game and shows the player hand', (

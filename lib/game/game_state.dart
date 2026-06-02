@@ -848,8 +848,11 @@ bool _beats({
       currentWinner.suit != requestedSuit;
 }
 
-GameState createInitialGameState({Random? random}) {
-  return _createRoundGameState(random: random);
+GameState createInitialGameState({
+  Random? random,
+  AiLevel aiLevel = AiLevel.debutant,
+}) {
+  return _createRoundGameState(random: random, aiLevel: aiLevel);
 }
 
 GameState _createRoundGameState({
@@ -884,7 +887,7 @@ Suit? _automaticTrumpSuitFor(GameState gameState, PlayerSeat seat) {
     case AiLevel.debutant:
       return _debutantTrumpSuitFor(gameState, seat);
     case AiLevel.expert:
-      return _debutantTrumpSuitFor(gameState, seat);
+      return _expertTrumpSuitFor(gameState, seat);
   }
 }
 
@@ -906,6 +909,31 @@ Suit? _debutantTrumpSuitFor(GameState gameState, PlayerSeat seat) {
 
   final bestScore = rankedSuitScores.first.value;
   final takeThreshold = gameState.biddingRound == 1 ? 24 : 17;
+  if (bestScore < takeThreshold) {
+    return null;
+  }
+
+  return rankedSuitScores.first.key;
+}
+
+Suit? _expertTrumpSuitFor(GameState gameState, PlayerSeat seat) {
+  final availableSuits = gameState.availableTrumpSuits;
+  if (availableSuits.isEmpty) {
+    return null;
+  }
+
+  final prospectiveHand = [
+    ...(gameState.hands[seat] ?? const <BeloteCard>[]),
+    gameState.turnedCard,
+  ];
+
+  final rankedSuitScores = [
+    for (final suit in availableSuits)
+      MapEntry(suit, _expertTrumpSuitScore(prospectiveHand, suit)),
+  ]..sort((first, second) => second.value.compareTo(first.value));
+
+  final bestScore = rankedSuitScores.first.value;
+  final takeThreshold = gameState.biddingRound == 1 ? 30 : 22;
   if (bestScore < takeThreshold) {
     return null;
   }
@@ -935,6 +963,74 @@ int _debutantTrumpSuitScore(List<BeloteCard> hand, Suit trumpSuit) {
   }
   if (hasNine) {
     score += 3;
+  }
+
+  return score;
+}
+
+int _expertTrumpSuitScore(List<BeloteCard> hand, Suit trumpSuit) {
+  final trumpCards = hand.where((card) => card.suit == trumpSuit).toList();
+  var score = 0;
+
+  for (final card in trumpCards) {
+    score += switch (card.rank) {
+      Rank.jack => 16,
+      Rank.nine => 12,
+      Rank.ace => 9,
+      Rank.ten => 8,
+      Rank.king => 5,
+      Rank.queen => 4,
+      Rank.eight => 2,
+      Rank.seven => 1,
+    };
+  }
+
+  score += trumpCards.length * 2;
+  if (trumpCards.length >= 4) {
+    score += 4;
+  }
+  if (trumpCards.length >= 5) {
+    score += 4;
+  }
+
+  final hasJack = trumpCards.any((card) => card.rank == Rank.jack);
+  final hasNine = trumpCards.any((card) => card.rank == Rank.nine);
+  if (hasJack && hasNine) {
+    score += 8;
+  }
+
+  final hasAce = trumpCards.any((card) => card.rank == Rank.ace);
+  final hasTen = trumpCards.any((card) => card.rank == Rank.ten);
+  if (hasAce && hasTen) {
+    score += 3;
+  }
+
+  score += hand.where((card) => card.suit != trumpSuit).fold<int>(0, (
+    total,
+    card,
+  ) {
+    return total +
+        switch (card.rank) {
+          Rank.ace => 4,
+          Rank.ten => 3,
+          Rank.king => 2,
+          Rank.queen => 1,
+          Rank.jack => 1,
+          Rank.nine || Rank.eight || Rank.seven => 0,
+        };
+  });
+
+  for (final suit in Suit.values) {
+    if (suit == trumpSuit) {
+      continue;
+    }
+
+    final suitCount = hand.where((card) => card.suit == suit).length;
+    if (suitCount == 0) {
+      score += 3;
+    } else if (suitCount == 1) {
+      score += 1;
+    }
   }
 
   return score;
