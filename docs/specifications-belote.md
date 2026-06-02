@@ -125,6 +125,13 @@ couleur au centre. Le preneur est aussi rappelé dans le tapis central avec un
 badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
 permet maintenant de choisir entre IA `Debutant` et `Expert`.
 
+Le jeton `D` du tapis represente le donneur. Le donneur est choisi
+aleatoirement au debut, la distribution commence par le joueur a sa droite, et
+le premier joueur d'enchere reste ce meme voisin de droite. A chaque manche
+suivante, le donneur tourne sur le joueur qui avait ouvert la parole a la
+manche precedente, puis la regle de distribution repart de son voisin de
+droite.
+
 Prochaine reprise :
 
 1. poursuivre le polish visuel du plateau et de la zone score ;

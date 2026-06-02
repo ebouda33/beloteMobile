@@ -28,6 +28,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   dans le pli en cours.
 - La carte retournee se clique pour ouvrir une confirmation `Votre choix` avec
   les actions `Prendre` et `Passer`.
+- Le donneur est choisi aleatoirement au debut, puis la donne commence par le
+  joueur a sa droite ; au redeal, le nouveau donneur devient le joueur qui
+  avait parle en premier a la manche precedente.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.
@@ -62,6 +65,11 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une
   etape est terminee.
+
+Le jeton `D` du tapis indique le donneur, pas le premier a parler. Le premier
+joueur d'enchere est le voisin de droite du donneur, et la manche suivante
+fait tourner le donneur sur le joueur qui a ouvert la parole a la manche
+precedente.
 
 ## Lancer le projet
 
