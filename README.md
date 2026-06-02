@@ -40,6 +40,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   depuis la barre du haut.
 - Quand les cartes adverses sont revelees ou sur le tapis, leur couleur reste
   au centre de la carte et la valeur reste dans les coins.
+- Les cartes cachees des adversaires ne sont plus rendues en eventail: elles
+  sont posees en support discret et stable autour du tapis pour rester
+  lisibles.
 - Les adversaires jouent automatiquement pour completer un pli, le gagnant est
   calcule selon l'atout et la couleur demandee, puis il devient joueur courant.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la

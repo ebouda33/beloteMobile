@@ -169,7 +169,6 @@ class GameBoardView extends StatelessWidget {
                   cards: gameState.hands[PlayerSeat.partner] ?? const [],
                   faceDown: !showOpponentCards,
                   orientation: Axis.horizontal,
-                  fanDirection: _CardFanDirection.down,
                   isDealer: gameState.dealerSeat == PlayerSeat.partner,
                   active: gameState.currentPlayer == PlayerSeat.partner,
                   speechBubble: showBiddingSpeech
@@ -181,28 +180,31 @@ class GameBoardView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _SeatHand(
-                        key: const ValueKey('left-opponent-hand'),
-                        title: PlayerSeat.leftOpponent.label,
-                        cards:
-                            gameState.hands[PlayerSeat.leftOpponent] ??
-                            const [],
-                        faceDown: !showOpponentCards,
-                        orientation: Axis.vertical,
-                        compact: true,
-                        fanDirection: _CardFanDirection.right,
-                        isDealer:
-                            gameState.dealerSeat == PlayerSeat.leftOpponent,
-                        active:
-                            gameState.currentPlayer == PlayerSeat.leftOpponent,
-                        speechBubble: showBiddingSpeech
-                            ? gameState.biddingSpeechForSeat(
-                                PlayerSeat.leftOpponent,
-                              )
-                            : null,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _SeatHand(
+                          key: const ValueKey('left-opponent-hand'),
+                          title: PlayerSeat.leftOpponent.label,
+                          cards:
+                              gameState.hands[PlayerSeat.leftOpponent] ??
+                              const [],
+                          faceDown: !showOpponentCards,
+                          orientation: Axis.vertical,
+                          compact: true,
+                          isDealer:
+                              gameState.dealerSeat == PlayerSeat.leftOpponent,
+                          active:
+                              gameState.currentPlayer ==
+                              PlayerSeat.leftOpponent,
+                          speechBubble: showBiddingSpeech
+                              ? gameState.biddingSpeechForSeat(
+                                  PlayerSeat.leftOpponent,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
                       flex: 2,
                       child: _TrickArea(
@@ -211,27 +213,30 @@ class GameBoardView extends StatelessWidget {
                         showLastTrick: showLastTrick,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: _SeatHand(
-                        key: const ValueKey('right-opponent-hand'),
-                        title: PlayerSeat.rightOpponent.label,
-                        cards:
-                            gameState.hands[PlayerSeat.rightOpponent] ??
-                            const [],
-                        faceDown: !showOpponentCards,
-                        orientation: Axis.vertical,
-                        compact: true,
-                        fanDirection: _CardFanDirection.left,
-                        isDealer:
-                            gameState.dealerSeat == PlayerSeat.rightOpponent,
-                        active:
-                            gameState.currentPlayer == PlayerSeat.rightOpponent,
-                        speechBubble: showBiddingSpeech
-                            ? gameState.biddingSpeechForSeat(
-                                PlayerSeat.rightOpponent,
-                              )
-                            : null,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _SeatHand(
+                          key: const ValueKey('right-opponent-hand'),
+                          title: PlayerSeat.rightOpponent.label,
+                          cards:
+                              gameState.hands[PlayerSeat.rightOpponent] ??
+                              const [],
+                          faceDown: !showOpponentCards,
+                          orientation: Axis.vertical,
+                          compact: true,
+                          isDealer:
+                              gameState.dealerSeat == PlayerSeat.rightOpponent,
+                          active:
+                              gameState.currentPlayer ==
+                              PlayerSeat.rightOpponent,
+                          speechBubble: showBiddingSpeech
+                              ? gameState.biddingSpeechForSeat(
+                                  PlayerSeat.rightOpponent,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                   ],
@@ -243,7 +248,6 @@ class GameBoardView extends StatelessWidget {
                   cards: gameState.humanHand,
                   faceDown: false,
                   orientation: Axis.horizontal,
-                  fanDirection: _CardFanDirection.up,
                   isDealer: gameState.dealerSeat == gameState.humanSeat,
                   active: gameState.currentPlayer == gameState.humanSeat,
                   playableCards: playableCards.toSet(),
@@ -519,7 +523,6 @@ class _SeatHand extends StatelessWidget {
     required this.cards,
     required this.faceDown,
     required this.orientation,
-    required this.fanDirection,
     required this.isDealer,
     required this.active,
     this.compact = false,
@@ -532,7 +535,6 @@ class _SeatHand extends StatelessWidget {
   final List<BeloteCard> cards;
   final bool faceDown;
   final Axis orientation;
-  final _CardFanDirection fanDirection;
   final bool isDealer;
   final bool active;
   final bool compact;
@@ -608,9 +610,9 @@ class _SeatHand extends StatelessWidget {
             else if (!faceDown && orientation == Axis.horizontal)
               Wrap(spacing: 8, runSpacing: 8, children: visibleCards)
             else if (faceDown)
-              _CardFan(
+              _CardSupport(
                 cards: visibleCards,
-                fanDirection: fanDirection,
+                orientation: orientation,
                 compact: compact,
               )
             else
@@ -896,17 +898,15 @@ class _DealerChip extends StatelessWidget {
   }
 }
 
-enum _CardFanDirection { up, down, left, right }
-
-class _CardFan extends StatelessWidget {
-  const _CardFan({
+class _CardSupport extends StatelessWidget {
+  const _CardSupport({
     required this.cards,
-    required this.fanDirection,
+    required this.orientation,
     required this.compact,
   });
 
   final List<Widget> cards;
-  final _CardFanDirection fanDirection;
+  final Axis orientation;
   final bool compact;
 
   @override
@@ -917,56 +917,26 @@ class _CardFan extends StatelessWidget {
 
     final cardWidth = compact ? 42.0 : 56.0;
     final cardHeight = compact ? 60.0 : 82.0;
-    final spacing = compact ? 11.0 : 15.0;
-    final totalSpan = (cards.length - 1) * spacing;
-    final width =
-        fanDirection == _CardFanDirection.left ||
-            fanDirection == _CardFanDirection.right
-        ? cardWidth + 14
-        : cardWidth + totalSpan;
-    final height =
-        fanDirection == _CardFanDirection.left ||
-            fanDirection == _CardFanDirection.right
-        ? cardHeight + totalSpan
-        : cardHeight + 14;
-    final center = (cards.length - 1) / 2;
-    final isHorizontalFan =
-        fanDirection == _CardFanDirection.up ||
-        fanDirection == _CardFanDirection.down;
-    final angleDirection = switch (fanDirection) {
-      _CardFanDirection.up => -1,
-      _CardFanDirection.left => -1,
-      _CardFanDirection.down => 1,
-      _CardFanDirection.right => 1,
-    };
+    final overlap = compact ? 11.0 : 15.0;
+    final width = orientation == Axis.horizontal
+        ? cardWidth + (cards.length - 1) * overlap
+        : cardWidth + 10;
+    final height = orientation == Axis.horizontal
+        ? cardHeight + 10
+        : cardHeight + (cards.length - 1) * overlap;
 
     return SizedBox(
       width: width,
       height: height,
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.center,
+        alignment: Alignment.topLeft,
         children: [
           for (var index = 0; index < cards.length; index++)
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.center,
-                child: Transform.translate(
-                  offset: isHorizontalFan
-                      ? Offset(
-                          (index - center) * spacing,
-                          (index - center).abs() * 1.5,
-                        )
-                      : Offset(
-                          (index - center).abs() * 1.5,
-                          (index - center) * spacing,
-                        ),
-                  child: Transform.rotate(
-                    angle: (index - center) * 0.09 * angleDirection,
-                    child: cards[index],
-                  ),
-                ),
-              ),
+            Positioned(
+              left: orientation == Axis.horizontal ? index * overlap : 0,
+              top: orientation == Axis.vertical ? index * overlap : 0,
+              child: cards[index],
             ),
         ],
       ),

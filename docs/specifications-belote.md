@@ -121,7 +121,9 @@ phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
 `Votre choix` avec `Prendre` et `Passer` au premier tour, puis les 3 couleurs
 restantes au second tour. Une option visuelle permet de reveler les cartes
 des adversaires, avec un rendu compact ou la valeur reste dans les coins et la
-couleur au centre. Le preneur est aussi rappelé dans le tapis central avec un
+couleur au centre. Les cartes cachees des adversaires ne sont plus rendues en
+eventail: elles sont posees en support discret et stable autour du tapis pour
+rester lisibles. Le preneur est aussi rappelé dans le tapis central avec un
 badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
 permet maintenant de choisir entre IA `Debutant` et `Expert`.
 
@@ -132,7 +134,8 @@ donneur a la manche suivante.
 
 Prochaine reprise :
 
-1. poursuivre le polish visuel du plateau et de la zone score ;
+1. poursuivre le polish visuel du plateau avec le support de cartes des
+   adversaires ;
 2. preparer l'ajout de nouvelles annonces ou variantes ;
 3. etendre l'intelligence des robots a la phase de jeu elle-meme.
 
