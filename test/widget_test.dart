@@ -223,6 +223,33 @@ void main() {
     expect(find.text('♥'), findsOneWidget);
   });
 
+  testWidgets('renders trump cards with a gold border', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PlayingCardView(
+            card: BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+            trump: true,
+          ),
+        ),
+      ),
+    );
+
+    final animatedContainer = tester.widget<AnimatedContainer>(
+      find.descendant(
+        of: find.byType(PlayingCardView),
+        matching: find.byType(AnimatedContainer),
+      ),
+    );
+    final decoration = animatedContainer.decoration! as BoxDecoration;
+    final border = decoration.border! as Border;
+
+    expect(border.top.color, const Color(0xFFD4B15D));
+    expect(border.top.width, 2.2);
+  });
+
   testWidgets('opens the trump dialog automatically and takes the trump', (
     WidgetTester tester,
   ) async {
@@ -669,5 +696,91 @@ void main() {
       find.byKey(const ValueKey('trick-card-human-hearts-ace')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('shows a victory animation when the human team wins the game', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: GameBoardView(
+              gameState: GameState(
+                hands: const {
+                  PlayerSeat.human: [],
+                  PlayerSeat.leftOpponent: [],
+                  PlayerSeat.partner: [],
+                  PlayerSeat.rightOpponent: [],
+                },
+                turnedCard: const BeloteCard(
+                  suit: Suit.hearts,
+                  rank: Rank.queen,
+                ),
+                remainingDeck: const [],
+                phase: GamePhase.roundComplete,
+                trumpSuit: Suit.hearts,
+                trumpTaker: PlayerSeat.human,
+                gameScore: const {Team.humanTeam: 1000, Team.opponentTeam: 820},
+                targetScore: 1000,
+              ),
+              onCardTap: (_) {},
+              showOpponentCards: false,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('victory-overlay')), findsOneWidget);
+    expect(find.text('Victoire'), findsOneWidget);
+  });
+
+  testWidgets('shows a defeat animation when opponents win the game', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: GameBoardView(
+              gameState: GameState(
+                hands: const {
+                  PlayerSeat.human: [],
+                  PlayerSeat.leftOpponent: [],
+                  PlayerSeat.partner: [],
+                  PlayerSeat.rightOpponent: [],
+                },
+                turnedCard: const BeloteCard(
+                  suit: Suit.hearts,
+                  rank: Rank.queen,
+                ),
+                remainingDeck: const [],
+                phase: GamePhase.roundComplete,
+                trumpSuit: Suit.hearts,
+                trumpTaker: PlayerSeat.leftOpponent,
+                gameScore: const {Team.humanTeam: 760, Team.opponentTeam: 1000},
+                targetScore: 1000,
+              ),
+              onCardTap: (_) {},
+              showOpponentCards: false,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('defeat-overlay')), findsOneWidget);
+    expect(find.text('Defaite'), findsOneWidget);
   });
 }

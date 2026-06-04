@@ -108,6 +108,8 @@ Premier niveau valide :
   avec IA, score cible et action `Rejouer` ;
 - panneau `Votre choix` rendu non modal pour laisser le tapis visible et le
   scroll de fond actif pendant le choix de l'atout ;
+- cartes visibles a l'atout marquees par un bord dore pour rester coherentes
+  avec le theme bistrot chic ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
 - zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une
@@ -162,7 +164,8 @@ eventail: elles sont posees en support discret et stable autour du tapis pour
 rester lisibles. Le preneur est aussi rappelé dans le tapis central avec un
 badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
 permet maintenant de choisir entre IA `Debutant` et `Expert`, puis se replie en
-resume compact des que la partie commence.
+resume compact des que la partie commence. Les cartes visibles de la couleur
+d'atout sont soulignees par un bord dore.
 
 Le jeton `D` du tapis represente le donneur. Le donneur est choisi
 aleatoirement au debut, puis toutes les actions suivent la meme rotation

@@ -1,5 +1,112 @@
 part of 'game_board_view.dart';
 
+class _GameResultOverlay extends StatefulWidget {
+  const _GameResultOverlay({required this.winningTeam});
+
+  final Team winningTeam;
+
+  @override
+  State<_GameResultOverlay> createState() => _GameResultOverlayState();
+}
+
+class _GameResultOverlayState extends State<_GameResultOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  bool get _isVictory => widget.winningTeam == Team.humanTeam;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _isVictory
+        ? const Color(0xFFC4A15A)
+        : const Color(0xFFB75E5E);
+    final halo = _isVictory ? const Color(0x66C4A15A) : const Color(0x55B75E5E);
+    final title = _isVictory ? 'Victoire' : 'Defaite';
+    final subtitle = _isVictory
+        ? 'La partie est remportee.'
+        : 'L equipe adverse remporte la partie.';
+    final icon = _isVictory ? Icons.emoji_events : Icons.sentiment_dissatisfied;
+
+    return Center(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final pulse = 1 + (_controller.value * 0.06);
+          final opacity = 0.72 + (_controller.value * 0.18);
+
+          return Transform.scale(
+            scale: pulse,
+            child: Opacity(opacity: opacity, child: child),
+          );
+        },
+        child: Container(
+          key: ValueKey(_isVictory ? 'victory-overlay' : 'defeat-overlay'),
+          constraints: const BoxConstraints(maxWidth: 340),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+          decoration: BoxDecoration(
+            color: GameBoardView._forestDeep.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: accent.withValues(alpha: 0.88), width: 2),
+            boxShadow: [
+              BoxShadow(color: halo, blurRadius: 28, spreadRadius: 4),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.withValues(alpha: 0.16),
+                  border: Border.all(
+                    color: accent.withValues(alpha: 0.82),
+                    width: 2,
+                  ),
+                ),
+                child: Icon(icon, color: accent, size: 38),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: _isVictory
+                      ? GameBoardView._paper
+                      : const Color(0xFFFFE6E0),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: Color(0xFFE1D5C3)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ScoreNotebook extends StatelessWidget {
   const _ScoreNotebook({required this.gameState});
 
@@ -294,6 +401,7 @@ class _SeatHand extends StatelessWidget {
     this.playableCards = const {},
     this.onCardTap,
     this.speechBubble,
+    this.trumpSuitForCards,
   });
 
   final String title;
@@ -308,6 +416,7 @@ class _SeatHand extends StatelessWidget {
   final Set<BeloteCard> playableCards;
   final ValueChanged<BeloteCard>? onCardTap;
   final String? speechBubble;
+  final Suit? trumpSuitForCards;
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +427,7 @@ class _SeatHand extends StatelessWidget {
         card: card,
         faceDown: faceDown,
         compact: compact || (!faceDown && onCardTap == null),
+        trump: trumpSuitForCards == card.suit,
         playable: playableCards.contains(card),
         dimmed:
             onCardTap != null &&
@@ -479,6 +589,8 @@ class _TrickArea extends StatelessWidget {
                         child: PlayingCardView(
                           key: const ValueKey('turned-card'),
                           card: gameState.turnedCard,
+                          trump:
+                              gameState.trumpSuit == gameState.turnedCard.suit,
                         ),
                       ),
                     )
@@ -515,6 +627,9 @@ class _TrickArea extends StatelessWidget {
                                         ),
                                         card: playedCard.card,
                                         compact: true,
+                                        trump:
+                                            gameState.trumpSuit ==
+                                            playedCard.card.suit,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
@@ -551,6 +666,8 @@ class _TrickArea extends StatelessWidget {
                               ),
                               card: playedCard.card,
                               compact: true,
+                              trump:
+                                  gameState.trumpSuit == playedCard.card.suit,
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -702,6 +819,7 @@ class PlayingCardView extends StatelessWidget {
     required this.card,
     this.faceDown = false,
     this.compact = false,
+    this.trump = false,
     this.playable = false,
     this.dimmed = false,
     this.onTap,
@@ -710,6 +828,7 @@ class PlayingCardView extends StatelessWidget {
   final BeloteCard card;
   final bool faceDown;
   final bool compact;
+  final bool trump;
   final bool playable;
   final bool dimmed;
   final VoidCallback? onTap;
@@ -725,6 +844,7 @@ class PlayingCardView extends StatelessWidget {
       height: height,
       faceDown: faceDown,
       compact: compact,
+      trump: trump,
       playable: playable,
       dimmed: dimmed,
       onTap: onTap,
@@ -742,6 +862,7 @@ class _PlayingCardFrame extends StatefulWidget {
     required this.height,
     required this.faceDown,
     required this.compact,
+    required this.trump,
     required this.playable,
     required this.dimmed,
     required this.onTap,
@@ -753,6 +874,7 @@ class _PlayingCardFrame extends StatefulWidget {
   final double height;
   final bool faceDown;
   final bool compact;
+  final bool trump;
   final bool playable;
   final bool dimmed;
   final VoidCallback? onTap;
@@ -796,13 +918,22 @@ class _PlayingCardFrameState extends State<_PlayingCardFrame> {
             border: Border.all(
               color: widget.faceDown
                   ? const Color(0xFFC4A15A)
+                  : widget.trump
+                  ? const Color(0xFFD4B15D)
                   : widget.playable
                   ? const Color(0xFFC4A15A)
                   : const Color(0xFFD8CCB7),
-              width: widget.playable ? 2.2 : 1.2,
+              width: widget.trump || widget.playable ? 2.2 : 1.2,
             ),
-            boxShadow: const [
-              BoxShadow(
+            boxShadow: [
+              if (widget.trump && !widget.faceDown)
+                const BoxShadow(
+                  color: Color(0x33C4A15A),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                  offset: Offset(0, 3),
+                ),
+              const BoxShadow(
                 color: Color(0x332B251F),
                 blurRadius: 8,
                 offset: Offset(0, 3),

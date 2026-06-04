@@ -93,6 +93,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   l'IA, le score cible et une action `Rejouer`.
 - Le panneau `Votre choix` n'est plus modal : le tapis reste visible et le
   scroll de fond reste autorise pendant le choix de l'atout.
+- Les cartes visibles a l'atout sont maintenant marquees par un bord dore,
+  coherent avec le theme bistrot chic.
 - Bonus belote/rebelote de 20 points ajoute automatiquement quand le meme
   equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une

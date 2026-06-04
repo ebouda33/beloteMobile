@@ -137,120 +137,140 @@ class GameBoardView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF2A4638), Color(0xFF1A2E25)],
-              ),
-              border: Border.all(color: _brass.withValues(alpha: 0.4)),
-            ),
-            child: Column(
-              children: [
-                _SeatHand(
-                  key: const ValueKey('partner-hand'),
-                  title: PlayerSeat.partner.label,
-                  cards: gameState.hands[PlayerSeat.partner] ?? const [],
-                  faceDown: !showOpponentCards,
-                  orientation: Axis.horizontal,
-                  isDealer: gameState.dealerSeat == PlayerSeat.partner,
-                  active: gameState.currentPlayer == PlayerSeat.partner,
-                  isTrumpTaker: gameState.trumpTaker == PlayerSeat.partner,
-                  trumpSuit: gameState.trumpSuit,
-                  speechBubble: gameState.speechBubbleForSeat(
-                    PlayerSeat.partner,
+          Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2A4638), Color(0xFF1A2E25)],
                   ),
+                  border: Border.all(color: _brass.withValues(alpha: 0.4)),
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: _SeatHand(
-                          key: const ValueKey('left-opponent-hand'),
-                          title: PlayerSeat.leftOpponent.label,
-                          cards:
-                              gameState.hands[PlayerSeat.leftOpponent] ??
-                              const [],
-                          faceDown: !showOpponentCards,
-                          orientation: Axis.vertical,
-                          compact: true,
-                          isDealer:
-                              gameState.dealerSeat == PlayerSeat.leftOpponent,
-                          active:
-                              gameState.currentPlayer ==
-                              PlayerSeat.leftOpponent,
-                          isTrumpTaker:
-                              gameState.trumpTaker == PlayerSeat.leftOpponent,
-                          trumpSuit: gameState.trumpSuit,
-                          speechBubble: gameState.speechBubbleForSeat(
-                            PlayerSeat.leftOpponent,
-                          ),
-                        ),
+                    _SeatHand(
+                      key: const ValueKey('partner-hand'),
+                      title: PlayerSeat.partner.label,
+                      cards: gameState.hands[PlayerSeat.partner] ?? const [],
+                      faceDown: !showOpponentCards,
+                      orientation: Axis.horizontal,
+                      isDealer: gameState.dealerSeat == PlayerSeat.partner,
+                      active: gameState.currentPlayer == PlayerSeat.partner,
+                      isTrumpTaker: gameState.trumpTaker == PlayerSeat.partner,
+                      trumpSuit: gameState.trumpSuit,
+                      trumpSuitForCards: gameState.trumpSuit,
+                      speechBubble: gameState.speechBubbleForSeat(
+                        PlayerSeat.partner,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: _TrickArea(
-                        gameState: gameState,
-                        showLastTrick: showLastTrick,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: _SeatHand(
-                          key: const ValueKey('right-opponent-hand'),
-                          title: PlayerSeat.rightOpponent.label,
-                          cards:
-                              gameState.hands[PlayerSeat.rightOpponent] ??
-                              const [],
-                          faceDown: !showOpponentCards,
-                          orientation: Axis.vertical,
-                          compact: true,
-                          isDealer:
-                              gameState.dealerSeat == PlayerSeat.rightOpponent,
-                          active:
-                              gameState.currentPlayer ==
-                              PlayerSeat.rightOpponent,
-                          isTrumpTaker:
-                              gameState.trumpTaker == PlayerSeat.rightOpponent,
-                          trumpSuit: gameState.trumpSuit,
-                          speechBubble: gameState.speechBubbleForSeat(
-                            PlayerSeat.rightOpponent,
+                    const SizedBox(height: 14),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: _SeatHand(
+                              key: const ValueKey('left-opponent-hand'),
+                              title: PlayerSeat.leftOpponent.label,
+                              cards:
+                                  gameState.hands[PlayerSeat.leftOpponent] ??
+                                  const [],
+                              faceDown: !showOpponentCards,
+                              orientation: Axis.vertical,
+                              compact: true,
+                              isDealer:
+                                  gameState.dealerSeat ==
+                                  PlayerSeat.leftOpponent,
+                              active:
+                                  gameState.currentPlayer ==
+                                  PlayerSeat.leftOpponent,
+                              isTrumpTaker:
+                                  gameState.trumpTaker ==
+                                  PlayerSeat.leftOpponent,
+                              trumpSuit: gameState.trumpSuit,
+                              trumpSuitForCards: gameState.trumpSuit,
+                              speechBubble: gameState.speechBubbleForSeat(
+                                PlayerSeat.leftOpponent,
+                              ),
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: _TrickArea(
+                            gameState: gameState,
+                            showLastTrick: showLastTrick,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: _SeatHand(
+                              key: const ValueKey('right-opponent-hand'),
+                              title: PlayerSeat.rightOpponent.label,
+                              cards:
+                                  gameState.hands[PlayerSeat.rightOpponent] ??
+                                  const [],
+                              faceDown: !showOpponentCards,
+                              orientation: Axis.vertical,
+                              compact: true,
+                              isDealer:
+                                  gameState.dealerSeat ==
+                                  PlayerSeat.rightOpponent,
+                              active:
+                                  gameState.currentPlayer ==
+                                  PlayerSeat.rightOpponent,
+                              isTrumpTaker:
+                                  gameState.trumpTaker ==
+                                  PlayerSeat.rightOpponent,
+                              trumpSuit: gameState.trumpSuit,
+                              trumpSuitForCards: gameState.trumpSuit,
+                              speechBubble: gameState.speechBubbleForSeat(
+                                PlayerSeat.rightOpponent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _SeatHand(
+                      key: const ValueKey('human-hand'),
+                      title: PlayerSeat.human.label,
+                      cards: gameState.humanHand,
+                      faceDown: false,
+                      orientation: Axis.horizontal,
+                      isDealer: gameState.dealerSeat == gameState.humanSeat,
+                      active: gameState.currentPlayer == gameState.humanSeat,
+                      isTrumpTaker: gameState.trumpTaker == gameState.humanSeat,
+                      trumpSuit: gameState.trumpSuit,
+                      trumpSuitForCards: gameState.trumpSuit,
+                      playableCards: playableCards.toSet(),
+                      onCardTap: onCardTap,
+                      speechBubble: gameState.speechBubbleForSeat(
+                        gameState.humanSeat,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                _SeatHand(
-                  key: const ValueKey('human-hand'),
-                  title: PlayerSeat.human.label,
-                  cards: gameState.humanHand,
-                  faceDown: false,
-                  orientation: Axis.horizontal,
-                  isDealer: gameState.dealerSeat == gameState.humanSeat,
-                  active: gameState.currentPlayer == gameState.humanSeat,
-                  isTrumpTaker: gameState.trumpTaker == gameState.humanSeat,
-                  trumpSuit: gameState.trumpSuit,
-                  playableCards: playableCards.toSet(),
-                  onCardTap: onCardTap,
-                  speechBubble: gameState.speechBubbleForSeat(
-                    gameState.humanSeat,
+              ),
+              if (gameState.isGameComplete && gameState.winningTeam != null)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: _GameResultOverlay(
+                      winningTeam: gameState.winningTeam!,
+                    ),
                   ),
                 ),
-              ],
-            ),
+            ],
           ),
         ],
       ),
