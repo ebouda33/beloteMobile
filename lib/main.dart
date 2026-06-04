@@ -18,6 +18,7 @@ Future<void> main() async {
 const gameTargetScoreOptions = <int>[501, 1000, 2000];
 const _aiLevelPreferenceKey = 'home.ai_level';
 const _targetScorePreferenceKey = 'home.target_score';
+const _announcementsPreferenceKey = 'home.announcements_enabled';
 
 class BeloteApp extends StatelessWidget {
   const BeloteApp({
@@ -176,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showLastTrick = false;
   AiLevel _aiLevel = AiLevel.debutant;
   int _targetScore = defaultTargetScore;
+  bool _announcementsEnabled = true;
   int _biddingAnimationToken = 0;
   int _trickAnimationToken = 0;
   bool _trumpChoiceDialogOpen = false;
@@ -183,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
   SharedPreferences? _preferences;
   bool _aiLevelChangedByUser = false;
   bool _targetScoreChangedByUser = false;
+  bool _announcementsChangedByUser = false;
 
   @override
   void initState() {
@@ -212,11 +215,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _preferences = preferences;
     await preferences.setString(_aiLevelPreferenceKey, _aiLevel.name);
     await preferences.setInt(_targetScorePreferenceKey, _targetScore);
+    await preferences.setBool(
+      _announcementsPreferenceKey,
+      _announcementsEnabled,
+    );
   }
 
   void _applyPreferences(SharedPreferences preferences, {bool notify = false}) {
     final savedAiLevelName = preferences.getString(_aiLevelPreferenceKey);
     final savedTargetScore = preferences.getInt(_targetScorePreferenceKey);
+    final savedAnnouncementsEnabled = preferences.getBool(
+      _announcementsPreferenceKey,
+    );
     AiLevel? savedAiLevel;
     for (final level in AiLevel.values) {
       if (level.name == savedAiLevelName) {
@@ -233,6 +243,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!_targetScoreChangedByUser &&
           gameTargetScoreOptions.contains(savedTargetScore)) {
         _targetScore = savedTargetScore!;
+      }
+      if (!_announcementsChangedByUser && savedAnnouncementsEnabled != null) {
+        _announcementsEnabled = savedAnnouncementsEnabled;
       }
     }
 
@@ -252,6 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
         aiLevel: _aiLevel,
         randomizeDealerSeat: widget.randomizeDealerSeat,
         targetScore: _targetScore,
+        announcementsEnabled: _announcementsEnabled,
       );
       _showOpponentCards = false;
       _showLastTrick = false;
@@ -544,6 +558,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.flag_outlined,
                     label: 'Partie $_targetScore pts',
                   ),
+                  _buildSetupSummaryChip(
+                    icon: Icons.campaign_outlined,
+                    label: _announcementsEnabled
+                        ? 'Annonces bonus actives'
+                        : 'Sans annonces bonus',
+                  ),
                 ],
               ),
             ),
@@ -648,6 +668,31 @@ class _HomeScreenState extends State<HomeScreen> {
             2000 => 'Format long pour une vraie session locale.',
             _ => 'Score cible personnalise.',
           }, style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 14),
+          Material(
+            color: Colors.transparent,
+            child: SwitchListTile.adaptive(
+              key: const ValueKey('announcements-toggle'),
+              contentPadding: EdgeInsets.zero,
+              value: _announcementsEnabled,
+              onChanged: (value) {
+                setState(() {
+                  _announcementsChangedByUser = true;
+                  _announcementsEnabled = value;
+                });
+                unawaited(_persistSettings());
+              },
+              title: const Text(
+                'Annonces bonus',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                _announcementsEnabled
+                    ? 'Tierce, cinquante, cent et futures annonces actives.'
+                    : 'Belote / rebelote restent actives, sans autres annonces.',
+              ),
+            ),
+          ),
         ],
       ),
     );

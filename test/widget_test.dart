@@ -35,6 +35,7 @@ void main() {
     expect(find.text('Nouvelle partie'), findsOneWidget);
     expect(find.byKey(const ValueKey('ai-level-selector')), findsOneWidget);
     expect(find.byKey(const ValueKey('target-score-selector')), findsOneWidget);
+    expect(find.byKey(const ValueKey('announcements-toggle')), findsOneWidget);
   });
 
   testWidgets('can switch the AI level selector', (WidgetTester tester) async {
@@ -77,6 +78,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'home.ai_level': AiLevel.expert.name,
       'home.target_score': 2000,
+      'home.announcements_enabled': false,
     });
     final preferences = await SharedPreferences.getInstance();
 
@@ -89,8 +91,31 @@ void main() {
     final targetSelector = tester.widget<SegmentedButton<int>>(
       find.byKey(const ValueKey('target-score-selector')),
     );
+    final announcementsToggle = tester.widget<SwitchListTile>(
+      find.byKey(const ValueKey('announcements-toggle')),
+    );
     expect(aiSelector.selected, {AiLevel.expert});
     expect(targetSelector.selected, {2000});
+    expect(announcementsToggle.value, isFalse);
+  });
+
+  testWidgets('can toggle announcements option', (WidgetTester tester) async {
+    await tester.pumpWidget(const BeloteApp());
+
+    final toggleBefore = tester.widget<SwitchListTile>(
+      find.byKey(const ValueKey('announcements-toggle')),
+    );
+    expect(toggleBefore.value, isTrue);
+
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('announcements-toggle')),
+    );
+
+    final toggleAfter = tester.widget<SwitchListTile>(
+      find.byKey(const ValueKey('announcements-toggle')),
+    );
+    expect(toggleAfter.value, isFalse);
   });
 
   testWidgets('persists the selected AI level before starting a game', (
@@ -136,9 +161,11 @@ void main() {
     expect(find.byKey(const ValueKey('toggle-last-trick')), findsOneWidget);
     expect(find.byKey(const ValueKey('ai-level-selector')), findsNothing);
     expect(find.byKey(const ValueKey('target-score-selector')), findsNothing);
+    expect(find.byKey(const ValueKey('announcements-toggle')), findsNothing);
     expect(find.text('Rejouer'), findsOneWidget);
     expect(find.textContaining('IA'), findsOneWidget);
     expect(find.textContaining('501'), findsOneWidget);
+    expect(find.text('Annonces bonus actives'), findsOneWidget);
     expect(humanCards(), findsNWidgets(5));
     expect(
       find.descendant(

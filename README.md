@@ -91,6 +91,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   rafraichissement de la page, y compris apres le lancement d'une partie.
 - Une fois la partie demarree, le bandeau d'accueil se compacte en resume avec
   l'IA, le score cible et une action `Rejouer`.
+- L'option `Annonces bonus` ne couvre que les annonces optionnelles a venir ;
+  belote/rebelote reste toujours active.
 - Le panneau `Votre choix` n'est plus modal : le tapis reste visible et le
   scroll de fond reste autorise pendant le choix de l'atout.
 - Les cartes visibles a l'atout sont maintenant marquees par un bord dore,

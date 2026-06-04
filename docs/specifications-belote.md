@@ -106,6 +106,7 @@ Premier niveau valide :
   page, y compris apres le lancement d'une partie ;
 - bandeau d'accueil compacte en resume de partie des que la table est lancee,
   avec IA, score cible et action `Rejouer` ;
+- option `Annonces bonus` limitee aux annonces optionnelles a venir ;
 - panneau `Votre choix` rendu non modal pour laisser le tapis visible et le
   scroll de fond actif pendant le choix de l'atout ;
 - cartes visibles a l'atout marquees par un bord dore pour rester coherentes
@@ -166,6 +167,8 @@ badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
 permet maintenant de choisir entre IA `Debutant` et `Expert`, puis se replie en
 resume compact des que la partie commence. Les cartes visibles de la couleur
 d'atout sont soulignees par un bord dore.
+L'option de demarrage `Annonces bonus` n'enleve pas belote/rebelote, elle ne
+concerne que les annonces optionnelles futures.
 
 Le jeton `D` du tapis represente le donneur. Le donneur est choisi
 aleatoirement au debut, puis toutes les actions suivent la meme rotation
@@ -201,7 +204,7 @@ Decisions initiales :
 - Score cumule entre les equipes.
 - Score cible configurable : `501` par defaut, avec options `1000` et `2000`.
 - Belote/rebelote activee des la V1.
-- Autres annonces desactivees en V1.
+- Autres annonces optionnelles desactivees par defaut en V1.
 - Capot gere des la V1.
 - Defausse autorisee quand le partenaire est maitre du pli.
 - Stack cible : Flutter.
@@ -215,6 +218,8 @@ Recommandation V1 :
 - conserver le dix de der ;
 - viser par defaut une partie jusqu'a 501 points, avec possibilite de passer a
   1000 ou 2000 points.
+- conserver belote/rebelote activee ;
+- rendre les autres annonces optionnelles au demarrage.
 
 ## Cartes
 

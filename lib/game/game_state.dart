@@ -73,6 +73,7 @@ class GameState {
     this.seenCards = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
     this.targetScore = defaultTargetScore,
+    this.announcementsEnabled = true,
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -100,6 +101,7 @@ class GameState {
   final Set<BeloteCard> seenCards;
   final Map<Team, int> gameScore;
   final int targetScore;
+  final bool announcementsEnabled;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
 
@@ -347,6 +349,7 @@ class GameState {
           seenCards: seenCards,
           gameScore: gameScore,
           targetScore: targetScore,
+          announcementsEnabled: announcementsEnabled,
         );
       }
 
@@ -356,6 +359,7 @@ class GameState {
         dealerSeat: _nextSeatAfter(dealerSeat),
         aiLevel: aiLevel,
         targetScore: targetScore,
+        announcementsEnabled: announcementsEnabled,
       );
     }
 
@@ -384,6 +388,7 @@ class GameState {
       seenCards: seenCards,
       gameScore: gameScore,
       targetScore: targetScore,
+      announcementsEnabled: announcementsEnabled,
     );
   }
 
@@ -479,6 +484,7 @@ class GameState {
       seenCards: seenCards,
       gameScore: gameScore,
       targetScore: targetScore,
+      announcementsEnabled: announcementsEnabled,
     );
   }
 
@@ -500,6 +506,7 @@ class GameState {
       dealerSeat: _nextSeatAfter(dealerSeat),
       aiLevel: aiLevel,
       targetScore: targetScore,
+      announcementsEnabled: announcementsEnabled,
     );
   }
 
@@ -652,6 +659,7 @@ class GameState {
       seenCards: updatedSeenCards,
       gameScore: updatedGameScore,
       targetScore: targetScore,
+      announcementsEnabled: announcementsEnabled,
     );
   }
 
@@ -1341,6 +1349,7 @@ GameState createInitialGameState({
   AiLevel aiLevel = AiLevel.debutant,
   bool randomizeDealerSeat = false,
   int targetScore = defaultTargetScore,
+  bool announcementsEnabled = true,
 }) {
   final dealerSeat = randomizeDealerSeat
       ? _randomSeat(random ?? Random())
@@ -1350,6 +1359,7 @@ GameState createInitialGameState({
     aiLevel: aiLevel,
     dealerSeat: dealerSeat,
     targetScore: targetScore,
+    announcementsEnabled: announcementsEnabled,
   );
 }
 
@@ -1360,6 +1370,7 @@ GameState _createRoundGameState({
   PlayerSeat dealerSeat = PlayerSeat.rightOpponent,
   AiLevel aiLevel = AiLevel.debutant,
   int targetScore = defaultTargetScore,
+  bool announcementsEnabled = true,
 }) {
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
@@ -1383,6 +1394,7 @@ GameState _createRoundGameState({
     gameScore: gameScore,
     seenCards: const {},
     targetScore: targetScore,
+    announcementsEnabled: announcementsEnabled,
   );
 }
 
