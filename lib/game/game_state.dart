@@ -788,8 +788,13 @@ class GameState {
         second.value,
         trumpSuit: trumpSuit,
       );
+      final firstContextScore = _expertLeadingSuitContextScore(first.key);
+      final secondContextScore = _expertLeadingSuitContextScore(second.key);
 
       if (preferStrength) {
+        if (firstContextScore != secondContextScore) {
+          return firstContextScore > secondContextScore ? first : second;
+        }
         if (firstScore != secondScore) {
           return firstScore > secondScore ? first : second;
         }
@@ -799,6 +804,9 @@ class GameState {
       } else {
         if (first.value.length != second.value.length) {
           return first.value.length > second.value.length ? first : second;
+        }
+        if (firstContextScore != secondContextScore) {
+          return firstContextScore > secondContextScore ? first : second;
         }
         if (firstScore != secondScore) {
           return firstScore > secondScore ? first : second;
@@ -841,6 +849,18 @@ class GameState {
           card.strength(trumpSuit: trumpSuit) +
           card.points(trumpSuit: trumpSuit),
     );
+  }
+
+  int _expertLeadingSuitContextScore(Suit suit) {
+    final teamSuitMomentum = _wonTricksForSuit(Team.humanTeam, suit);
+    final opponentSuitMomentum = _wonTricksForSuit(Team.opponentTeam, suit);
+    return teamSuitMomentum - opponentSuitMomentum;
+  }
+
+  int _wonTricksForSuit(Team team, Suit suit) {
+    return (wonTricks[team] ?? const <List<PlayedCard>>[]).where((trick) {
+      return trick.isNotEmpty && trick.first.card.suit == suit;
+    }).length;
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(

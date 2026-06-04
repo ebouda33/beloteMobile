@@ -989,6 +989,79 @@ void main() {
       );
     });
 
+    test('expert AI reads fallen tricks when choosing an opening suit', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+          ],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.playingTrick,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        currentPlayer: PlayerSeat.leftOpponent,
+        wonTricks: const {
+          Team.humanTeam: [
+            [
+              PlayedCard(
+                player: PlayerSeat.human,
+                card: BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+              ),
+              PlayedCard(
+                player: PlayerSeat.leftOpponent,
+                card: BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+              ),
+              PlayedCard(
+                player: PlayerSeat.partner,
+                card: BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+              ),
+              PlayedCard(
+                player: PlayerSeat.rightOpponent,
+                card: BeloteCard(suit: Suit.diamonds, rank: Rank.nine),
+              ),
+            ],
+          ],
+          Team.opponentTeam: [
+            [
+              PlayedCard(
+                player: PlayerSeat.human,
+                card: BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+              ),
+              PlayedCard(
+                player: PlayerSeat.leftOpponent,
+                card: BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+              ),
+              PlayedCard(
+                player: PlayerSeat.partner,
+                card: BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+              ),
+              PlayedCard(
+                player: PlayerSeat.rightOpponent,
+                card: BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+              ),
+            ],
+          ],
+        },
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.playAutomaticTurns();
+
+      expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+      expect(
+        updatedState.currentTrick.first.card,
+        const BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+      );
+    });
+
     test(
       'expert AI keeps trump in hand when a non-trump can still win the trick',
       () {

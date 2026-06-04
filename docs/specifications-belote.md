@@ -71,6 +71,8 @@ Premier niveau valide :
   encore gagner le pli ou quand il doit se defausser ;
 - quand `expert` mene un pli, il privilegie la couleur non-atout la plus
   fournie plutot que la carte la plus faible prise isolément ;
+- `expert` affine aussi ses choix a partir du partenaire et des plis deja
+  tombes pour mieux orienter l'entame et la defausse ;
 - quand `expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire ;

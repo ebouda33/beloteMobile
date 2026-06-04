@@ -57,6 +57,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Quand `Expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire.
+- Le niveau `Expert` affine aussi ses choix avec les plis deja tombes et la
+  lecture du partenaire pour mieux orienter l'entame et la defausse.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
