@@ -4,6 +4,7 @@ import 'package:belote_mobile/main.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Future<void> tapVisible(WidgetTester tester, Finder finder) async {
@@ -33,6 +34,7 @@ void main() {
     expect(find.text('Belote'), findsOneWidget);
     expect(find.text('Nouvelle partie'), findsOneWidget);
     expect(find.byKey(const ValueKey('ai-level-selector')), findsOneWidget);
+    expect(find.byKey(const ValueKey('target-score-selector')), findsOneWidget);
   });
 
   testWidgets('can switch the AI level selector', (WidgetTester tester) async {
@@ -49,6 +51,46 @@ void main() {
       find.byKey(const ValueKey('ai-level-selector')),
     );
     expect(selectorAfter.selected, {AiLevel.expert});
+  });
+
+  testWidgets('can switch the target score selector', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BeloteApp());
+
+    final selectorBefore = tester.widget<SegmentedButton<int>>(
+      find.byKey(const ValueKey('target-score-selector')),
+    );
+    expect(selectorBefore.selected, {501});
+
+    await tapVisible(tester, find.text('1000'));
+
+    final selectorAfter = tester.widget<SegmentedButton<int>>(
+      find.byKey(const ValueKey('target-score-selector')),
+    );
+    expect(selectorAfter.selected, {1000});
+  });
+
+  testWidgets('restores AI level and target score from preferences', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'home.ai_level': AiLevel.expert.name,
+      'home.target_score': 2000,
+    });
+    final preferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(BeloteApp(preferences: preferences));
+    await tester.pumpAndSettle();
+
+    final aiSelector = tester.widget<SegmentedButton<AiLevel>>(
+      find.byKey(const ValueKey('ai-level-selector')),
+    );
+    final targetSelector = tester.widget<SegmentedButton<int>>(
+      find.byKey(const ValueKey('target-score-selector')),
+    );
+    expect(aiSelector.selected, {AiLevel.expert});
+    expect(targetSelector.selected, {2000});
   });
 
   testWidgets('starts a local game and shows the player hand', (

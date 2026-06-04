@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:math';
 
@@ -12,11 +13,21 @@ void main() {
   runApp(const BeloteApp());
 }
 
+const gameTargetScoreOptions = <int>[501, 1000, 2000];
+const _aiLevelPreferenceKey = 'home.ai_level';
+const _targetScorePreferenceKey = 'home.target_score';
+
 class BeloteApp extends StatelessWidget {
-  const BeloteApp({super.key, this.random, this.randomizeDealerSeat = true});
+  const BeloteApp({
+    super.key,
+    this.random,
+    this.randomizeDealerSeat = true,
+    this.preferences,
+  });
 
   final Random? random;
   final bool randomizeDealerSeat;
+  final SharedPreferences? preferences;
 
   @override
   Widget build(BuildContext context) {
@@ -135,16 +146,23 @@ class BeloteApp extends StatelessWidget {
       home: HomeScreen(
         random: random,
         randomizeDealerSeat: randomizeDealerSeat,
+        preferences: preferences,
       ),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.random, this.randomizeDealerSeat = true});
+  const HomeScreen({
+    super.key,
+    this.random,
+    this.randomizeDealerSeat = true,
+    this.preferences,
+  });
 
   final Random? random;
   final bool randomizeDealerSeat;
+  final SharedPreferences? preferences;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -155,10 +173,54 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showOpponentCards = false;
   bool _showLastTrick = false;
   AiLevel _aiLevel = AiLevel.debutant;
+  int _targetScore = defaultTargetScore;
   int _biddingAnimationToken = 0;
   int _trickAnimationToken = 0;
   bool _trumpChoiceDialogOpen = false;
   GameState? _lastTrumpChoicePromptedState;
+  SharedPreferences? _preferences;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadPreferences());
+  }
+
+  Future<void> _loadPreferences() async {
+    final preferences =
+        widget.preferences ?? await SharedPreferences.getInstance();
+    if (!mounted) {
+      return;
+    }
+
+    final savedAiLevelName = preferences.getString(_aiLevelPreferenceKey);
+    final savedTargetScore = preferences.getInt(_targetScorePreferenceKey);
+    AiLevel? savedAiLevel;
+    for (final level in AiLevel.values) {
+      if (level.name == savedAiLevelName) {
+        savedAiLevel = level;
+        break;
+      }
+    }
+
+    setState(() {
+      _preferences = preferences;
+      _aiLevel = savedAiLevel ?? _aiLevel;
+      _targetScore = gameTargetScoreOptions.contains(savedTargetScore)
+          ? savedTargetScore!
+          : _targetScore;
+    });
+  }
+
+  Future<void> _persistSettings() async {
+    final preferences =
+        _preferences ??
+        widget.preferences ??
+        await SharedPreferences.getInstance();
+    _preferences = preferences;
+    await preferences.setString(_aiLevelPreferenceKey, _aiLevel.name);
+    await preferences.setInt(_targetScorePreferenceKey, _targetScore);
+  }
 
   Future<void> _startNewGame() async {
     setState(() {
@@ -166,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
         random: widget.random,
         aiLevel: _aiLevel,
         randomizeDealerSeat: widget.randomizeDealerSeat,
+        targetScore: _targetScore,
       );
       _showOpponentCards = false;
       _showLastTrick = false;
@@ -551,8 +614,47 @@ class _HomeScreenState extends State<HomeScreen> {
                               setState(() {
                                 _aiLevel = selection.first;
                               });
+                              unawaited(_persistSettings());
                             },
                           ),
+                          const SizedBox(height: 12),
+                          SegmentedButton<int>(
+                            key: const ValueKey('target-score-selector'),
+                            segments: const [
+                              ButtonSegment(
+                                value: 501,
+                                label: Text('501'),
+                                icon: Icon(Icons.looks_one_outlined),
+                              ),
+                              ButtonSegment(
+                                value: 1000,
+                                label: Text('1000'),
+                                icon: Icon(Icons.filter_1_outlined),
+                              ),
+                              ButtonSegment(
+                                value: 2000,
+                                label: Text('2000'),
+                                icon: Icon(Icons.filter_2_outlined),
+                              ),
+                            ],
+                            selected: {_targetScore},
+                            onSelectionChanged: (selection) {
+                              setState(() {
+                                _targetScore = selection.first;
+                              });
+                              unawaited(_persistSettings());
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Text(switch (_targetScore) {
+                            501 =>
+                              'Format court, proche de ce qui se joue souvent en ligne.',
+                            1000 =>
+                              'Format classique de table, plus long et plus stable.',
+                            2000 =>
+                              'Format long pour une vraie session locale.',
+                            _ => 'Score cible personnalise.',
+                          }, style: const TextStyle(fontSize: 13)),
                         ],
                       ),
                     ),

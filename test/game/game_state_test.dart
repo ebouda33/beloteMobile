@@ -1635,12 +1635,29 @@ void main() {
         turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
         remainingDeck: const [],
         phase: GamePhase.roundComplete,
-        gameScore: const {Team.humanTeam: targetScore, Team.opponentTeam: 320},
+        gameScore: const {
+          Team.humanTeam: defaultTargetScore,
+          Team.opponentTeam: 320,
+        },
       );
 
       expect(gameState.isGameComplete, isTrue);
       expect(gameState.winningTeam, Team.humanTeam);
       expect(gameState.startNextRound, throwsStateError);
+    });
+
+    test('supports a custom game target score', () {
+      final gameState = GameState(
+        hands: const {},
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.roundComplete,
+        gameScore: const {Team.humanTeam: 910, Team.opponentTeam: 320},
+        targetScore: 1000,
+      );
+
+      expect(gameState.isGameComplete, isFalse);
+      expect(gameState.winningTeam, isNull);
     });
 
     test('returns no winning team before the target score is reached', () {

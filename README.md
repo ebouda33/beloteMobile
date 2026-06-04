@@ -82,9 +82,13 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Validation du contrat preneur ajoutee : contrat reussi a partir de 82 points,
   chute a 162 points pour la defense et capot a 252 points.
 - Score de partie cumule entre les manches, affichage du score courant,
-  nouvelle manche apres score et detection du score cible de 501 points.
+  nouvelle manche apres score et detection du score cible choisi au demarrage.
 - Affichage du vainqueur de partie quand le score cible est atteint, avec
   fermeture du flux de nouvelle manche et recapitulatif du score final.
+- Le score cible de la partie se choisit maintenant au lancement entre `501`,
+  `1000` et `2000`.
+- Le niveau d'IA et le score cible sont conserves sur le Web apres
+  rafraichissement de la page.
 - Bonus belote/rebelote de 20 points ajoute automatiquement quand le meme
   equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une

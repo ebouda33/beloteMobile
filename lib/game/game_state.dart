@@ -3,7 +3,7 @@ import 'dart:math';
 import 'cards/belote_card.dart';
 import 'cards/deck.dart';
 
-const targetScore = 501;
+const defaultTargetScore = 501;
 
 enum PlayerSeat { human, leftOpponent, partner, rightOpponent }
 
@@ -72,6 +72,7 @@ class GameState {
     this.playSpeeches = const {},
     this.seenCards = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
+    this.targetScore = defaultTargetScore,
   });
 
   final Map<PlayerSeat, List<BeloteCard>> hands;
@@ -98,6 +99,7 @@ class GameState {
   final Map<PlayerSeat, String> playSpeeches;
   final Set<BeloteCard> seenCards;
   final Map<Team, int> gameScore;
+  final int targetScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
 
@@ -344,6 +346,7 @@ class GameState {
           beloteRanksPlayed: beloteRanksPlayed,
           seenCards: seenCards,
           gameScore: gameScore,
+          targetScore: targetScore,
         );
       }
 
@@ -352,6 +355,7 @@ class GameState {
         humanSeat: humanSeat,
         dealerSeat: _nextSeatAfter(dealerSeat),
         aiLevel: aiLevel,
+        targetScore: targetScore,
       );
     }
 
@@ -379,6 +383,7 @@ class GameState {
       beloteRanksPlayed: beloteRanksPlayed,
       seenCards: seenCards,
       gameScore: gameScore,
+      targetScore: targetScore,
     );
   }
 
@@ -473,6 +478,7 @@ class GameState {
       beloteRanksPlayed: beloteRanksPlayed,
       seenCards: seenCards,
       gameScore: gameScore,
+      targetScore: targetScore,
     );
   }
 
@@ -493,6 +499,7 @@ class GameState {
       humanSeat: humanSeat,
       dealerSeat: _nextSeatAfter(dealerSeat),
       aiLevel: aiLevel,
+      targetScore: targetScore,
     );
   }
 
@@ -644,6 +651,7 @@ class GameState {
       playSpeeches: updatedPlaySpeeches,
       seenCards: updatedSeenCards,
       gameScore: updatedGameScore,
+      targetScore: targetScore,
     );
   }
 
@@ -1332,6 +1340,7 @@ GameState createInitialGameState({
   Random? random,
   AiLevel aiLevel = AiLevel.debutant,
   bool randomizeDealerSeat = false,
+  int targetScore = defaultTargetScore,
 }) {
   final dealerSeat = randomizeDealerSeat
       ? _randomSeat(random ?? Random())
@@ -1340,6 +1349,7 @@ GameState createInitialGameState({
     random: random,
     aiLevel: aiLevel,
     dealerSeat: dealerSeat,
+    targetScore: targetScore,
   );
 }
 
@@ -1349,6 +1359,7 @@ GameState _createRoundGameState({
   PlayerSeat humanSeat = PlayerSeat.human,
   PlayerSeat dealerSeat = PlayerSeat.rightOpponent,
   AiLevel aiLevel = AiLevel.debutant,
+  int targetScore = defaultTargetScore,
 }) {
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
@@ -1371,6 +1382,7 @@ GameState _createRoundGameState({
     currentPlayer: biddingStarterSeat,
     gameScore: gameScore,
     seenCards: const {},
+    targetScore: targetScore,
   );
 }
 

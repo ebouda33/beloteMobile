@@ -97,9 +97,13 @@ Premier niveau valide :
 - validation du contrat preneur ajoutee avec reussite a partir de 82 points,
   chute attribuant 162 points a la defense et capot a 252 points ;
 - score de partie cumule entre les manches, nouvelle manche apres score et
-  detection du score cible de 501 points ajoutes ;
-- affichage du vainqueur de partie quand 501 points est atteint, avec
+  detection du score cible choisi au demarrage ajoutes ;
+- affichage du vainqueur de partie quand le score cible choisi est atteint, avec
   fermeture du flux de nouvelle manche et recapitulatif du score final ;
+- choix du score cible de la partie ajoute au demarrage avec `501`, `1000` ou
+  `2000` points ;
+- niveau d'IA et score cible conserves sur le Web apres rafraichissement de la
+  page ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
 - zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une
@@ -134,9 +138,9 @@ cartes sont conserves ; en cas de chute, la defense marque 162 points ; en cas
 de capot, l'equipe qui gagne les 8 plis marque 252 points. Le score applique de
 chaque manche est maintenant ajoute au score de partie. Une nouvelle manche
 peut etre lancee apres le score tant qu'aucune equipe n'a atteint 501 points.
-Quand une equipe atteint 501 points, l'interface affiche clairement le
-vainqueur de partie, un recapitulatif du score final, et n'expose plus l'action
-de nouvelle manche.
+Quand une equipe atteint le score cible choisi au demarrage, l'interface
+affiche clairement le vainqueur de partie, un recapitulatif du score final, et
+n'expose plus l'action de nouvelle manche.
 Le bonus belote/rebelote est calcule automatiquement quand la meme equipe joue
 le roi et la dame d'atout, puis il est ajoute au score de manche et affiche
 dans le recapitulatif.
@@ -186,7 +190,7 @@ Decisions initiales :
 - Distribution automatique.
 - Jeu en manches successives.
 - Score cumule entre les equipes.
-- Score cible : 501 points.
+- Score cible configurable : `501` par defaut, avec options `1000` et `2000`.
 - Belote/rebelote activee des la V1.
 - Autres annonces desactivees en V1.
 - Capot gere des la V1.
@@ -200,7 +204,8 @@ Recommandation V1 :
 - inclure belote/rebelote ;
 - garder les encheres simples ;
 - conserver le dix de der ;
-- viser une partie jusqu'a 501 points.
+- viser par defaut une partie jusqu'a 501 points, avec possibilite de passer a
+  1000 ou 2000 points.
 
 ## Cartes
 
