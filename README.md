@@ -26,8 +26,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Debut de pli jouable : apres la prise d'atout, le joueur courant est affiche,
   les cartes jouables du joueur humain sont cliquables et la carte posee apparait
   dans le pli en cours.
-- La carte retournee se clique pour ouvrir une confirmation `Votre choix` avec
-  les actions `Prendre` et `Passer`.
+- Quand la parole revient au joueur humain pour l'atout, un panneau `Votre
+  choix` s'ouvre automatiquement avec les actions `Prendre` et `Passer`.
 - Le donneur est choisi aleatoirement au debut. Toute la rotation suit le meme
   sens anti-horaire sur le tapis : donne, prise, jeu de la carte et rotation
   du donneur d'une manche a l'autre.
@@ -89,6 +89,10 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   `1000` et `2000`.
 - Le niveau d'IA et le score cible sont conserves sur le Web apres
   rafraichissement de la page, y compris apres le lancement d'une partie.
+- Une fois la partie demarree, le bandeau d'accueil se compacte en resume avec
+  l'IA, le score cible et une action `Rejouer`.
+- Le panneau `Votre choix` n'est plus modal : le tapis reste visible et le
+  scroll de fond reste autorise pendant le choix de l'atout.
 - Bonus belote/rebelote de 20 points ajoute automatiquement quand le meme
   equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une

@@ -107,6 +107,8 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
     await tester.pumpWidget(BeloteApp(preferences: preferences));
     await tester.pumpAndSettle();
 
@@ -132,6 +134,11 @@ void main() {
     expect(find.byKey(const ValueKey('turned-card')), findsOneWidget);
     expect(find.byKey(const ValueKey('toggle-opponent-cards')), findsOneWidget);
     expect(find.byKey(const ValueKey('toggle-last-trick')), findsOneWidget);
+    expect(find.byKey(const ValueKey('ai-level-selector')), findsNothing);
+    expect(find.byKey(const ValueKey('target-score-selector')), findsNothing);
+    expect(find.text('Rejouer'), findsOneWidget);
+    expect(find.textContaining('IA'), findsOneWidget);
+    expect(find.textContaining('501'), findsOneWidget);
     expect(humanCards(), findsNWidgets(5));
     expect(
       find.descendant(
@@ -224,6 +231,7 @@ void main() {
     await tapVisible(tester, find.text('Nouvelle partie'));
     await tester.pumpAndSettle();
     expect(find.text('Votre choix'), findsOneWidget);
+    expect(find.byKey(const ValueKey('trump-choice-overlay')), findsOneWidget);
     await tapVisible(tester, find.text('Prendre'));
     await tester.pumpAndSettle();
 

@@ -270,6 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
+      _trumpChoiceDialogOpen = false;
       _gameState = gameState.chooseTrump(trumpSuit: trumpSuit);
       _lastTrumpChoicePromptedState = null;
     });
@@ -285,6 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
+      _trumpChoiceDialogOpen = false;
       _gameState = gameState.passTrump();
       _lastTrumpChoicePromptedState = null;
     });
@@ -306,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (gameState.phase == GamePhase.choosingTrump ||
           gameState.phase == GamePhase.waitingForTrumpTaker) {
-        unawaited(_showTrumpChoiceDialogAutomatically());
+        _showTrumpChoiceDialogAutomatically();
       }
     });
   }
@@ -350,7 +352,6 @@ class _HomeScreenState extends State<HomeScreen> {
         gameState.phase == GamePhase.waitingForTrumpTaker) {
       if (gameState.currentPlayer == gameState.humanSeat) {
         _scheduleTrumpChoicePrompt();
-        await _showTrumpChoiceDialogAutomatically();
         return;
       }
     }
@@ -358,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _scheduleAutomaticTrickTurns();
   }
 
-  Future<void> _showTrumpChoiceDialogAutomatically() async {
+  void _showTrumpChoiceDialogAutomatically() {
     final gameState = _gameState;
     if (gameState == null ||
         gameState.currentPlayer != gameState.humanSeat ||
@@ -369,13 +370,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    _lastTrumpChoicePromptedState = gameState;
-    _trumpChoiceDialogOpen = true;
-    try {
-      await _showTrumpChoiceDialog();
-    } finally {
-      _trumpChoiceDialogOpen = false;
-    }
+    setState(() {
+      _lastTrumpChoicePromptedState = gameState;
+      _trumpChoiceDialogOpen = true;
+    });
   }
 
   Future<void> _scheduleAutomaticTrickTurns() async {
@@ -411,68 +409,247 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _showTrumpChoiceDialog() async {
-    final gameState = _gameState;
-    if (gameState == null) {
-      return;
+  Widget _buildTrumpChoiceOverlay(GameState gameState) {
+    final isSecondRound = gameState.biddingRound == 2;
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Material(
+            key: const ValueKey('trump-choice-overlay'),
+            elevation: 18,
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFCF8F1),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0xFFC4A15A).withValues(alpha: 0.55),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x332B251F),
+                    blurRadius: 24,
+                    offset: Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Votre choix',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    isSecondRound
+                        ? 'Choisissez une autre couleur que '
+                              '${gameState.turnedCard.suit.label}.'
+                        : 'Prendre ${gameState.turnedCard.suit.label} ?',
+                  ),
+                  const SizedBox(height: 14),
+                  Center(child: PlayingCardView(card: gameState.turnedCard)),
+                  if (isSecondRound) ...[
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final suit in gameState.availableTrumpSuits)
+                          FilledButton(
+                            onPressed: () => _chooseTrump(trumpSuit: suit),
+                            child: Text('Prendre ${suit.label}'),
+                          ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: _passTrump,
+                        child: const Text('Passer'),
+                      ),
+                      if (!isSecondRound)
+                        FilledButton(
+                          onPressed: _chooseTrump,
+                          child: const Text('Prendre'),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSetupSummaryChip({
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC4A15A).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: const Color(0xFFC4A15A).withValues(alpha: 0.38),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: const Color(0xFF182A23)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSetupPanel() {
+    if (_gameState != null) {
+      return _surfacePanel(
+        child: Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text(
+                    'Belote',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                  ),
+                  _buildSetupSummaryChip(
+                    icon: Icons.psychology_outlined,
+                    label:
+                        'IA ${_aiLevel == AiLevel.expert ? 'Expert' : 'Debutant'}',
+                  ),
+                  _buildSetupSummaryChip(
+                    icon: Icons.flag_outlined,
+                    label: 'Partie $_targetScore pts',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            FilledButton.icon(
+              onPressed: _startNewGame,
+              icon: const Icon(Icons.restart_alt_outlined),
+              label: const Text('Rejouer'),
+            ),
+          ],
+        ),
+      );
     }
 
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Votre choix'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
+    return _surfacePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                gameState.biddingRound == 1
-                    ? 'Prendre ${gameState.turnedCard.suit.label} ?'
-                    : 'Choisissez une autre couleur que '
-                          '${gameState.turnedCard.suit.label}.',
-              ),
-              const SizedBox(height: 14),
-              Center(child: PlayingCardView(card: gameState.turnedCard)),
-              if (gameState.biddingRound == 2) ...[
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final suit in gameState.availableTrumpSuits)
-                      FilledButton(
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop();
-                          _chooseTrump(trumpSuit: suit);
-                        },
-                        child: Text('Prendre ${suit.label}'),
+                    Text(
+                      'Belote',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
                       ),
+                    ),
+                    SizedBox(height: 8),
+                    Text('Version locale : Web, puis iOS, puis Android.'),
                   ],
                 ),
-              ],
+              ),
+              FilledButton.icon(
+                onPressed: _startNewGame,
+                icon: const Icon(Icons.local_play_outlined),
+                label: const Text('Nouvelle partie'),
+              ),
             ],
           ),
-          actionsAlignment: MainAxisAlignment.spaceBetween,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _passTrump();
-              },
-              child: const Text('Passer'),
-            ),
-            if (gameState.biddingRound == 1)
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                  _chooseTrump();
-                },
-                child: const Text('Prendre'),
+          const SizedBox(height: 16),
+          SegmentedButton<AiLevel>(
+            key: const ValueKey('ai-level-selector'),
+            segments: const [
+              ButtonSegment(
+                value: AiLevel.debutant,
+                label: Text('Debutant'),
+                icon: Icon(Icons.school_outlined),
               ),
-          ],
-        );
-      },
+              ButtonSegment(
+                value: AiLevel.expert,
+                label: Text('Expert'),
+                icon: Icon(Icons.psychology_outlined),
+              ),
+            ],
+            selected: {_aiLevel},
+            onSelectionChanged: (selection) {
+              setState(() {
+                _aiLevelChangedByUser = true;
+                _aiLevel = selection.first;
+              });
+              unawaited(_persistSettings());
+            },
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<int>(
+            key: const ValueKey('target-score-selector'),
+            segments: const [
+              ButtonSegment(
+                value: 501,
+                label: Text('501'),
+                icon: Icon(Icons.looks_one_outlined),
+              ),
+              ButtonSegment(
+                value: 1000,
+                label: Text('1000'),
+                icon: Icon(Icons.filter_1_outlined),
+              ),
+              ButtonSegment(
+                value: 2000,
+                label: Text('2000'),
+                icon: Icon(Icons.filter_2_outlined),
+              ),
+            ],
+            selected: {_targetScore},
+            onSelectionChanged: (selection) {
+              setState(() {
+                _targetScoreChangedByUser = true;
+                _targetScore = selection.first;
+              });
+              unawaited(_persistSettings());
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(switch (_targetScore) {
+            501 => 'Format court, proche de ce qui se joue souvent en ligne.',
+            1000 => 'Format classique de table, plus long et plus stable.',
+            2000 => 'Format long pour une vraie session locale.',
+            _ => 'Score cible personnalise.',
+          }, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
     );
   }
 
@@ -536,6 +713,13 @@ class _HomeScreenState extends State<HomeScreen> {
     const cream = Color(0xFFF4E8D6);
     const paper = Color(0xFFFCF8F1);
     const brass = Color(0xFFC4A15A);
+    final gameState = _gameState;
+    final showTrumpChoiceOverlay =
+        gameState != null &&
+        _trumpChoiceDialogOpen &&
+        gameState.currentPlayer == gameState.humanSeat &&
+        (gameState.phase == GamePhase.choosingTrump ||
+            gameState.phase == GamePhase.waitingForTrumpTaker);
 
     return Scaffold(
       appBar: AppBar(
@@ -580,134 +764,43 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1040),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _surfacePanel(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Belote',
-                                      style: TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Version locale : Web, puis iOS, puis Android.',
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              FilledButton.icon(
-                                onPressed: _startNewGame,
-                                icon: const Icon(Icons.local_play_outlined),
-                                label: const Text('Nouvelle partie'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          SegmentedButton<AiLevel>(
-                            key: const ValueKey('ai-level-selector'),
-                            segments: const [
-                              ButtonSegment(
-                                value: AiLevel.debutant,
-                                label: Text('Debutant'),
-                                icon: Icon(Icons.school_outlined),
-                              ),
-                              ButtonSegment(
-                                value: AiLevel.expert,
-                                label: Text('Expert'),
-                                icon: Icon(Icons.psychology_outlined),
-                              ),
-                            ],
-                            selected: {_aiLevel},
-                            onSelectionChanged: (selection) {
+              child: Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSetupPanel(),
+                        if (gameState case final currentGameState?) ...[
+                          const SizedBox(height: 20),
+                          GameBoardView(
+                            gameState: currentGameState,
+                            onCardTap: _playCard,
+                            showOpponentCards: _showOpponentCards,
+                            showLastTrick: _showLastTrick,
+                            onToggleLastTrick: () {
                               setState(() {
-                                _aiLevelChangedByUser = true;
-                                _aiLevel = selection.first;
+                                _showLastTrick = !_showLastTrick;
                               });
-                              unawaited(_persistSettings());
                             },
-                          ),
-                          const SizedBox(height: 12),
-                          SegmentedButton<int>(
-                            key: const ValueKey('target-score-selector'),
-                            segments: const [
-                              ButtonSegment(
-                                value: 501,
-                                label: Text('501'),
-                                icon: Icon(Icons.looks_one_outlined),
-                              ),
-                              ButtonSegment(
-                                value: 1000,
-                                label: Text('1000'),
-                                icon: Icon(Icons.filter_1_outlined),
-                              ),
-                              ButtonSegment(
-                                value: 2000,
-                                label: Text('2000'),
-                                icon: Icon(Icons.filter_2_outlined),
-                              ),
-                            ],
-                            selected: {_targetScore},
-                            onSelectionChanged: (selection) {
+                            onStartNextRound: _startNextRound,
+                            onToggleOpponentCards: () {
                               setState(() {
-                                _targetScoreChangedByUser = true;
-                                _targetScore = selection.first;
+                                _showOpponentCards = !_showOpponentCards;
                               });
-                              unawaited(_persistSettings());
                             },
+                            showOpponentCardsActionLabel: _showOpponentCards
+                                ? 'Masquer les cartes des joueurs'
+                                : 'Voir les cartes des joueurs',
                           ),
-                          const SizedBox(height: 8),
-                          Text(switch (_targetScore) {
-                            501 =>
-                              'Format court, proche de ce qui se joue souvent en ligne.',
-                            1000 =>
-                              'Format classique de table, plus long et plus stable.',
-                            2000 =>
-                              'Format long pour une vraie session locale.',
-                            _ => 'Score cible personnalise.',
-                          }, style: const TextStyle(fontSize: 13)),
                         ],
-                      ),
+                      ],
                     ),
-                    if (_gameState case final gameState?) ...[
-                      const SizedBox(height: 20),
-                      GameBoardView(
-                        gameState: gameState,
-                        onCardTap: _playCard,
-                        showOpponentCards: _showOpponentCards,
-                        showLastTrick: _showLastTrick,
-                        onToggleLastTrick: () {
-                          setState(() {
-                            _showLastTrick = !_showLastTrick;
-                          });
-                        },
-                        onStartNextRound: _startNextRound,
-                        onToggleOpponentCards: () {
-                          setState(() {
-                            _showOpponentCards = !_showOpponentCards;
-                          });
-                        },
-                        showOpponentCardsActionLabel: _showOpponentCards
-                            ? 'Masquer les cartes des joueurs'
-                            : 'Voir les cartes des joueurs',
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                  if (showTrumpChoiceOverlay)
+                    _buildTrumpChoiceOverlay(gameState),
+                ],
               ),
             ),
           ),

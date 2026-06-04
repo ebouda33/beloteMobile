@@ -57,9 +57,9 @@ Premier niveau valide :
 - option visuelle ajoutee pour reveler ou masquer les cartes des adversaires ;
 - les cartes compactes gardent la valeur dans les coins et la couleur au centre
   pour les cartes adverses revelees et les cartes jouees sur le tapis ;
-- clic sur la carte retournee ajoute pour ouvrir une confirmation `Votre choix`
-  avec `Prendre` et `Passer` au premier tour, puis un choix des 3 couleurs
-  restantes au second tour ;
+- ouverture automatique du panneau `Votre choix` quand la parole revient au
+  joueur humain, avec `Prendre` et `Passer` au premier tour, puis un choix des
+  3 couleurs restantes au second tour ;
 - jeu automatique des adversaires ajoute pour completer le pli courant ;
 - quand une IA remporte un pli, l'application laisse le pli visible un peu plus
   longtemps avant d'enchainer automatiquement le pli suivant ;
@@ -104,6 +104,10 @@ Premier niveau valide :
   `2000` points ;
 - niveau d'IA et score cible conserves sur le Web apres rafraichissement de la
   page, y compris apres le lancement d'une partie ;
+- bandeau d'accueil compacte en resume de partie des que la table est lancee,
+  avec IA, score cible et action `Rejouer` ;
+- panneau `Votre choix` rendu non modal pour laisser le tapis visible et le
+  scroll de fond actif pendant le choix de l'atout ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
 - zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une
@@ -148,15 +152,17 @@ dans le recapitulatif.
 La presentation visuelle du tapis repose desormais sur de vraies cartes :
 la main humaine reste visible et cliquable, les mains adverses sont montrees
 dos caches, et la carte retournee est placee au centre du tapis pendant la
-phase de choix de l'atout. Cette carte ouvre maintenant une confirmation
-`Votre choix` avec `Prendre` et `Passer` au premier tour, puis les 3 couleurs
-restantes au second tour. Une option visuelle permet de reveler les cartes
+phase de choix de l'atout. Quand la parole revient au joueur humain, un
+panneau flottant `Votre choix` s'ouvre automatiquement avec `Prendre` et
+`Passer` au premier tour, puis les 3 couleurs restantes au second tour. Ce
+panneau ne bloque plus le scroll du fond. Une option visuelle permet de reveler les cartes
 des adversaires, avec un rendu compact ou la valeur reste dans les coins et la
 couleur au centre. Les cartes cachees des adversaires ne sont plus rendues en
 eventail: elles sont posees en support discret et stable autour du tapis pour
 rester lisibles. Le preneur est aussi rappelé dans le tapis central avec un
 badge dedie, et l'atout est affiche sous forme d'icone compacte. L'accueil
-permet maintenant de choisir entre IA `Debutant` et `Expert`.
+permet maintenant de choisir entre IA `Debutant` et `Expert`, puis se replie en
+resume compact des que la partie commence.
 
 Le jeton `D` du tapis represente le donneur. Le donneur est choisi
 aleatoirement au debut, puis toutes les actions suivent la meme rotation
