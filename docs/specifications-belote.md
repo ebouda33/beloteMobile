@@ -69,6 +69,8 @@ Premier niveau valide :
   que `expert` evite d'ouvrir un pli avec l'atout quand une carte hors atout
   reste possible et conserve aussi l'atout quand une carte hors atout peut
   encore gagner le pli ou quand il doit se defausser ;
+- quand `expert` mene un pli, il privilegie la couleur non-atout la plus
+  fournie plutot que la carte la plus faible prise isolément ;
 - cartes jouables renforcees avec suivi de couleur, coupe obligatoire, defausse
   autorisee si le partenaire est maitre et montee a l'atout quand possible ;
 - les cartes impossibles a jouer sont assombries et les cartes jouables se

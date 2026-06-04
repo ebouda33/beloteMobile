@@ -891,6 +891,37 @@ void main() {
       );
     });
 
+    test('expert AI leads from the longest non-trump suit', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+            BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+            BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+          ],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.playingTrick,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        currentPlayer: PlayerSeat.leftOpponent,
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.playAutomaticTurns();
+
+      expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+      expect(
+        updatedState.currentTrick.first.card,
+        const BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+      );
+    });
+
     test(
       'expert AI keeps trump in hand when a non-trump can still win the trick',
       () {

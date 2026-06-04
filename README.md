@@ -52,6 +52,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   que `Expert` evite d'ouvrir un pli avec l'atout quand une carte hors atout
   reste possible et preserve aussi l'atout quand une carte hors atout peut
   encore gagner le pli ou quand il doit se defausser.
+- Quand `Expert` mene un pli, il privilegie la couleur non-atout la plus fournie
+  plutot que la carte la plus faible prise isolément.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.

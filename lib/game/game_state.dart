@@ -684,7 +684,10 @@ class GameState {
           .where((card) => card.suit != trump)
           .toList();
       if (nonTrumpCards.isNotEmpty) {
-        return _lowestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
+        return _lowestPriorityAutomaticCard(
+          _bestLeadingCardsForExpert(nonTrumpCards, trumpSuit: trump),
+          trumpSuit: trump,
+        );
       }
 
       return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
@@ -756,6 +759,45 @@ class GameState {
       });
 
     return sortedCards.first;
+  }
+
+  List<BeloteCard> _bestLeadingCardsForExpert(
+    List<BeloteCard> playableCards, {
+    required Suit trumpSuit,
+  }) {
+    final cardsBySuit = <Suit, List<BeloteCard>>{};
+    for (final card in playableCards) {
+      cardsBySuit.putIfAbsent(card.suit, () => []).add(card);
+    }
+
+    final bestSuit = cardsBySuit.entries.reduce((first, second) {
+      if (first.value.length != second.value.length) {
+        return first.value.length > second.value.length ? first : second;
+      }
+
+      final firstPriority = _lowestPriorityAutomaticCard(
+        first.value,
+        trumpSuit: trumpSuit,
+      );
+      final secondPriority = _lowestPriorityAutomaticCard(
+        second.value,
+        trumpSuit: trumpSuit,
+      );
+      if (firstPriority.points(trumpSuit: trumpSuit) !=
+          secondPriority.points(trumpSuit: trumpSuit)) {
+        return firstPriority.points(trumpSuit: trumpSuit) <
+                secondPriority.points(trumpSuit: trumpSuit)
+            ? first
+            : second;
+      }
+
+      return firstPriority.strength(trumpSuit: trumpSuit) <
+              secondPriority.strength(trumpSuit: trumpSuit)
+          ? first
+          : second;
+    });
+
+    return bestSuit.value;
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(
