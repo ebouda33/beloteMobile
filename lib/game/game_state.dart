@@ -685,7 +685,11 @@ class GameState {
           .toList();
       if (nonTrumpCards.isNotEmpty) {
         return _lowestPriorityAutomaticCard(
-          _bestLeadingCardsForExpert(nonTrumpCards, trumpSuit: trump),
+          _bestLeadingCardsForExpert(
+            nonTrumpCards,
+            trumpSuit: trump,
+            seat: seat,
+          ),
           trumpSuit: trump,
         );
       }
@@ -764,17 +768,18 @@ class GameState {
   List<BeloteCard> _bestLeadingCardsForExpert(
     List<BeloteCard> playableCards, {
     required Suit trumpSuit,
+    required PlayerSeat seat,
   }) {
     final cardsBySuit = <Suit, List<BeloteCard>>{};
     for (final card in playableCards) {
       cardsBySuit.putIfAbsent(card.suit, () => []).add(card);
     }
 
-    final bestSuit = cardsBySuit.entries.reduce((first, second) {
-      if (first.value.length != second.value.length) {
-        return first.value.length > second.value.length ? first : second;
-      }
+    final team = _teamOf(seat);
+    final preferStrength =
+        (gameScore[team] ?? 0) < (gameScore[_opponentOf(team)] ?? 0);
 
+    final bestSuit = cardsBySuit.entries.reduce((first, second) {
       final firstScore = _expertLeadingSuitScore(
         first.value,
         trumpSuit: trumpSuit,
@@ -783,8 +788,21 @@ class GameState {
         second.value,
         trumpSuit: trumpSuit,
       );
-      if (firstScore != secondScore) {
-        return firstScore > secondScore ? first : second;
+
+      if (preferStrength) {
+        if (firstScore != secondScore) {
+          return firstScore > secondScore ? first : second;
+        }
+        if (first.value.length != second.value.length) {
+          return first.value.length > second.value.length ? first : second;
+        }
+      } else {
+        if (first.value.length != second.value.length) {
+          return first.value.length > second.value.length ? first : second;
+        }
+        if (firstScore != secondScore) {
+          return firstScore > secondScore ? first : second;
+        }
       }
 
       final firstPriority = _lowestPriorityAutomaticCard(

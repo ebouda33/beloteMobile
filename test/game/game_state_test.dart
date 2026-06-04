@@ -925,6 +925,39 @@ void main() {
       );
     });
 
+    test('expert AI leads more aggressively when its team is behind', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+            BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          ],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.playingTrick,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        currentPlayer: PlayerSeat.leftOpponent,
+        gameScore: const {Team.humanTeam: 180, Team.opponentTeam: 120},
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.playAutomaticTurns();
+
+      expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+      expect(
+        updatedState.currentTrick.first.card,
+        const BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+      );
+    });
+
     test('expert AI prefers the strongest suit when lead lengths tie', () {
       final gameState = GameState(
         hands: const {
