@@ -72,7 +72,8 @@ Premier niveau valide :
 - quand `expert` mene un pli, il privilegie la couleur non-atout la plus
   fournie plutot que la carte la plus faible prise isolément ;
 - `expert` affine aussi ses choix a partir du partenaire et des plis deja
-  tombes pour mieux orienter l'entame et la defausse ;
+  tombes, avec un suivi explicite des cartes sorties, pour mieux orienter
+  l'entame et la defausse ;
 - quand `expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire ;
@@ -156,8 +157,9 @@ Prochaine reprise :
 
 1. poursuivre le polish visuel du plateau avec le support de cartes des
    adversaires ;
-2. preparer l'ajout de nouvelles annonces ou variantes ;
-3. etendre l'intelligence des robots a la phase de jeu elle-meme.
+2. affiner encore l'IA expert sur la lecture du partenaire et des fins de
+   manche ;
+3. preparer l'ajout de nouvelles annonces ou variantes.
 
 ## Principes de conception
 

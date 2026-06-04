@@ -809,6 +809,7 @@ void main() {
       expect(updatedState.currentTrick.single.player, PlayerSeat.human);
       expect(updatedState.currentTrick.single.card, card);
       expect(updatedState.currentPlayer, PlayerSeat.rightOpponent);
+      expect(updatedState.seenCards, contains(card));
     });
 
     test('automatically completes the current trick for opponent turns', () {
@@ -1061,6 +1062,48 @@ void main() {
         const BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
       );
     });
+
+    test(
+      'expert AI uses seen cards to prefer the safer remaining opening suit',
+      () {
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+            PlayerSeat.leftOpponent: [
+              BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+              BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+              BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+              BeloteCard(suit: Suit.diamonds, rank: Rank.eight),
+            ],
+            PlayerSeat.partner: [],
+            PlayerSeat.rightOpponent: [],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.leftOpponent,
+          seenCards: {
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.king),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.queen),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.jack),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.nine),
+          },
+          aiLevel: AiLevel.expert,
+        );
+
+        final updatedState = gameState.playAutomaticTurns();
+
+        expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+        expect(
+          updatedState.currentTrick.first.card,
+          const BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+        );
+      },
+    );
 
     test(
       'expert AI keeps trump in hand when a non-trump can still win the trick',

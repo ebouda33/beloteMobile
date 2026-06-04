@@ -57,8 +57,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Quand `Expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire.
-- Le niveau `Expert` affine aussi ses choix avec les plis deja tombes et la
-  lecture du partenaire pour mieux orienter l'entame et la defausse.
+- Le niveau `Expert` affine aussi ses choix avec le suivi des cartes sorties,
+  les plis deja tombes et la lecture du partenaire pour mieux orienter
+  l'entame et la defausse.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
@@ -123,4 +124,5 @@ passent.
 ## Prochaine reprise
 
 Prochaine etape recommandee : poursuivre le polish visuel du plateau et de la
-zone score, ou etendre l'intelligence des robots a la phase de jeu elle-meme.
+zone score, ou renforcer encore l'intelligence des robots sur la lecture du
+partenaire et des fins de manche.

@@ -70,6 +70,7 @@ class GameState {
     this.beloteTeam,
     this.beloteRanksPlayed = const {},
     this.playSpeeches = const {},
+    this.seenCards = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   });
 
@@ -95,6 +96,7 @@ class GameState {
   final Team? beloteTeam;
   final Set<Rank> beloteRanksPlayed;
   final Map<PlayerSeat, String> playSpeeches;
+  final Set<BeloteCard> seenCards;
   final Map<Team, int> gameScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
@@ -340,6 +342,7 @@ class GameState {
           roundHistory: roundHistory,
           beloteTeam: beloteTeam,
           beloteRanksPlayed: beloteRanksPlayed,
+          seenCards: seenCards,
           gameScore: gameScore,
         );
       }
@@ -374,6 +377,7 @@ class GameState {
       roundHistory: roundHistory,
       beloteTeam: beloteTeam,
       beloteRanksPlayed: beloteRanksPlayed,
+      seenCards: seenCards,
       gameScore: gameScore,
     );
   }
@@ -467,6 +471,7 @@ class GameState {
       roundHistory: roundHistory,
       beloteTeam: beloteTeam,
       beloteRanksPlayed: beloteRanksPlayed,
+      seenCards: seenCards,
       gameScore: gameScore,
     );
   }
@@ -543,6 +548,7 @@ class GameState {
     final updatedRoundBonusPoints = {
       for (final team in Team.values) team: roundBonusPoints[team] ?? 0,
     };
+    final updatedSeenCards = {...seenCards, card};
     var updatedBeloteTeam = beloteTeam;
     var updatedBeloteRanksPlayed = {...beloteRanksPlayed};
     var updatedPlaySpeeches = {...playSpeeches};
@@ -636,6 +642,7 @@ class GameState {
       beloteTeam: updatedBeloteTeam,
       beloteRanksPlayed: updatedBeloteRanksPlayed,
       playSpeeches: updatedPlaySpeeches,
+      seenCards: updatedSeenCards,
       gameScore: updatedGameScore,
     );
   }
@@ -757,9 +764,22 @@ class GameState {
           return pointsComparison;
         }
 
-        return first
+        final strengthComparison = first
             .strength(trumpSuit: trumpSuit)
             .compareTo(second.strength(trumpSuit: trumpSuit));
+        if (strengthComparison != 0) {
+          return strengthComparison;
+        }
+
+        final firstPressure = _expertRemainingSuitPressure(
+          first.suit,
+          trumpSuit: trumpSuit,
+        );
+        final secondPressure = _expertRemainingSuitPressure(
+          second.suit,
+          trumpSuit: trumpSuit,
+        );
+        return firstPressure.compareTo(secondPressure);
       });
 
     return sortedCards.first;
@@ -790,10 +810,21 @@ class GameState {
       );
       final firstContextScore = _expertLeadingSuitContextScore(first.key);
       final secondContextScore = _expertLeadingSuitContextScore(second.key);
+      final firstPressure = _expertRemainingSuitPressure(
+        first.key,
+        trumpSuit: trumpSuit,
+      );
+      final secondPressure = _expertRemainingSuitPressure(
+        second.key,
+        trumpSuit: trumpSuit,
+      );
 
       if (preferStrength) {
         if (firstContextScore != secondContextScore) {
           return firstContextScore > secondContextScore ? first : second;
+        }
+        if (firstPressure != secondPressure) {
+          return firstPressure > secondPressure ? first : second;
         }
         if (firstScore != secondScore) {
           return firstScore > secondScore ? first : second;
@@ -807,6 +838,9 @@ class GameState {
         }
         if (firstContextScore != secondContextScore) {
           return firstContextScore > secondContextScore ? first : second;
+        }
+        if (firstPressure != secondPressure) {
+          return firstPressure < secondPressure ? first : second;
         }
         if (firstScore != secondScore) {
           return firstScore > secondScore ? first : second;
@@ -855,6 +889,18 @@ class GameState {
     final teamSuitMomentum = _wonTricksForSuit(Team.humanTeam, suit);
     final opponentSuitMomentum = _wonTricksForSuit(Team.opponentTeam, suit);
     return teamSuitMomentum - opponentSuitMomentum;
+  }
+
+  int _expertRemainingSuitPressure(Suit suit, {required Suit trumpSuit}) {
+    return createDeck()
+        .where((card) => card.suit == suit && !seenCards.contains(card))
+        .fold<int>(
+          0,
+          (total, card) =>
+              total +
+              card.points(trumpSuit: trumpSuit) +
+              card.strength(trumpSuit: trumpSuit),
+        );
   }
 
   int _wonTricksForSuit(Team team, Suit suit) {
@@ -1157,6 +1203,7 @@ GameState _createRoundGameState({
     biddingStarterSeat: biddingStarterSeat,
     currentPlayer: biddingStarterSeat,
     gameScore: gameScore,
+    seenCards: const {},
   );
 }
 
