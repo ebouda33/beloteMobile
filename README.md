@@ -62,6 +62,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Le niveau `Expert` affine aussi ses choix avec le suivi des cartes sorties,
   les plis deja tombes et la lecture du partenaire pour mieux orienter
   l'entame et la defausse.
+- En fin de manche, `Expert` securise mieux les plis chers et donne plus
+  volontiers des points a son partenaire quand celui-ci tient deja le pli.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
@@ -126,9 +128,7 @@ passent.
 - `docs/ide/intellij-flutter.md` : configuration IntelliJ pour lancer le Web.
 
 ## Prochaine reprise
-
+ 
 Prochaine etape recommandee :
 
-1. renforcer encore l'intelligence des robots sur la lecture du partenaire et
-   des fins de manche ;
-2. preparer l'ajout de nouvelles annonces ou variantes.
+1. preparer l'ajout de nouvelles annonces ou variantes.

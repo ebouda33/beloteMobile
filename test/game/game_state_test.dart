@@ -1339,6 +1339,110 @@ void main() {
       );
     });
 
+    test(
+      'expert AI discards high points to a winning partner in the late round',
+      () {
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.seven)],
+            PlayerSeat.leftOpponent: [
+              BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+              BeloteCard(suit: Suit.spades, rank: Rank.seven),
+            ],
+            PlayerSeat.partner: [BeloteCard(suit: Suit.clubs, rank: Rank.nine)],
+            PlayerSeat.rightOpponent: [
+              BeloteCard(suit: Suit.hearts, rank: Rank.jack),
+            ],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.leftOpponent,
+          currentTrick: const [
+            PlayedCard(
+              player: PlayerSeat.human,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            ),
+            PlayedCard(
+              player: PlayerSeat.rightOpponent,
+              card: BeloteCard(suit: Suit.hearts, rank: Rank.jack),
+            ),
+            PlayedCard(
+              player: PlayerSeat.partner,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            ),
+          ],
+          wonTricks: const {
+            Team.humanTeam: [[], [], [], [], [], []],
+            Team.opponentTeam: [],
+          },
+          aiLevel: AiLevel.expert,
+        );
+
+        final updatedState = gameState.playAutomaticTurns();
+
+        expect(updatedState.currentTrick, isEmpty);
+        expect(
+          updatedState.lastCompletedTrick.last.card,
+          const BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+        );
+      },
+    );
+
+    test(
+      'expert AI secures a valuable late trick with the highest winning card',
+      () {
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.seven)],
+            PlayerSeat.leftOpponent: [
+              BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+              BeloteCard(suit: Suit.clubs, rank: Rank.king),
+            ],
+            PlayerSeat.partner: [],
+            PlayerSeat.rightOpponent: [
+              BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+            ],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.leftOpponent,
+          currentTrick: const [
+            PlayedCard(
+              player: PlayerSeat.human,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+            ),
+            PlayedCard(
+              player: PlayerSeat.rightOpponent,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+            ),
+            PlayedCard(
+              player: PlayerSeat.partner,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+            ),
+          ],
+          wonTricks: const {
+            Team.humanTeam: [[], [], [], [], [], []],
+            Team.opponentTeam: [],
+          },
+          aiLevel: AiLevel.expert,
+        );
+
+        final updatedState = gameState.playAutomaticTurns();
+
+        expect(updatedState.currentTrick, isEmpty);
+        expect(
+          updatedState.lastCompletedTrick.last.card,
+          const BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+        );
+      },
+    );
+
     test('expert AI overtrumps with the least costly winning trump', () {
       final gameState = GameState(
         hands: const {

@@ -76,6 +76,8 @@ Premier niveau valide :
 - `expert` affine aussi ses choix a partir du partenaire et des plis deja
   tombes, avec un suivi explicite des cartes sorties, pour mieux orienter
   l'entame et la defausse ;
+- en fin de manche, `expert` securise mieux les plis chers et donne plus
+  volontiers des points a son partenaire quand celui-ci est deja maitre du pli ;
 - quand `expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire ;
@@ -159,9 +161,7 @@ donneur a la manche suivante.
 
 Prochaine reprise :
 
-1. affiner encore l'IA expert sur la lecture du partenaire et des fins de
-   manche ;
-2. preparer l'ajout de nouvelles annonces ou variantes.
+1. preparer l'ajout de nouvelles annonces ou variantes.
 
 ## Principes de conception
 

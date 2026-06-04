@@ -685,6 +685,8 @@ class GameState {
     PlayerSeat seat,
   ) {
     final trump = trumpSuit!;
+    final lateRound = _isExpertLateRound();
+    final teamBehind = _isExpertTeamBehind(seat);
 
     if (currentTrick.isEmpty) {
       final nonTrumpCards = playableCards
@@ -710,6 +712,12 @@ class GameState {
           .where((card) => card.suit != trump)
           .toList();
       if (nonTrumpCards.isNotEmpty) {
+        if (lateRound ||
+            teamBehind ||
+            _trickPoints(currentTrick, trump) >= 10) {
+          return _highestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
+        }
+
         return _lowestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
       }
 
@@ -733,6 +741,13 @@ class GameState {
           .where((card) => card.suit != trump)
           .toList();
       if (nonTrumpWinningCards.isNotEmpty) {
+        if (lateRound || _trickPoints(currentTrick, trump) >= 10) {
+          return _highestPriorityAutomaticCard(
+            nonTrumpWinningCards,
+            trumpSuit: trump,
+          );
+        }
+
         final cashableAces = nonTrumpWinningCards
             .where(
               (card) =>
@@ -760,6 +775,40 @@ class GameState {
     }
 
     return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
+  }
+
+  BeloteCard _highestPriorityAutomaticCard(
+    List<BeloteCard> playableCards, {
+    required Suit trumpSuit,
+  }) {
+    final sortedCards = [...playableCards]
+      ..sort((first, second) {
+        final pointsComparison = second
+            .points(trumpSuit: trumpSuit)
+            .compareTo(first.points(trumpSuit: trumpSuit));
+        if (pointsComparison != 0) {
+          return pointsComparison;
+        }
+
+        final strengthComparison = second
+            .strength(trumpSuit: trumpSuit)
+            .compareTo(first.strength(trumpSuit: trumpSuit));
+        if (strengthComparison != 0) {
+          return strengthComparison;
+        }
+
+        final firstPressure = _expertRemainingSuitPressure(
+          first.suit,
+          trumpSuit: trumpSuit,
+        );
+        final secondPressure = _expertRemainingSuitPressure(
+          second.suit,
+          trumpSuit: trumpSuit,
+        );
+        return firstPressure.compareTo(secondPressure);
+      });
+
+    return sortedCards.first;
   }
 
   BeloteCard _lowestPriorityAutomaticCard(
@@ -998,6 +1047,33 @@ class GameState {
           total + playedCard.card.points(trumpSuit: trumpSuit),
     );
     return remainingSuitPressure <= 6 || trickPoints >= 10;
+  }
+
+  bool _isExpertLateRound() {
+    final completedTricks = _completedTrickCount(wonTricks);
+    return completedTricks >= 6;
+  }
+
+  bool _isExpertTeamBehind(PlayerSeat seat) {
+    final team = _teamOf(seat);
+    final opponent = _opponentOf(team);
+    final teamScore =
+        (gameScore[team] ?? 0) +
+        (roundPoints[team] ?? 0) +
+        (roundBonusPoints[team] ?? 0);
+    final opponentScore =
+        (gameScore[opponent] ?? 0) +
+        (roundPoints[opponent] ?? 0) +
+        (roundBonusPoints[opponent] ?? 0);
+    return teamScore < opponentScore;
+  }
+
+  int _trickPoints(List<PlayedCard> trick, Suit trumpSuit) {
+    return trick.fold<int>(
+      0,
+      (total, playedCard) =>
+          total + playedCard.card.points(trumpSuit: trumpSuit),
+    );
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(
