@@ -71,6 +71,9 @@ Premier niveau valide :
   encore gagner le pli ou quand il doit se defausser ;
 - quand `expert` mene un pli, il privilegie la couleur non-atout la plus
   fournie plutot que la carte la plus faible prise isolément ;
+- quand `expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
+  carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
+  obligatoire ;
 - cartes jouables renforcees avec suivi de couleur, coupe obligatoire, defausse
   autorisee si le partenaire est maitre et montee a l'atout quand possible ;
 - les cartes impossibles a jouer sont assombries et les cartes jouables se

@@ -54,6 +54,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   encore gagner le pli ou quand il doit se defausser.
 - Quand `Expert` mene un pli, il privilegie la couleur non-atout la plus fournie
   plutot que la carte la plus faible prise isolément.
+- Quand `Expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
+  carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
+  obligatoire.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.

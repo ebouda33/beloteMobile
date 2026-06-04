@@ -775,6 +775,18 @@ class GameState {
         return first.value.length > second.value.length ? first : second;
       }
 
+      final firstScore = _expertLeadingSuitScore(
+        first.value,
+        trumpSuit: trumpSuit,
+      );
+      final secondScore = _expertLeadingSuitScore(
+        second.value,
+        trumpSuit: trumpSuit,
+      );
+      if (firstScore != secondScore) {
+        return firstScore > secondScore ? first : second;
+      }
+
       final firstPriority = _lowestPriorityAutomaticCard(
         first.value,
         trumpSuit: trumpSuit,
@@ -798,6 +810,19 @@ class GameState {
     });
 
     return bestSuit.value;
+  }
+
+  int _expertLeadingSuitScore(
+    List<BeloteCard> cards, {
+    required Suit trumpSuit,
+  }) {
+    return cards.fold<int>(
+      0,
+      (total, card) =>
+          total +
+          card.strength(trumpSuit: trumpSuit) +
+          card.points(trumpSuit: trumpSuit),
+    );
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(
