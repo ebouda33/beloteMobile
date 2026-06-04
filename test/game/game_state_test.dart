@@ -828,6 +828,69 @@ void main() {
       expect(updatedState.currentPlayer, updatedState.lastTrickWinner);
     });
 
+    test(
+      'beginner AI can open a trick with the cheapest card even if trump',
+      () {
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+            PlayerSeat.leftOpponent: [
+              BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+              BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+              BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+            ],
+            PlayerSeat.partner: [],
+            PlayerSeat.rightOpponent: [],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.leftOpponent,
+          aiLevel: AiLevel.debutant,
+        );
+
+        final updatedState = gameState.playAutomaticTurns();
+
+        expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+        expect(
+          updatedState.currentTrick.first.card,
+          const BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+        );
+      },
+    );
+
+    test('expert AI avoids leading with trump when a non-trump exists', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.hearts, rank: Rank.seven),
+            BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+            BeloteCard(suit: Suit.diamonds, rank: Rank.ace),
+          ],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.playingTrick,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        currentPlayer: PlayerSeat.leftOpponent,
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.playAutomaticTurns();
+
+      expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+      expect(
+        updatedState.currentTrick.first.card,
+        const BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+      );
+    });
+
     test('selects the trump card winner when a trick contains trump', () {
       const humanCard = BeloteCard(suit: Suit.clubs, rank: Rank.ace);
       const leftCard = BeloteCard(suit: Suit.clubs, rank: Rank.seven);

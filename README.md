@@ -48,6 +48,9 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   lisibles.
 - Les adversaires jouent automatiquement pour completer un pli, le gagnant est
   calcule selon l'atout et la couleur demandee, puis il devient joueur courant.
+- Au jeu de la carte, `Debutant` garde un choix simple de carte jouable, tandis
+  que `Expert` evite d'ouvrir un pli avec l'atout quand une carte hors atout
+  reste possible.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.

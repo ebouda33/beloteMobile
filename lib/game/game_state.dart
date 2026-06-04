@@ -507,7 +507,7 @@ class GameState {
       }
 
       updatedState = updatedState.playCard(
-        updatedState._chooseAutomaticCard(playableCards),
+        updatedState._chooseAutomaticCard(playableCards, seat),
         seat: seat,
       );
       guard += 1;
@@ -644,7 +644,17 @@ class GameState {
     return hands.values.any((hand) => hand.isNotEmpty);
   }
 
-  BeloteCard _chooseAutomaticCard(List<BeloteCard> playableCards) {
+  BeloteCard _chooseAutomaticCard(
+    List<BeloteCard> playableCards,
+    PlayerSeat seat,
+  ) {
+    return switch (aiLevel) {
+      AiLevel.debutant => _chooseDebutantAutomaticCard(playableCards),
+      AiLevel.expert => _chooseExpertAutomaticCard(playableCards, seat),
+    };
+  }
+
+  BeloteCard _chooseDebutantAutomaticCard(List<BeloteCard> playableCards) {
     final trump = trumpSuit!;
     final sortedCards = [...playableCards]
       ..sort((first, second) {
@@ -658,6 +668,67 @@ class GameState {
         return first
             .strength(trumpSuit: trump)
             .compareTo(second.strength(trumpSuit: trump));
+      });
+
+    return sortedCards.first;
+  }
+
+  BeloteCard _chooseExpertAutomaticCard(
+    List<BeloteCard> playableCards,
+    PlayerSeat seat,
+  ) {
+    final trump = trumpSuit!;
+
+    if (currentTrick.isEmpty) {
+      final nonTrumpCards = playableCards
+          .where((card) => card.suit != trump)
+          .toList();
+      if (nonTrumpCards.isNotEmpty) {
+        return _lowestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
+      }
+
+      return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
+    }
+
+    if (_isPartnerCurrentlyWinning(seat)) {
+      return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
+    }
+
+    final currentWinner = _winningPlayedCard(currentTrick, trump).card;
+    final winningCards = playableCards
+        .where(
+          (card) => _beats(
+            challenger: card,
+            currentWinner: currentWinner,
+            requestedSuit: currentTrick.first.card.suit,
+            trumpSuit: trump,
+          ),
+        )
+        .toList();
+
+    if (winningCards.isNotEmpty) {
+      return _lowestPriorityAutomaticCard(winningCards, trumpSuit: trump);
+    }
+
+    return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
+  }
+
+  BeloteCard _lowestPriorityAutomaticCard(
+    List<BeloteCard> playableCards, {
+    required Suit trumpSuit,
+  }) {
+    final sortedCards = [...playableCards]
+      ..sort((first, second) {
+        final pointsComparison = first
+            .points(trumpSuit: trumpSuit)
+            .compareTo(second.points(trumpSuit: trumpSuit));
+        if (pointsComparison != 0) {
+          return pointsComparison;
+        }
+
+        return first
+            .strength(trumpSuit: trumpSuit)
+            .compareTo(second.strength(trumpSuit: trumpSuit));
       });
 
     return sortedCards.first;
