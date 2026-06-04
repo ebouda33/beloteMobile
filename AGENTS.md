@@ -28,6 +28,8 @@ Existing commits use short imperative summaries, such as `Initialise Flutter bel
 
 Keep `README.md` focused on current project status and quick start instructions. Put detailed setup or product rules in `docs/`. Do not commit generated build outputs from `build/`, local IDE state, secrets, or machine-specific configuration.
 
+For GitHub CLI or HTTPS pushes from this repository, use the environment variable `GITHUB_TOKEN_BELOTE` as the canonical token source. Do not hardcode a GitHub token in files, commit messages, or shell history.
+
 ## Agent-Specific Instructions
 
 When the user says `etape finis`, `étape finie`, or similar, use the local `finish-step-docs` skill. Update the relevant docs with the completed work, verification performed, and the next concrete step before committing documentation changes.
