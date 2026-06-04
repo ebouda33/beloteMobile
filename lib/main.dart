@@ -157,6 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
   AiLevel _aiLevel = AiLevel.debutant;
   int _biddingAnimationToken = 0;
   int _trickAnimationToken = 0;
+  bool _trumpChoiceDialogOpen = false;
+  GameState? _lastTrumpChoicePromptedState;
 
   Future<void> _startNewGame() async {
     setState(() {
@@ -233,7 +235,35 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    if (gameState.phase == GamePhase.choosingTrump ||
+        gameState.phase == GamePhase.waitingForTrumpTaker) {
+      if (gameState.currentPlayer == gameState.humanSeat) {
+        await _showTrumpChoiceDialogAutomatically();
+        return;
+      }
+    }
+
     await _scheduleAutomaticTrickTurns();
+  }
+
+  Future<void> _showTrumpChoiceDialogAutomatically() async {
+    final gameState = _gameState;
+    if (gameState == null ||
+        gameState.currentPlayer != gameState.humanSeat ||
+        (gameState.phase != GamePhase.choosingTrump &&
+            gameState.phase != GamePhase.waitingForTrumpTaker) ||
+        identical(_lastTrumpChoicePromptedState, gameState) ||
+        _trumpChoiceDialogOpen) {
+      return;
+    }
+
+    _lastTrumpChoicePromptedState = gameState;
+    _trumpChoiceDialogOpen = true;
+    try {
+      await _showTrumpChoiceDialog();
+    } finally {
+      _trumpChoiceDialogOpen = false;
+    }
   }
 
   Future<void> _scheduleAutomaticTrickTurns() async {
@@ -503,7 +533,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       GameBoardView(
                         gameState: gameState,
                         onCardTap: _playCard,
-                        onTurnedCardTap: _showTrumpChoiceDialog,
                         showOpponentCards: _showOpponentCards,
                         showLastTrick: _showLastTrick,
                         onToggleLastTrick: () {

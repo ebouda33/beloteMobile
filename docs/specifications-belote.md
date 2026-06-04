@@ -20,6 +20,13 @@ Ordre des plateformes :
 2. iOS
 3. Android
 
+## Regle canonique de rotation
+
+La rotation anti-horaire de la belote est figée dans
+[`docs/belote-turn-order.md`](belote-turn-order.md). Elle s'applique sans
+exception à la distribution, à la parole, au jeu de la carte et à la rotation
+du donneur entre les manches.
+
 ## Etat d'avancement
 
 Premier niveau valide :

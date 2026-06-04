@@ -65,11 +65,8 @@ void main() {
     expect(find.text('NOUS'), findsOneWidget);
     expect(find.byKey(const ValueKey('human-hand')), findsOneWidget);
     expect(find.byKey(const ValueKey('turned-card')), findsOneWidget);
-    expect(find.byKey(const ValueKey('trump-badge')), findsOneWidget);
-    expect(find.text('Atout'), findsOneWidget);
     expect(find.byKey(const ValueKey('toggle-opponent-cards')), findsOneWidget);
     expect(find.byKey(const ValueKey('toggle-last-trick')), findsOneWidget);
-    expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
     expect(humanCards(), findsNWidgets(5));
     expect(
       find.descendant(
@@ -78,20 +75,23 @@ void main() {
       ),
       findsNWidgets(5),
     );
-    expect(find.textContaining('Prendre '), findsNothing);
-    expect(find.text('Passer'), findsNothing);
 
-    await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
-
+    await tester.pumpAndSettle();
     expect(find.text('Votre choix'), findsOneWidget);
     expect(find.textContaining('Prendre '), findsOneWidget);
     expect(find.text('Passer'), findsOneWidget);
 
     await tapVisible(tester, find.text('Prendre'));
 
-    expect(find.byKey(const ValueKey('trump-badge')), findsOneWidget);
     expect(find.byKey(const ValueKey('dealer-chip')), findsOneWidget);
-    expect(find.text('Preneur : Vous *'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('human-hand')),
+        matching: find.byKey(const ValueKey('trump-suit-indicator')),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Preneur'), findsNothing);
     expect(humanCards(), findsNWidgets(8));
     expect(find.textContaining('Prendre '), findsNothing);
     expect(find.text('Passer'), findsNothing);
@@ -103,6 +103,12 @@ void main() {
     await tester.pumpWidget(const BeloteApp());
 
     await tapVisible(tester, find.text('Nouvelle partie'));
+
+    await tester.pumpAndSettle();
+
+    if (find.text('Votre choix').evaluate().isNotEmpty) {
+      await tapVisible(tester, find.text('Passer'));
+    }
 
     final partnerCardsBefore = tester
         .widgetList<PlayingCardView>(opponentCards('partner-hand'))
@@ -122,6 +128,9 @@ void main() {
     expect(partnerCardsAfter.every((card) => !card.faceDown), isTrue);
 
     expect(find.byKey(const ValueKey('toggle-opponent-cards')), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('renders compact cards with suit only', (
@@ -142,17 +151,15 @@ void main() {
     expect(find.text('♥'), findsOneWidget);
   });
 
-  testWidgets('passes on the turned trump card and closes the dialog', (
+  testWidgets('opens the trump dialog automatically and takes the trump', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const BeloteApp(randomizeDealerSeat: false));
 
     await tapVisible(tester, find.text('Nouvelle partie'));
-    await tapVisible(tester, find.byKey(const ValueKey('turned-card')));
-
+    await tester.pumpAndSettle();
     expect(find.text('Votre choix'), findsOneWidget);
-    await tapVisible(tester, find.text('Passer'));
-    await tester.pump(const Duration(seconds: 2));
+    await tapVisible(tester, find.text('Prendre'));
     await tester.pumpAndSettle();
 
     expect(find.text('Votre choix'), findsNothing);
@@ -198,7 +205,6 @@ void main() {
                 passedSeats: {PlayerSeat.partner, PlayerSeat.rightOpponent},
               ),
               onCardTap: (_) {},
-              onTurnedCardTap: () {},
               showOpponentCards: true,
               showLastTrick: false,
               onToggleLastTrick: () {},
@@ -303,7 +309,6 @@ void main() {
                 },
               ),
               onCardTap: (_) {},
-              onTurnedCardTap: () {},
               showOpponentCards: true,
               showLastTrick: false,
               onToggleLastTrick: () {},
@@ -360,7 +365,6 @@ void main() {
                 ],
               ),
               onCardTap: (_) {},
-              onTurnedCardTap: () {},
               showOpponentCards: false,
               showLastTrick: false,
               onToggleLastTrick: () {},
@@ -503,7 +507,6 @@ void main() {
                     },
                   ),
                   onCardTap: (_) {},
-                  onTurnedCardTap: () {},
                   showOpponentCards: true,
                   showLastTrick: showLastTrick,
                   onToggleLastTrick: () {

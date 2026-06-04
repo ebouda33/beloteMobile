@@ -442,7 +442,7 @@ class GameState {
       trumpSuit: selectedTrumpSuit,
       trumpTaker: taker,
       passedSeats: passedSeats,
-      currentPlayer: taker,
+      currentPlayer: biddingStarterSeat,
       wonTricks: wonTricks,
       roundBonusPoints: roundBonusPoints,
       roundHistory: roundHistory,
@@ -650,7 +650,7 @@ class GameState {
     completedHands[taker]!.add(turnedCard);
 
     var deckIndex = 0;
-    for (final seat in PlayerSeat.values) {
+    for (final seat in _seatsInTurnOrderFrom(biddingStarterSeat)) {
       final cardsToDeal = seat == taker ? 2 : 3;
       completedHands[seat]!.addAll(
         remainingDeck.sublist(deckIndex, deckIndex + cardsToDeal),
@@ -689,9 +689,20 @@ class GameState {
 }
 
 PlayerSeat _nextSeatAfter(PlayerSeat seat) {
-  final nextIndex =
-      (PlayerSeat.values.indexOf(seat) + 1) % PlayerSeat.values.length;
-  return PlayerSeat.values[nextIndex];
+  return switch (seat) {
+    PlayerSeat.human => PlayerSeat.rightOpponent,
+    PlayerSeat.rightOpponent => PlayerSeat.partner,
+    PlayerSeat.partner => PlayerSeat.leftOpponent,
+    PlayerSeat.leftOpponent => PlayerSeat.human,
+  };
+}
+
+List<PlayerSeat> _seatsInTurnOrderFrom(PlayerSeat seat) {
+  final seats = <PlayerSeat>[seat];
+  while (seats.length < PlayerSeat.values.length) {
+    seats.add(_nextSeatAfter(seats.last));
+  }
+  return seats;
 }
 
 PlayerSeat _randomSeat(Random random) {
@@ -888,7 +899,7 @@ GameState createInitialGameState({
 }) {
   final dealerSeat = randomizeDealerSeat
       ? _randomSeat(random ?? Random())
-      : PlayerSeat.rightOpponent;
+      : PlayerSeat.leftOpponent;
   return _createRoundGameState(
     random: random,
     aiLevel: aiLevel,
@@ -906,11 +917,13 @@ GameState _createRoundGameState({
   final initialDeal = dealInitialHandsAndTurnCard(
     createShuffledDeck(random: random),
   );
+  final biddingStarterSeat = _nextSeatAfter(dealerSeat);
+  final dealOrder = _seatsInTurnOrderFrom(biddingStarterSeat);
 
   return GameState(
     hands: {
       for (var index = 0; index < PlayerSeat.values.length; index += 1)
-        PlayerSeat.values[index]: initialDeal.hands[index],
+        dealOrder[index]: initialDeal.hands[index],
     },
     turnedCard: initialDeal.turnedCard,
     remainingDeck: initialDeal.remainingDeck,
@@ -918,8 +931,8 @@ GameState _createRoundGameState({
     aiLevel: aiLevel,
     biddingRound: 1,
     dealerSeat: dealerSeat,
-    biddingStarterSeat: _nextSeatAfter(dealerSeat),
-    currentPlayer: _nextSeatAfter(dealerSeat),
+    biddingStarterSeat: biddingStarterSeat,
+    currentPlayer: biddingStarterSeat,
     gameScore: gameScore,
   );
 }

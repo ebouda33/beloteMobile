@@ -123,14 +123,14 @@ void main() {
     test('can select trump for another player after earlier passes', () {
       final gameState = createInitialGameState(
         random: Random(1),
-      ).passTrump().passTrump(seat: PlayerSeat.leftOpponent);
+      ).passTrump().passTrump(seat: PlayerSeat.rightOpponent);
 
       final updatedState = gameState.chooseTrump(taker: PlayerSeat.partner);
 
       expect(updatedState.trumpSuit, gameState.turnedCard.suit);
       expect(updatedState.trumpTaker, PlayerSeat.partner);
       expect(updatedState.phase, GamePhase.playingTrick);
-      expect(updatedState.currentPlayer, PlayerSeat.partner);
+      expect(updatedState.currentPlayer, PlayerSeat.human);
       expect(
         updatedState.hands[PlayerSeat.partner],
         contains(gameState.turnedCard),
@@ -188,8 +188,8 @@ void main() {
         ],
         phase: GamePhase.choosingTrump,
         biddingRound: 1,
-        biddingStarterSeat: PlayerSeat.leftOpponent,
-        currentPlayer: PlayerSeat.leftOpponent,
+        biddingStarterSeat: PlayerSeat.rightOpponent,
+        currentPlayer: PlayerSeat.rightOpponent,
         aiLevel: AiLevel.debutant,
       );
 
@@ -199,7 +199,7 @@ void main() {
       expect(updatedState.trumpSuit, Suit.hearts);
       expect(updatedState.trumpTaker, PlayerSeat.leftOpponent);
       expect(updatedState.trumpTakerLabel, 'Preneur : Adversaire gauche *');
-      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.rightOpponent);
     });
 
     test('beginner AI passes when the first-round trump is too weak', () {
@@ -250,8 +250,8 @@ void main() {
         ],
         phase: GamePhase.choosingTrump,
         biddingRound: 1,
-        biddingStarterSeat: PlayerSeat.leftOpponent,
-        currentPlayer: PlayerSeat.leftOpponent,
+        biddingStarterSeat: PlayerSeat.rightOpponent,
+        currentPlayer: PlayerSeat.rightOpponent,
         aiLevel: AiLevel.debutant,
       );
 
@@ -262,9 +262,9 @@ void main() {
       expect(updatedState.trumpTaker, isNull);
       expect(updatedState.currentPlayer, PlayerSeat.human);
       expect(updatedState.passedSeats, {
-        PlayerSeat.leftOpponent,
-        PlayerSeat.partner,
         PlayerSeat.rightOpponent,
+        PlayerSeat.partner,
+        PlayerSeat.leftOpponent,
       });
     });
 
@@ -316,8 +316,8 @@ void main() {
         ],
         phase: GamePhase.choosingTrump,
         biddingRound: 1,
-        biddingStarterSeat: PlayerSeat.leftOpponent,
-        currentPlayer: PlayerSeat.leftOpponent,
+        biddingStarterSeat: PlayerSeat.rightOpponent,
+        currentPlayer: PlayerSeat.rightOpponent,
         aiLevel: AiLevel.expert,
       );
 
@@ -326,7 +326,7 @@ void main() {
       expect(updatedState.phase, GamePhase.playingTrick);
       expect(updatedState.trumpSuit, Suit.hearts);
       expect(updatedState.trumpTaker, PlayerSeat.leftOpponent);
-      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.rightOpponent);
     });
 
     test('expert AI passes when the first-round trump is too weak', () {
@@ -377,8 +377,8 @@ void main() {
         ],
         phase: GamePhase.choosingTrump,
         biddingRound: 1,
-        biddingStarterSeat: PlayerSeat.leftOpponent,
-        currentPlayer: PlayerSeat.leftOpponent,
+        biddingStarterSeat: PlayerSeat.rightOpponent,
+        currentPlayer: PlayerSeat.rightOpponent,
         aiLevel: AiLevel.expert,
       );
 
@@ -389,9 +389,9 @@ void main() {
       expect(updatedState.trumpTaker, isNull);
       expect(updatedState.currentPlayer, PlayerSeat.human);
       expect(updatedState.passedSeats, {
-        PlayerSeat.leftOpponent,
-        PlayerSeat.partner,
         PlayerSeat.rightOpponent,
+        PlayerSeat.partner,
+        PlayerSeat.leftOpponent,
       });
     });
 
@@ -516,7 +516,7 @@ void main() {
         expect(updatedState.phase, GamePhase.waitingForTrumpTaker);
         expect(updatedState.trumpSuit, isNull);
         expect(updatedState.trumpTaker, isNull);
-        expect(updatedState.currentPlayer, PlayerSeat.partner);
+        expect(updatedState.currentPlayer, PlayerSeat.human);
         expect(updatedState.passedSeats, {PlayerSeat.leftOpponent});
       },
     );
@@ -543,7 +543,7 @@ void main() {
       expect(updatedState.hands, gameState.hands);
       expect(updatedState.turnedCard, gameState.turnedCard);
       expect(updatedState.passedSeats, {PlayerSeat.human});
-      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.rightOpponent);
       expect(updatedState.biddingRound, 1);
     });
 
@@ -552,9 +552,9 @@ void main() {
       () {
         final gameState = createInitialGameState(random: Random(1))
             .passTrump()
-            .passTrump(seat: PlayerSeat.leftOpponent)
+            .passTrump(seat: PlayerSeat.rightOpponent)
             .passTrump(seat: PlayerSeat.partner)
-            .passTrump(seat: PlayerSeat.rightOpponent);
+            .passTrump(seat: PlayerSeat.leftOpponent);
 
         expect(gameState.trumpSuit, isNull);
         expect(gameState.trumpTaker, isNull);
@@ -584,9 +584,9 @@ void main() {
     test('allows a second-round trump choice on another suit', () {
       final gameState = createInitialGameState(random: Random(1))
           .passTrump()
-          .passTrump(seat: PlayerSeat.leftOpponent)
+          .passTrump(seat: PlayerSeat.rightOpponent)
           .passTrump(seat: PlayerSeat.partner)
-          .passTrump(seat: PlayerSeat.rightOpponent);
+          .passTrump(seat: PlayerSeat.leftOpponent);
 
       final updatedState = gameState.chooseTrump(trumpSuit: Suit.clubs);
 
@@ -644,13 +644,13 @@ void main() {
             .resolveAutomaticTrumpTurns();
         final redealtState = firstRoundPass
             .passTrump()
-            .passTrump(seat: PlayerSeat.leftOpponent)
+            .passTrump(seat: PlayerSeat.rightOpponent)
             .passTrump(seat: PlayerSeat.partner)
-            .passTrump(seat: PlayerSeat.rightOpponent);
+            .passTrump(seat: PlayerSeat.leftOpponent);
 
         expect(redealtState.phase, GamePhase.choosingTrump);
         expect(redealtState.biddingRound, 1);
-        expect(redealtState.dealerSeat, PlayerSeat.human);
+        expect(redealtState.dealerSeat, PlayerSeat.partner);
         expect(redealtState.biddingStarterSeat, PlayerSeat.leftOpponent);
         expect(redealtState.currentPlayer, PlayerSeat.leftOpponent);
         expect(redealtState.passedSeats, isEmpty);
@@ -676,7 +676,7 @@ void main() {
       expect(updatedState.currentTrick, hasLength(1));
       expect(updatedState.currentTrick.single.player, PlayerSeat.human);
       expect(updatedState.currentTrick.single.card, card);
-      expect(updatedState.currentPlayer, PlayerSeat.leftOpponent);
+      expect(updatedState.currentPlayer, PlayerSeat.rightOpponent);
     });
 
     test('automatically completes the current trick for opponent turns', () {
@@ -718,9 +718,9 @@ void main() {
 
       final updatedState = gameState
           .playCard(humanCard)
-          .playCard(leftCard, seat: PlayerSeat.leftOpponent)
+          .playCard(rightCard, seat: PlayerSeat.rightOpponent)
           .playCard(partnerCard, seat: PlayerSeat.partner)
-          .playCard(rightCard, seat: PlayerSeat.rightOpponent);
+          .playCard(leftCard, seat: PlayerSeat.leftOpponent);
 
       expect(updatedState.lastTrickWinner, PlayerSeat.partner);
       expect(updatedState.currentPlayer, PlayerSeat.partner);
@@ -1012,8 +1012,8 @@ void main() {
       );
       final requestedSuit = leadCard.suit;
       final updatedState = gameState.playCard(leadCard);
-      final leftOpponentHand = updatedState.hands[PlayerSeat.leftOpponent]!;
-      final expectedLeftOpponentPlayableCards = leftOpponentHand
+      final rightOpponentHand = updatedState.hands[PlayerSeat.rightOpponent]!;
+      final expectedRightOpponentPlayableCards = rightOpponentHand
           .where((card) => card.suit == requestedSuit)
           .toList();
 
@@ -1021,10 +1021,10 @@ void main() {
       expect(gameState.playableCards(PlayerSeat.leftOpponent), isEmpty);
       expect(updatedState.playableCards(PlayerSeat.human), isEmpty);
       expect(
-        updatedState.playableCards(PlayerSeat.leftOpponent),
-        expectedLeftOpponentPlayableCards.isEmpty
-            ? leftOpponentHand
-            : expectedLeftOpponentPlayableCards,
+        updatedState.playableCards(PlayerSeat.rightOpponent),
+        expectedRightOpponentPlayableCards.isEmpty
+            ? rightOpponentHand
+            : expectedRightOpponentPlayableCards,
       );
     });
 
@@ -1065,23 +1065,24 @@ void main() {
       final gameState = GameState(
         hands: const {
           PlayerSeat.human: [],
-          PlayerSeat.leftOpponent: [],
+          PlayerSeat.leftOpponent: [discard, trumpSeven],
           PlayerSeat.partner: [],
-          PlayerSeat.rightOpponent: [discard, trumpSeven],
+          PlayerSeat.rightOpponent: [],
         },
         turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
         remainingDeck: const [],
         phase: GamePhase.playingTrick,
         trumpSuit: Suit.hearts,
         trumpTaker: PlayerSeat.human,
-        currentPlayer: PlayerSeat.rightOpponent,
+        currentPlayer: PlayerSeat.leftOpponent,
         currentTrick: const [
           PlayedCard(player: PlayerSeat.human, card: humanCard),
-          PlayedCard(player: PlayerSeat.leftOpponent, card: partnerCard),
+          PlayedCard(player: PlayerSeat.rightOpponent, card: partnerCard),
+          PlayedCard(player: PlayerSeat.partner, card: discard),
         ],
       );
 
-      expect(gameState.playableCards(PlayerSeat.rightOpponent), [
+      expect(gameState.playableCards(PlayerSeat.leftOpponent), [
         discard,
         trumpSeven,
       ]);

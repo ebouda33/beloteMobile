@@ -31,6 +31,7 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Le donneur est choisi aleatoirement au debut. Toute la rotation suit le meme
   sens anti-horaire sur le tapis : donne, prise, jeu de la carte et rotation
   du donneur d'une manche a l'autre.
+- La regle canonique de rotation est figee dans `docs/belote-turn-order.md`.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.
