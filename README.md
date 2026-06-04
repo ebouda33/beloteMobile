@@ -88,7 +88,7 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Le score cible de la partie se choisit maintenant au lancement entre `501`,
   `1000` et `2000`.
 - Le niveau d'IA et le score cible sont conserves sur le Web apres
-  rafraichissement de la page.
+  rafraichissement de la page, y compris apres le lancement d'une partie.
 - Bonus belote/rebelote de 20 points ajoute automatiquement quand le meme
   equipe joue les deux honneurs d'atout.
 - Skill local `finish-step-docs` ajoute pour mettre a jour les docs quand une

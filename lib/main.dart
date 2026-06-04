@@ -9,8 +9,10 @@ import 'game/ui/game_board_view.dart';
 
 export 'game/ui/game_board_view.dart';
 
-void main() {
-  runApp(const BeloteApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final preferences = await SharedPreferences.getInstance();
+  runApp(BeloteApp(preferences: preferences));
 }
 
 const gameTargetScoreOptions = <int>[501, 1000, 2000];
@@ -179,10 +181,17 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _trumpChoiceDialogOpen = false;
   GameState? _lastTrumpChoicePromptedState;
   SharedPreferences? _preferences;
+  bool _aiLevelChangedByUser = false;
+  bool _targetScoreChangedByUser = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.preferences case final preferences?) {
+      _applyPreferences(preferences);
+      return;
+    }
+
     unawaited(_loadPreferences());
   }
 
@@ -192,24 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) {
       return;
     }
-
-    final savedAiLevelName = preferences.getString(_aiLevelPreferenceKey);
-    final savedTargetScore = preferences.getInt(_targetScorePreferenceKey);
-    AiLevel? savedAiLevel;
-    for (final level in AiLevel.values) {
-      if (level.name == savedAiLevelName) {
-        savedAiLevel = level;
-        break;
-      }
-    }
-
-    setState(() {
-      _preferences = preferences;
-      _aiLevel = savedAiLevel ?? _aiLevel;
-      _targetScore = gameTargetScoreOptions.contains(savedTargetScore)
-          ? savedTargetScore!
-          : _targetScore;
-    });
+    _applyPreferences(preferences, notify: true);
   }
 
   Future<void> _persistSettings() async {
@@ -222,7 +214,38 @@ class _HomeScreenState extends State<HomeScreen> {
     await preferences.setInt(_targetScorePreferenceKey, _targetScore);
   }
 
+  void _applyPreferences(SharedPreferences preferences, {bool notify = false}) {
+    final savedAiLevelName = preferences.getString(_aiLevelPreferenceKey);
+    final savedTargetScore = preferences.getInt(_targetScorePreferenceKey);
+    AiLevel? savedAiLevel;
+    for (final level in AiLevel.values) {
+      if (level.name == savedAiLevelName) {
+        savedAiLevel = level;
+        break;
+      }
+    }
+
+    void assignValues() {
+      _preferences = preferences;
+      if (!_aiLevelChangedByUser && savedAiLevel != null) {
+        _aiLevel = savedAiLevel;
+      }
+      if (!_targetScoreChangedByUser &&
+          gameTargetScoreOptions.contains(savedTargetScore)) {
+        _targetScore = savedTargetScore!;
+      }
+    }
+
+    if (!notify) {
+      assignValues();
+      return;
+    }
+
+    setState(assignValues);
+  }
+
   Future<void> _startNewGame() async {
+    await _persistSettings();
     setState(() {
       _gameState = createInitialGameState(
         random: widget.random,
@@ -612,6 +635,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             selected: {_aiLevel},
                             onSelectionChanged: (selection) {
                               setState(() {
+                                _aiLevelChangedByUser = true;
                                 _aiLevel = selection.first;
                               });
                               unawaited(_persistSettings());
@@ -640,6 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             selected: {_targetScore},
                             onSelectionChanged: (selection) {
                               setState(() {
+                                _targetScoreChangedByUser = true;
                                 _targetScore = selection.first;
                               });
                               unawaited(_persistSettings());

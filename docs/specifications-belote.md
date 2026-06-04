@@ -103,7 +103,7 @@ Premier niveau valide :
 - choix du score cible de la partie ajoute au demarrage avec `501`, `1000` ou
   `2000` points ;
 - niveau d'IA et score cible conserves sur le Web apres rafraichissement de la
-  page ;
+  page, y compris apres le lancement d'une partie ;
 - belote/rebelote ajoutee avec bonus de 20 points pour l'equipe qui joue les
   deux honneurs d'atout ;
 - zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une

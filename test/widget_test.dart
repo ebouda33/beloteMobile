@@ -93,6 +93,29 @@ void main() {
     expect(targetSelector.selected, {2000});
   });
 
+  testWidgets('persists the selected AI level before starting a game', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(BeloteApp(preferences: preferences));
+    await tester.pumpAndSettle();
+
+    await tapVisible(tester, find.text('Expert'));
+    await tapVisible(tester, find.text('Nouvelle partie'));
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(BeloteApp(preferences: preferences));
+    await tester.pumpAndSettle();
+
+    final aiSelector = tester.widget<SegmentedButton<AiLevel>>(
+      find.byKey(const ValueKey('ai-level-selector')),
+    );
+    expect(aiSelector.selected, {AiLevel.expert});
+  });
+
   testWidgets('starts a local game and shows the player hand', (
     WidgetTester tester,
   ) async {
