@@ -1,4 +1,4 @@
 interface:
   display_name: "Finish Step Docs"
-  short_description: "Update docs and commit completed project steps"
-  default_prompt: "Use $finish-step-docs when I say etape finis to update project docs, next steps, and commit the completed step."
+  short_description: "Update docs, renumber remaining steps, and commit completed project steps"
+  default_prompt: "Use $finish-step-docs when I say etape finis to update project docs, remove the completed README step, renumber the remaining steps, state the next step, and commit the completed step."

@@ -71,6 +71,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   locaux depuis l'ecran d'accueil.
 - La zone score est simplifiee en tableau avec deux colonnes `EUX` / `NOUS`,
   une ligne par manche et un total automatique en bas.
+- Le carnet de score du tapis a ete compacte et clarifie pour mieux separer
+  les manches, le total, et la lecture generale de la table.
 - Une manche peut aller jusqu'aux 8 plis, avec suivi des plis remportes par
   equipe et detection de fin de manche.
 - Premier calcul de points de manche : points des cartes gagnees et bonus de
@@ -125,6 +127,8 @@ passent.
 
 ## Prochaine reprise
 
-Prochaine etape recommandee : poursuivre le polish visuel du plateau et de la
-zone score, ou renforcer encore l'intelligence des robots sur la lecture du
-partenaire et des fins de manche.
+Prochaine etape recommandee :
+
+1. renforcer encore l'intelligence des robots sur la lecture du partenaire et
+   des fins de manche ;
+2. preparer l'ajout de nouvelles annonces ou variantes.

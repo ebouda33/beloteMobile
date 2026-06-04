@@ -102,6 +102,8 @@ Premier niveau valide :
   deux honneurs d'atout ;
 - zone score simplifiee en tableau avec deux colonnes `EUX` / `NOUS`, une
   ligne par manche et un total automatique en bas ;
+- carnet de score du tapis compacte et clarifie pour mieux separer les manches,
+  le total et la lecture generale de la table ;
 - tests de base ajoutes et executes avec succes.
 
 Le premier etat de partie local est en place : une nouvelle partie melange le
@@ -157,11 +159,9 @@ donneur a la manche suivante.
 
 Prochaine reprise :
 
-1. poursuivre le polish visuel du plateau avec le support de cartes des
-   adversaires ;
-2. affiner encore l'IA expert sur la lecture du partenaire et des fins de
+1. affiner encore l'IA expert sur la lecture du partenaire et des fins de
    manche ;
-3. preparer l'ajout de nouvelles annonces ou variantes.
+2. preparer l'ajout de nouvelles annonces ou variantes.
 
 ## Principes de conception
 

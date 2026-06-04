@@ -13,13 +13,13 @@ class _ScoreNotebook extends StatelessWidget {
 
     return Container(
       key: const ValueKey('score-notebook'),
-      width: 310,
-      padding: const EdgeInsets.all(12),
+      width: 302,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F0DF),
+        color: const Color(0xFFF6EEDC),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: const Color(0xFFC4A15A).withValues(alpha: 0.55),
+          color: const Color(0xFFC4A15A).withValues(alpha: 0.48),
         ),
         boxShadow: const [
           BoxShadow(
@@ -37,7 +37,7 @@ class _ScoreNotebook extends StatelessWidget {
               child: CustomPaint(painter: _NotebookPagePainter()),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 30, right: 8),
+              padding: const EdgeInsets.fromLTRB(26, 10, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,12 +45,18 @@ class _ScoreNotebook extends StatelessWidget {
                     'Scores',
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.1,
                       color: Color(0xFF6B5A46),
                     ),
                   ),
                   const SizedBox(height: 10),
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Color(0xFFCFB991),
+                  ),
+                  const SizedBox(height: 9),
                   Row(
                     children: [
                       const Expanded(
@@ -59,42 +65,20 @@ class _ScoreNotebook extends StatelessWidget {
                           'Manche',
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF8C785F),
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF8B7458),
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 54,
-                        child: Text(
-                          'EUX',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF8C785F),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 54,
-                        child: Text(
-                          'NOUS',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF8C785F),
-                          ),
-                        ),
-                      ),
+                      _ScoreColumnLabel(text: 'EUX'),
+                      const SizedBox(width: 8),
+                      _ScoreColumnLabel(text: 'NOUS'),
                     ],
                   ),
                   const SizedBox(height: 8),
                   if (roundHistory.isEmpty)
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                         'Aucune manche jouee',
                         style: TextStyle(
@@ -104,108 +88,52 @@ class _ScoreNotebook extends StatelessWidget {
                       ),
                     )
                   else
-                    for (
-                      var index = 0;
-                      index < roundHistory.length;
-                      index++
-                    ) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              'Manche ${index + 1}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2B251F),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 54,
-                            child: Text(
-                              '${roundHistory[index][Team.opponentTeam] ?? 0}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2B251F),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          SizedBox(
-                            width: 54,
-                            child: Text(
-                              '${roundHistory[index][Team.humanTeam] ?? 0}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF2B251F),
-                              ),
-                            ),
-                          ),
-                        ],
+                    for (var index = 0; index < roundHistory.length; index++)
+                      _ScoreRow(
+                        roundLabel: 'Manche ${index + 1}',
+                        opponentScore:
+                            roundHistory[index][Team.opponentTeam] ?? 0,
+                        humanScore: roundHistory[index][Team.humanTeam] ?? 0,
+                        highlighted: index.isEven,
                       ),
-                      if (index != roundHistory.length - 1) ...[
-                        const SizedBox(height: 8),
-                        const Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Color(0xFFCFB991),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   const Divider(
                     height: 1,
                     thickness: 1,
                     color: Color(0xFFBFA57B),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Expanded(
-                        flex: 3,
-                        child: Text(
-                          'Total',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2B251F),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0x1FF1E1C9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFBFA57B).withValues(alpha: 0.55),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Expanded(
+                          flex: 3,
+                          child: Text(
+                            'Total',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2B251F),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: 54,
-                        child: Text(
-                          '$opponentTotal',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2B251F),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 54,
-                        child: Text(
-                          '$humanTotal',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2B251F),
-                          ),
-                        ),
-                      ),
-                    ],
+                        _ScoreValueBox(value: opponentTotal),
+                        const SizedBox(width: 8),
+                        _ScoreValueBox(value: humanTotal),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -230,15 +158,14 @@ class _NotebookPagePainter extends CustomPainter {
       ..color = const Color(0xFFC8B184).withValues(alpha: 0.78)
       ..strokeWidth = 1;
 
-    for (double y = 18; y < size.height; y += 18) {
+    for (double y = 20; y < size.height; y += 20) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), ruledPaint);
     }
 
-    //ligne rouge
-    canvas.drawLine(const Offset(20, 0), Offset(20, size.height), marginPaint);
+    canvas.drawLine(const Offset(22, 0), Offset(22, size.height), marginPaint);
     canvas.drawLine(
-      const Offset(0, 76),
-      Offset(size.width, 76),
+      const Offset(0, 68),
+      Offset(size.width, 68),
       separatorPaint,
     );
     canvas.drawLine(
@@ -250,6 +177,106 @@ class _NotebookPagePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NotebookPagePainter oldDelegate) => false;
+}
+
+class _ScoreColumnLabel extends StatelessWidget {
+  const _ScoreColumnLabel({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 54,
+      child: Text(
+        text,
+        textAlign: TextAlign.right,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF8B7458),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreRow extends StatelessWidget {
+  const _ScoreRow({
+    required this.roundLabel,
+    required this.opponentScore,
+    required this.humanScore,
+    required this.highlighted,
+  });
+
+  final String roundLabel;
+  final int opponentScore;
+  final int humanScore;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        decoration: BoxDecoration(
+          color: highlighted
+              ? const Color(0x11FFFFFF)
+              : const Color(0x06FFFFFF),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Text(
+                roundLabel,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2B251F),
+                ),
+              ),
+            ),
+            _ScoreValueBox(value: opponentScore),
+            const SizedBox(width: 8),
+            _ScoreValueBox(value: humanScore),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreValueBox extends StatelessWidget {
+  const _ScoreValueBox({required this.value});
+
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 54,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0x22FFF9EF),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFBFA57B).withValues(alpha: 0.5),
+        ),
+      ),
+      child: Text(
+        '$value',
+        textAlign: TextAlign.right,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF2B251F),
+        ),
+      ),
+    );
+  }
 }
 
 class _SeatHand extends StatelessWidget {
