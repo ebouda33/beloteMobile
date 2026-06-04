@@ -68,7 +68,7 @@ Premier niveau valide :
 - au jeu de la carte, `debutant` garde un choix simple de carte jouable tandis
   que `expert` evite d'ouvrir un pli avec l'atout quand une carte hors atout
   reste possible et conserve aussi l'atout quand une carte hors atout peut
-  encore gagner le pli ;
+  encore gagner le pli ou quand il doit se defausser ;
 - cartes jouables renforcees avec suivi de couleur, coupe obligatoire, defausse
   autorisee si le partenaire est maitre et montee a l'atout quand possible ;
 - les cartes impossibles a jouer sont assombries et les cartes jouables se

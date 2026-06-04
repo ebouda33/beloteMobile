@@ -691,6 +691,13 @@ class GameState {
     }
 
     if (_isPartnerCurrentlyWinning(seat)) {
+      final nonTrumpCards = playableCards
+          .where((card) => card.suit != trump)
+          .toList();
+      if (nonTrumpCards.isNotEmpty) {
+        return _lowestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
+      }
+
       return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);
     }
 
@@ -718,6 +725,13 @@ class GameState {
       }
 
       return _lowestPriorityAutomaticCard(winningCards, trumpSuit: trump);
+    }
+
+    final nonTrumpCards = playableCards
+        .where((card) => card.suit != trump)
+        .toList();
+    if (nonTrumpCards.isNotEmpty) {
+      return _lowestPriorityAutomaticCard(nonTrumpCards, trumpSuit: trump);
     }
 
     return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trump);

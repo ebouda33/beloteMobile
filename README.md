@@ -51,7 +51,7 @@ la cible Web afin de valider rapidement le moteur et l'interface.
 - Au jeu de la carte, `Debutant` garde un choix simple de carte jouable, tandis
   que `Expert` evite d'ouvrir un pli avec l'atout quand une carte hors atout
   reste possible et preserve aussi l'atout quand une carte hors atout peut
-  encore gagner le pli.
+  encore gagner le pli ou quand il doit se defausser.
 - Les cartes jouables respectent les premieres contraintes de pli : suivre la
   couleur demandee, couper si necessaire, defausser si le partenaire est maitre
   et monter a l'atout quand c'est possible.
