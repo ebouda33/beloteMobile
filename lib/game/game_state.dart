@@ -69,6 +69,7 @@ class GameState {
     this.roundHistory = const [],
     this.beloteTeam,
     this.beloteRanksPlayed = const {},
+    this.playSpeeches = const {},
     this.gameScore = const {Team.humanTeam: 0, Team.opponentTeam: 0},
   });
 
@@ -93,6 +94,7 @@ class GameState {
   final List<Map<Team, int>> roundHistory;
   final Team? beloteTeam;
   final Set<Rank> beloteRanksPlayed;
+  final Map<PlayerSeat, String> playSpeeches;
   final Map<Team, int> gameScore;
 
   List<BeloteCard> get humanHand => hands[humanSeat] ?? const [];
@@ -174,6 +176,23 @@ class GameState {
 
     if (passedSeats.contains(seat)) {
       return 'Passe';
+    }
+
+    return null;
+  }
+
+  String? playSpeechForSeat(PlayerSeat seat) {
+    return playSpeeches[seat];
+  }
+
+  String? speechBubbleForSeat(PlayerSeat seat) {
+    if (phase == GamePhase.choosingTrump ||
+        phase == GamePhase.waitingForTrumpTaker) {
+      return biddingSpeechForSeat(seat);
+    }
+
+    if (phase == GamePhase.playingTrick) {
+      return playSpeechForSeat(seat);
     }
 
     return null;
@@ -526,6 +545,7 @@ class GameState {
     };
     var updatedBeloteTeam = beloteTeam;
     var updatedBeloteRanksPlayed = {...beloteRanksPlayed};
+    var updatedPlaySpeeches = {...playSpeeches};
     final seatTeam = _teamOf(seat);
     final trump = trumpSuit!;
     if (card.suit == trump &&
@@ -538,9 +558,11 @@ class GameState {
             (updatedRoundBonusPoints[seatTeam] ?? 0) + 20;
         updatedBeloteTeam = null;
         updatedBeloteRanksPlayed = {};
+        updatedPlaySpeeches[seat] = 'Rebelote';
       } else if (playerHand.contains(otherTrumpMarriageCard)) {
         updatedBeloteTeam = seatTeam;
         updatedBeloteRanksPlayed = {card.rank};
+        updatedPlaySpeeches[seat] = 'Belote';
       }
     }
     updatedHands[seat]!.remove(card);
@@ -613,6 +635,7 @@ class GameState {
       roundHistory: updatedRoundHistory,
       beloteTeam: updatedBeloteTeam,
       beloteRanksPlayed: updatedBeloteRanksPlayed,
+      playSpeeches: updatedPlaySpeeches,
       gameScore: updatedGameScore,
     );
   }

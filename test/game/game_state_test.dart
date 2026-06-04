@@ -4,6 +4,15 @@ import 'package:belote_mobile/game/cards/belote_card.dart';
 import 'package:belote_mobile/game/game_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+PlayerSeat _nextSeatAfter(PlayerSeat seat) {
+  return switch (seat) {
+    PlayerSeat.human => PlayerSeat.rightOpponent,
+    PlayerSeat.rightOpponent => PlayerSeat.partner,
+    PlayerSeat.partner => PlayerSeat.leftOpponent,
+    PlayerSeat.leftOpponent => PlayerSeat.human,
+  };
+}
+
 void main() {
   group('Game state', () {
     test('creates an initial game state with four five-card hands', () {
@@ -581,6 +590,129 @@ void main() {
       },
     );
 
+    test(
+      'rotates the second bidding round correctly after every first-round pass',
+      () {
+        final seededState = createInitialGameState(random: Random(1));
+
+        for (final dealerSeat in PlayerSeat.values) {
+          final firstSeat = _nextSeatAfter(dealerSeat);
+          final secondSeat = _nextSeatAfter(firstSeat);
+          final thirdSeat = _nextSeatAfter(secondSeat);
+          final fourthSeat = _nextSeatAfter(thirdSeat);
+
+          final gameState = GameState(
+            hands: seededState.hands,
+            turnedCard: seededState.turnedCard,
+            remainingDeck: seededState.remainingDeck,
+            humanSeat: seededState.humanSeat,
+            aiLevel: seededState.aiLevel,
+            phase: GamePhase.choosingTrump,
+            biddingRound: 1,
+            dealerSeat: dealerSeat,
+            biddingStarterSeat: firstSeat,
+            currentPlayer: firstSeat,
+          );
+
+          final afterFirstPass = gameState.passTrump(seat: firstSeat);
+          final afterSecondPass = afterFirstPass.passTrump(seat: secondSeat);
+          final afterThirdPass = afterSecondPass.passTrump(seat: thirdSeat);
+          final secondRoundState = afterThirdPass.passTrump(seat: fourthSeat);
+
+          expect(secondRoundState.phase, GamePhase.choosingTrump);
+          expect(secondRoundState.biddingRound, 2);
+          expect(secondRoundState.dealerSeat, dealerSeat);
+          expect(secondRoundState.biddingStarterSeat, firstSeat);
+          expect(secondRoundState.currentPlayer, firstSeat);
+          expect(secondRoundState.passedSeats, isEmpty);
+          expect(
+            secondRoundState.availableTrumpSuits,
+            isNot(contains(seededState.turnedCard.suit)),
+          );
+        }
+      },
+    );
+
+    test(
+      'allows a second-round trump choice after every player passed once',
+      () {
+        final seededState = createInitialGameState(random: Random(1));
+
+        for (final dealerSeat in PlayerSeat.values) {
+          final firstSeat = _nextSeatAfter(dealerSeat);
+          final secondSeat = _nextSeatAfter(firstSeat);
+          final thirdSeat = _nextSeatAfter(secondSeat);
+          final fourthSeat = _nextSeatAfter(thirdSeat);
+
+          final gameState = GameState(
+            hands: seededState.hands,
+            turnedCard: seededState.turnedCard,
+            remainingDeck: seededState.remainingDeck,
+            humanSeat: seededState.humanSeat,
+            aiLevel: seededState.aiLevel,
+            phase: GamePhase.choosingTrump,
+            biddingRound: 1,
+            dealerSeat: dealerSeat,
+            biddingStarterSeat: firstSeat,
+            currentPlayer: firstSeat,
+          );
+
+          final secondRoundState = gameState
+              .passTrump(seat: firstSeat)
+              .passTrump(seat: secondSeat)
+              .passTrump(seat: thirdSeat)
+              .passTrump(seat: fourthSeat);
+          final selectedSuit = secondRoundState.availableTrumpSuits.first;
+          final updatedState = secondRoundState.chooseTrump(
+            taker: firstSeat,
+            trumpSuit: selectedSuit,
+          );
+
+          expect(updatedState.phase, GamePhase.playingTrick);
+          expect(updatedState.trumpTaker, firstSeat);
+          expect(updatedState.trumpSuit, selectedSuit);
+          expect(updatedState.currentPlayer, firstSeat);
+        }
+      },
+    );
+
+    test('rotates bidding from every dealer when players pass then take', () {
+      final seededState = createInitialGameState(random: Random(1));
+
+      for (final dealerSeat in PlayerSeat.values) {
+        final firstSeat = _nextSeatAfter(dealerSeat);
+        final secondSeat = _nextSeatAfter(firstSeat);
+        final thirdSeat = _nextSeatAfter(secondSeat);
+
+        final gameState = GameState(
+          hands: seededState.hands,
+          turnedCard: seededState.turnedCard,
+          remainingDeck: seededState.remainingDeck,
+          humanSeat: seededState.humanSeat,
+          aiLevel: seededState.aiLevel,
+          phase: GamePhase.choosingTrump,
+          biddingRound: 1,
+          dealerSeat: dealerSeat,
+          biddingStarterSeat: firstSeat,
+          currentPlayer: firstSeat,
+        );
+
+        final afterFirstPass = gameState.passTrump(seat: firstSeat);
+        expect(afterFirstPass.currentPlayer, secondSeat);
+        expect(afterFirstPass.passedSeats, {firstSeat});
+
+        final afterSecondPass = afterFirstPass.passTrump(seat: secondSeat);
+        expect(afterSecondPass.currentPlayer, thirdSeat);
+        expect(afterSecondPass.passedSeats, {firstSeat, secondSeat});
+
+        final afterTake = afterSecondPass.chooseTrump(taker: thirdSeat);
+        expect(afterTake.phase, GamePhase.playingTrick);
+        expect(afterTake.trumpTaker, thirdSeat);
+        expect(afterTake.trumpSuit, seededState.turnedCard.suit);
+        expect(afterTake.currentPlayer, firstSeat);
+      }
+    });
+
     test('allows a second-round trump choice on another suit', () {
       final gameState = createInitialGameState(random: Random(1))
           .passTrump()
@@ -878,6 +1010,7 @@ void main() {
             .playAutomaticTurns();
         expect(afterFirstTrick.roundBonusPoints[Team.humanTeam], 0);
         expect(afterFirstTrick.beloteBonusTeam, isNull);
+        expect(afterFirstTrick.playSpeechForSeat(PlayerSeat.human), 'Belote');
 
         final afterSecondTrick = afterFirstTrick
             .playCard(trumpQueen)
@@ -885,6 +1018,10 @@ void main() {
 
         expect(afterSecondTrick.roundBonusPoints[Team.humanTeam], 20);
         expect(afterSecondTrick.beloteBonusTeam, Team.humanTeam);
+        expect(
+          afterSecondTrick.playSpeechForSeat(PlayerSeat.human),
+          'Rebelote',
+        );
         expect(afterSecondTrick.roundScore[Team.humanTeam], 20);
         expect(afterSecondTrick.roundScore[Team.opponentTeam], 0);
       },

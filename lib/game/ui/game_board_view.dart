@@ -36,7 +36,6 @@ class GameBoardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playableCards = gameState.playableCards(gameState.humanSeat);
-    final showBiddingSpeech = gameState.completedTrickCount == 0;
 
     return Container(
       key: const ValueKey('game-table'),
@@ -162,9 +161,9 @@ class GameBoardView extends StatelessWidget {
                   active: gameState.currentPlayer == PlayerSeat.partner,
                   isTrumpTaker: gameState.trumpTaker == PlayerSeat.partner,
                   trumpSuit: gameState.trumpSuit,
-                  speechBubble: showBiddingSpeech
-                      ? gameState.biddingSpeechForSeat(PlayerSeat.partner)
-                      : null,
+                  speechBubble: gameState.speechBubbleForSeat(
+                    PlayerSeat.partner,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Row(
@@ -190,11 +189,9 @@ class GameBoardView extends StatelessWidget {
                           isTrumpTaker:
                               gameState.trumpTaker == PlayerSeat.leftOpponent,
                           trumpSuit: gameState.trumpSuit,
-                          speechBubble: showBiddingSpeech
-                              ? gameState.biddingSpeechForSeat(
-                                  PlayerSeat.leftOpponent,
-                                )
-                              : null,
+                          speechBubble: gameState.speechBubbleForSeat(
+                            PlayerSeat.leftOpponent,
+                          ),
                         ),
                       ),
                     ),
@@ -227,11 +224,9 @@ class GameBoardView extends StatelessWidget {
                           isTrumpTaker:
                               gameState.trumpTaker == PlayerSeat.rightOpponent,
                           trumpSuit: gameState.trumpSuit,
-                          speechBubble: showBiddingSpeech
-                              ? gameState.biddingSpeechForSeat(
-                                  PlayerSeat.rightOpponent,
-                                )
-                              : null,
+                          speechBubble: gameState.speechBubbleForSeat(
+                            PlayerSeat.rightOpponent,
+                          ),
                         ),
                       ),
                     ),
@@ -250,9 +245,9 @@ class GameBoardView extends StatelessWidget {
                   trumpSuit: gameState.trumpSuit,
                   playableCards: playableCards.toSet(),
                   onCardTap: onCardTap,
-                  speechBubble: showBiddingSpeech
-                      ? gameState.biddingSpeechForSeat(gameState.humanSeat)
-                      : null,
+                  speechBubble: gameState.speechBubbleForSeat(
+                    gameState.humanSeat,
+                  ),
                 ),
               ],
             ),

@@ -32,6 +32,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   sens anti-horaire sur le tapis : donne, prise, jeu de la carte et rotation
   du donneur d'une manche a l'autre.
 - La regle canonique de rotation est figee dans `docs/belote-turn-order.md`.
+- Une batterie de tests couvre aussi le deuxieme tour d'enchere apres passe
+  generale, sur les quatre donneurs possibles.
 - Plateau de jeu visuel ajoute : tapis central, vraies cartes, mains adverses
   cachees et carte retournee affichee au centre du tapis pendant le choix de
   l'atout.

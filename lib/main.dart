@@ -169,8 +169,11 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       _showOpponentCards = false;
       _showLastTrick = false;
+      _lastTrumpChoicePromptedState = null;
+      _trumpChoiceDialogOpen = false;
     });
 
+    _scheduleTrumpChoicePrompt();
     await _animateAutomaticTrumpBidding();
   }
 
@@ -182,8 +185,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _gameState = gameState.chooseTrump(trumpSuit: trumpSuit);
+      _lastTrumpChoicePromptedState = null;
     });
 
+    _scheduleTrumpChoicePrompt();
     await _animateAutomaticTrumpBidding();
   }
 
@@ -195,9 +200,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _gameState = gameState.passTrump();
+      _lastTrumpChoicePromptedState = null;
     });
 
+    _scheduleTrumpChoicePrompt();
     await _animateAutomaticTrumpBidding();
+  }
+
+  void _scheduleTrumpChoicePrompt() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      final gameState = _gameState;
+      if (gameState == null) {
+        return;
+      }
+
+      if (gameState.phase == GamePhase.choosingTrump ||
+          gameState.phase == GamePhase.waitingForTrumpTaker) {
+        unawaited(_showTrumpChoiceDialogAutomatically());
+      }
+    });
   }
 
   Future<void> _animateAutomaticTrumpBidding() async {
@@ -238,6 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (gameState.phase == GamePhase.choosingTrump ||
         gameState.phase == GamePhase.waitingForTrumpTaker) {
       if (gameState.currentPlayer == gameState.humanSeat) {
+        _scheduleTrumpChoicePrompt();
         await _showTrumpChoiceDialogAutomatically();
         return;
       }
@@ -389,8 +415,10 @@ class _HomeScreenState extends State<HomeScreen> {
           .resolveAutomaticTrumpTurns()
           .playAutomaticTurns();
       _showLastTrick = false;
+      _lastTrumpChoicePromptedState = null;
     });
 
+    _scheduleTrumpChoicePrompt();
     unawaited(_scheduleAutomaticTrickTurns());
   }
 

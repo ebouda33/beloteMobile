@@ -72,6 +72,8 @@ Premier niveau valide :
 - le niveau `expert` applique une heuristique d'enchere plus large que le
   niveau `debutant`, avec une evaluation plus ambitieuse des mains au premier
   et au second tour ;
+- la parole du second tour apres passe generale est couverte par une batterie
+  de tests sur les quatre donneurs possibles ;
 - enchainement des 8 plis d'une manche ajoute avec suivi des plis remportes par
   equipe et detection de fin de manche ;
 - premier calcul des points de manche ajoute avec points des cartes et bonus de

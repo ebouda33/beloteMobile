@@ -325,6 +325,56 @@ void main() {
     expect(find.textContaining('Prend '), findsNothing);
   });
 
+  testWidgets('shows belote and rebelote speech during card play', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: GameBoardView(
+              gameState: GameState(
+                hands: const {
+                  PlayerSeat.human: [
+                    BeloteCard(suit: Suit.hearts, rank: Rank.king),
+                  ],
+                  PlayerSeat.leftOpponent: [
+                    BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+                  ],
+                  PlayerSeat.partner: [
+                    BeloteCard(suit: Suit.spades, rank: Rank.seven),
+                  ],
+                  PlayerSeat.rightOpponent: [
+                    BeloteCard(suit: Suit.diamonds, rank: Rank.ten),
+                  ],
+                },
+                turnedCard: const BeloteCard(
+                  suit: Suit.hearts,
+                  rank: Rank.queen,
+                ),
+                remainingDeck: const [],
+                phase: GamePhase.playingTrick,
+                trumpSuit: Suit.hearts,
+                trumpTaker: PlayerSeat.human,
+                currentPlayer: PlayerSeat.human,
+                playSpeeches: const {PlayerSeat.human: 'Belote'},
+              ),
+              onCardTap: (_) {},
+              showOpponentCards: true,
+              showLastTrick: false,
+              onToggleLastTrick: () {},
+              onStartNextRound: () {},
+              onToggleOpponentCards: () {},
+              showOpponentCardsActionLabel: 'Voir les cartes des joueurs',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Belote'), findsOneWidget);
+  });
+
   testWidgets('dims non playable cards and lifts playable cards on hover', (
     WidgetTester tester,
   ) async {
