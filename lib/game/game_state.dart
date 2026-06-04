@@ -707,6 +707,16 @@ class GameState {
         .toList();
 
     if (winningCards.isNotEmpty) {
+      final nonTrumpWinningCards = winningCards
+          .where((card) => card.suit != trump)
+          .toList();
+      if (nonTrumpWinningCards.isNotEmpty) {
+        return _lowestPriorityAutomaticCard(
+          nonTrumpWinningCards,
+          trumpSuit: trump,
+        );
+      }
+
       return _lowestPriorityAutomaticCard(winningCards, trumpSuit: trump);
     }
 
