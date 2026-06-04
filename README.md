@@ -54,6 +54,8 @@ la cible Web afin de valider rapidement le moteur et l'interface.
   encore gagner le pli ou quand il doit se defausser.
 - Quand `Expert` mene un pli, il privilegie la couleur non-atout la plus fournie
   plutot que la carte la plus faible prise isolément.
+- Quand `Expert` peut encaisser un as sans risque apparent, il le joue au lieu
+  de le conserver inutilement.
 - Quand `Expert` ne peut pas gagner le pli, il suit la couleur demandee avec la
   carte la moins couteuse, puis joue le plus petit atout gagnant si un coup est
   obligatoire.

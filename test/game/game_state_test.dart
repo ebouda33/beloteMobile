@@ -990,6 +990,43 @@ void main() {
       );
     });
 
+    test('expert AI cashes a safe ace when leading', () {
+      final gameState = GameState(
+        hands: const {
+          PlayerSeat.human: [BeloteCard(suit: Suit.hearts, rank: Rank.ace)],
+          PlayerSeat.leftOpponent: [
+            BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+            BeloteCard(suit: Suit.clubs, rank: Rank.seven),
+          ],
+          PlayerSeat.partner: [],
+          PlayerSeat.rightOpponent: [],
+        },
+        turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+        remainingDeck: const [],
+        phase: GamePhase.playingTrick,
+        trumpSuit: Suit.hearts,
+        trumpTaker: PlayerSeat.human,
+        currentPlayer: PlayerSeat.leftOpponent,
+        seenCards: {
+          const BeloteCard(suit: Suit.clubs, rank: Rank.king),
+          const BeloteCard(suit: Suit.clubs, rank: Rank.queen),
+          const BeloteCard(suit: Suit.clubs, rank: Rank.jack),
+          const BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+          const BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+          const BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+        },
+        aiLevel: AiLevel.expert,
+      );
+
+      final updatedState = gameState.playAutomaticTurns();
+
+      expect(updatedState.currentTrick.first.player, PlayerSeat.leftOpponent);
+      expect(
+        updatedState.currentTrick.first.card,
+        const BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+      );
+    });
+
     test('expert AI reads fallen tricks when choosing an opening suit', () {
       final gameState = GameState(
         hands: const {
@@ -1101,6 +1138,53 @@ void main() {
         expect(
           updatedState.currentTrick.first.card,
           const BeloteCard(suit: Suit.diamonds, rank: Rank.seven),
+        );
+      },
+    );
+
+    test(
+      'expert AI cashes a winning ace when the trick is already valuable',
+      () {
+        final gameState = GameState(
+          hands: const {
+            PlayerSeat.human: [BeloteCard(suit: Suit.clubs, rank: Rank.ace)],
+            PlayerSeat.leftOpponent: [
+              BeloteCard(suit: Suit.clubs, rank: Rank.ace),
+              BeloteCard(suit: Suit.clubs, rank: Rank.king),
+            ],
+            PlayerSeat.partner: [],
+            PlayerSeat.rightOpponent: [],
+          },
+          turnedCard: const BeloteCard(suit: Suit.hearts, rank: Rank.ace),
+          remainingDeck: const [],
+          phase: GamePhase.playingTrick,
+          trumpSuit: Suit.hearts,
+          trumpTaker: PlayerSeat.human,
+          currentPlayer: PlayerSeat.leftOpponent,
+          currentTrick: const [
+            PlayedCard(
+              player: PlayerSeat.human,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.ten),
+            ),
+            PlayedCard(
+              player: PlayerSeat.rightOpponent,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.nine),
+            ),
+            PlayedCard(
+              player: PlayerSeat.partner,
+              card: BeloteCard(suit: Suit.clubs, rank: Rank.eight),
+            ),
+          ],
+          aiLevel: AiLevel.expert,
+        );
+
+        final updatedState = gameState.playAutomaticTurns();
+
+        expect(updatedState.currentTrick, isEmpty);
+        expect(updatedState.lastCompletedTrick, hasLength(4));
+        expect(
+          updatedState.lastCompletedTrick.last.card,
+          const BeloteCard(suit: Suit.clubs, rank: Rank.ace),
         );
       },
     );

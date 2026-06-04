@@ -691,13 +691,14 @@ class GameState {
           .where((card) => card.suit != trump)
           .toList();
       if (nonTrumpCards.isNotEmpty) {
-        return _lowestPriorityAutomaticCard(
+        return _chooseExpertLeadingCard(
           _bestLeadingCardsForExpert(
             nonTrumpCards,
             trumpSuit: trump,
             seat: seat,
           ),
           trumpSuit: trump,
+          seat: seat,
         );
       }
 
@@ -732,6 +733,16 @@ class GameState {
           .where((card) => card.suit != trump)
           .toList();
       if (nonTrumpWinningCards.isNotEmpty) {
+        final cashableAces = nonTrumpWinningCards
+            .where(
+              (card) =>
+                  _shouldCashWinningAce(card, currentTrick, trumpSuit: trump),
+            )
+            .toList();
+        if (cashableAces.isNotEmpty) {
+          return _lowestPriorityAutomaticCard(cashableAces, trumpSuit: trump);
+        }
+
         return _lowestPriorityAutomaticCard(
           nonTrumpWinningCards,
           trumpSuit: trump,
@@ -872,6 +883,42 @@ class GameState {
     return bestSuit.value;
   }
 
+  BeloteCard _chooseExpertLeadingCard(
+    List<BeloteCard> playableCards, {
+    required Suit trumpSuit,
+    required PlayerSeat seat,
+  }) {
+    final team = _teamOf(seat);
+    final teamBehind =
+        (gameScore[team] ?? 0) < (gameScore[_opponentOf(team)] ?? 0);
+
+    final cashableAces = playableCards
+        .where((card) => card.rank == Rank.ace && _shouldCashLeadingAce(card))
+        .toList();
+    if (cashableAces.isNotEmpty) {
+      final suitPressure = cashableAces.map(
+        (card) => MapEntry(
+          card,
+          _expertRemainingSuitPressure(
+            card.suit,
+            trumpSuit: trumpSuit,
+            excludeCard: card,
+          ),
+        ),
+      );
+      final bestCashableAce = suitPressure.reduce((first, second) {
+        if (teamBehind) {
+          return first.value >= second.value ? first : second;
+        }
+
+        return first.value <= second.value ? first : second;
+      });
+      return bestCashableAce.key;
+    }
+
+    return _lowestPriorityAutomaticCard(playableCards, trumpSuit: trumpSuit);
+  }
+
   int _expertLeadingSuitScore(
     List<BeloteCard> cards, {
     required Suit trumpSuit,
@@ -891,9 +938,18 @@ class GameState {
     return teamSuitMomentum - opponentSuitMomentum;
   }
 
-  int _expertRemainingSuitPressure(Suit suit, {required Suit trumpSuit}) {
+  int _expertRemainingSuitPressure(
+    Suit suit, {
+    required Suit trumpSuit,
+    BeloteCard? excludeCard,
+  }) {
     return createDeck()
-        .where((card) => card.suit == suit && !seenCards.contains(card))
+        .where(
+          (card) =>
+              card.suit == suit &&
+              !seenCards.contains(card) &&
+              (excludeCard == null || card != excludeCard),
+        )
         .fold<int>(
           0,
           (total, card) =>
@@ -907,6 +963,41 @@ class GameState {
     return (wonTricks[team] ?? const <List<PlayedCard>>[]).where((trick) {
       return trick.isNotEmpty && trick.first.card.suit == suit;
     }).length;
+  }
+
+  bool _shouldCashLeadingAce(BeloteCard card) {
+    if (card.rank != Rank.ace) {
+      return false;
+    }
+
+    return _expertRemainingSuitPressure(
+          card.suit,
+          trumpSuit: trumpSuit!,
+          excludeCard: card,
+        ) <=
+        6;
+  }
+
+  bool _shouldCashWinningAce(
+    BeloteCard card,
+    List<PlayedCard> trick, {
+    required Suit trumpSuit,
+  }) {
+    if (card.rank != Rank.ace || card.suit == trumpSuit) {
+      return false;
+    }
+
+    final remainingSuitPressure = _expertRemainingSuitPressure(
+      card.suit,
+      trumpSuit: trumpSuit,
+      excludeCard: card,
+    );
+    final trickPoints = trick.fold<int>(
+      0,
+      (total, playedCard) =>
+          total + playedCard.card.points(trumpSuit: trumpSuit),
+    );
+    return remainingSuitPressure <= 6 || trickPoints >= 10;
   }
 
   Map<PlayerSeat, List<BeloteCard>> _completeHandsAfterTrumpTaken(
